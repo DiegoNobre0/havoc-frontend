@@ -1,1 +1,22 @@
-/* You can add global styles to this file, and also import other style files */
+// Importação dos tokens
+@import 'styles/variables';
+
+// Reset Global e Tema Base
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background-color: $havoc-bg-dark;
+  color: $havoc-text-main;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Customizações globais para Angular Material podem entrar aqui
+// Exemplo: Deixando os botões com a cara da Havoc
+.mat-mdc-button, .mat-mdc-raised-button {
+  border-radius: 4px !important;
+  text-transform: uppercase !important;
+  font-weight: bold !important;
+}
