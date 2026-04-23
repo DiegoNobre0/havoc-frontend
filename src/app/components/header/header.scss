@@ -1,0 +1,238 @@
+@use '../../../styles/variables' as *;
+
+.top-header {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    background: $havoc-bg-dark;
+    border-bottom: 1px solid rgba(51, 51, 51, 0.4); // Borda muito sutil
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.menu-btn {
+    display: none;
+
+    @media (max-width: 992px) {
+        display: flex;
+    }
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: $havoc-text-muted;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+
+    lucide-icon {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2px;
+    }
+
+    &:hover,
+    &.active {
+        background: rgba(242, 185, 15, 0.1);
+        color: $havoc-yellow;
+    }
+
+    .badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid $havoc-bg-dark;
+
+        &.warning {
+            background: #F59E0B;
+        }
+
+        &.danger {
+            background: $havoc-danger;
+        }
+    }
+}
+
+// ------------------------------------------------
+// DROPDOWNS (Notificações)
+// ------------------------------------------------
+.dropdown-container {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 320px;
+    background: $havoc-bg-surface;
+    border: 1px solid $havoc-border;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+    z-index: 50;
+    overflow: hidden;
+
+    .dropdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+
+        h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: $havoc-text-main;
+        }
+
+        .badge-pill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+
+            &.warning {
+                background: rgba(245, 158, 11, 0.1);
+                color: #F59E0B;
+            }
+
+            &.info {
+                background: rgba(45, 136, 255, 0.1);
+                color: $havoc-info;
+            }
+        }
+    }
+
+    .dropdown-list {
+        max-height: 300px;
+        overflow-y: auto;
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+
+            &:hover {
+                background: rgba(242, 185, 15, 0.05);
+            }
+
+            .icon-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                lucide-icon {
+                    width: 20px;
+                    height: 20px;
+                }
+
+                &.info {
+                    background: rgba(45, 136, 255, 0.1);
+                    color: $havoc-info;
+                }
+
+                &.warning {
+                    background: rgba(245, 158, 11, 0.1);
+                    color: #F59E0B;
+                }
+            }
+
+            .item-content {
+                flex: 1;
+
+                h4 {
+                    margin: 0;
+                    font-size: 0.9rem;
+                    color: $havoc-text-main;
+                    font-weight: 600;
+                }
+
+                p {
+                    margin: 2px 0 0;
+                    font-size: 0.8rem;
+                    color: $havoc-text-muted;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 160px;
+                }
+            }
+
+            .time {
+                font-size: 0.7rem;
+                color: $havoc-text-muted;
+            }
+        }
+    }
+
+    .btn-block {
+        width: 100%;
+        padding: 12px;
+        background: $havoc-yellow;
+        color: $havoc-bg-dark; // Contraste forte
+        border: none;
+        font-weight: 800;
+        cursor: pointer;
+
+        &:hover {
+            background: $havoc-yellow-hover;
+        }
+    }
+
+    @media (max-width: 480px) {
+        position: fixed;
+        top: 70px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+    }
+}
+
+// Avatar do Usuário
+.user-profile {
+    margin-left: 0.5rem;
+    cursor: pointer;
+
+    .avatar-profile {
+        width: 36px;
+        height: 36px;
+        background: $havoc-yellow;
+        color: $havoc-bg-dark;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 2px 8px rgba(242, 185, 15, 0.3);
+    }
+}

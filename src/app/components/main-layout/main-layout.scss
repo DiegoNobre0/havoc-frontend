@@ -1,0 +1,50 @@
+@use '../../../styles/variables' as *; 
+
+.layout-wrapper {
+  display: flex;
+  height: 100vh;
+  height: 100dvh; 
+  width: 100vw;
+  overflow: hidden; 
+  background: $havoc-bg-dark;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; 
+}
+
+.page-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto; 
+  
+  // Barra de rolagem minimalista (Padrão Sênior)
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { 
+    background: rgba(51, 51, 51, 0.5); // Cor da borda
+    border-radius: 10px; 
+    &:hover { background: rgba(140, 140, 140, 0.5); } // Cor do texto muted
+  }
+
+  @media (max-width: 992px) {
+    padding: 1rem; 
+  }
+}
+
+.mobile-backdrop {
+  display: none; 
+  cursor: pointer;
+  
+  @media (max-width: 991px) {
+    display: block; 
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+  }
+}

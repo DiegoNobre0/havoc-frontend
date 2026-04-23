@@ -1,0 +1,306 @@
+@use '../../../styles/variables' as *;
+
+// Variáveis locais para a sidebar
+$sidebar-width: 260px;
+$sidebar-collapsed: 85px;
+
+:host {
+    display: block;
+    z-index: 100;
+}
+
+.sidebar {
+    height: 100vh;
+    height: 100dvh;
+    background: $havoc-bg-surface; // Fundo da Havoc
+    border-right: 1px solid $havoc-border;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    // ----------------------------------------------------
+    // 💻 COMPORTAMENTO DESKTOP (Fixa na tela)
+    // ----------------------------------------------------
+    @media (min-width: 992px) {
+        position: relative;
+        transform: translateX(0) !important;
+        width: $sidebar-width;
+
+        &.collapsed {
+            width: $sidebar-collapsed;
+
+            .brand {
+                padding: 2rem 0;
+                justify-content: center;
+
+                h1 {
+                    display: none;
+                }
+            }
+
+            .section-title {
+                display: none;
+            }
+
+            .menu-item {
+                justify-content: center;
+                padding: 0.85rem;
+                margin: 0.5rem auto;
+                width: 48px;
+                border-radius: 12px;
+
+                .label {
+                    display: none;
+                }
+            }
+
+            .sidebar-footer {
+                padding: 1.5rem 0;
+                justify-content: center;
+
+                .user-info {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    // ----------------------------------------------------
+    // 📱 COMPORTAMENTO MOBILE (Esconde/Desliza)
+    // ----------------------------------------------------
+    @media (max-width: 991px) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        transform: translateX(-100%);
+        box-shadow: none;
+
+        &.mobile-open {
+            transform: translateX(0);
+            box-shadow: 20px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        &.collapsed {
+            width: 280px;
+        }
+    }
+
+
+    // ----------------------------------------------------
+    // MARCA (LOGO)
+    // ----------------------------------------------------
+    .brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 110px;
+        transition: all 0.3s ease;
+
+        .brand-full {
+            width: 6rem;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(242, 185, 15, 0.15)); // Brilho Amarelo
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: auto;
+            max-height: 42px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(242, 185, 15, 0.25)); // Brilho Amarelo
+            animation: fadeIn 0.3s ease-in-out;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .menu-section {
+        padding: 1rem 0;
+
+        .section-title {
+            padding: 0 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: $havoc-text-muted;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+    }
+
+    .nav-group {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1rem;
+
+        .menu-item {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.25rem;
+            border-radius: 8px;
+            color: $havoc-text-muted;
+            text-decoration: none;
+            transition: all 0.3s ease;
+
+            .sidebar-icon {
+                width: 20px;
+                height: 20px;
+                stroke-width: 2px;
+                flex-shrink: 0;
+            }
+
+            .label {
+                margin-left: 12px;
+                white-space: nowrap;
+                font-size: 0.95rem;
+                font-weight: 500;
+            }
+
+            &:hover:not(.active) {
+                background: rgba(242, 185, 15, 0.05); // Amarelo suave
+                color: $havoc-text-main;
+
+                .sidebar-icon {
+                    color: $havoc-yellow;
+                }
+            }
+
+            &.active {
+                background: $havoc-yellow;
+                color: $havoc-bg-dark; // Texto escuro no fundo amarelo
+                box-shadow: 0 4px 15px rgba(242, 185, 15, 0.25);
+
+                .sidebar-icon {
+                    color: $havoc-bg-dark;
+                }
+            }
+        }
+    }
+
+    .spacer {
+        flex: 1;
+    }
+
+    .sidebar-footer {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: auto;
+
+        .user-badge {
+            min-width: 40px;
+            height: 40px;
+            background: rgba(242, 185, 15, 0.2);
+            color: $havoc-yellow;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+
+            .user-name {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: $havoc-text-main;
+            }
+
+            .user-role {
+                font-size: 0.75rem;
+                color: $havoc-text-muted;
+            }
+        }
+    }
+}
+
+.submenu {
+    display: flex;
+    flex-direction: column;
+    padding-left: 3.2rem;
+    padding-right: 1rem;
+    margin-top: -0.2rem;
+    margin-bottom: 0.5rem;
+    animation: slideDown 0.2s ease-out;
+
+    .submenu-item {
+        padding: 0.5rem 0.75rem;
+        color: $havoc-text-muted;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(242, 242, 242, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        &:hover {
+            color: $havoc-text-main;
+            background: rgba(255, 255, 255, 0.05);
+
+            &::before {
+                background: $havoc-yellow;
+            }
+        }
+
+        &.active {
+            color: $havoc-yellow;
+            font-weight: 700;
+
+            &::before {
+                background: $havoc-yellow;
+                box-shadow: 0 0 8px $havoc-yellow;
+            }
+        }
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

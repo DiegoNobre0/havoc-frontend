@@ -1,1 +1,63 @@
-<p>login works!</p>
+<div class="login-page-wrapper">
+
+  <div class="brand-section">
+    <img src="/HavocV3.png" class="giant-bg-logo" alt="Havoc Marca d'água">
+
+    <div class="brand-content">
+      <h1 class="welcome-title">Seja bem-vindo à <span class="highlight">HAVOC</span></h1>
+      <p class="welcome-text">O painel administrativo para gerenciar suplementos, vendas e clientes com extrema velocidade e performance.</p>
+      <!-- <button class="btn-learn-more">Saiba Mais</button> -->
+    </div>
+    <div class="abstract-graphic"></div>
+  </div>
+
+  <div class="form-section">
+    <div class="login-card">
+
+      <header class="card-header">
+        <img src="/HavocV3.png" class="logo" alt="Logo Havoc Suplementos">
+        <h2>Acesso ao Painel</h2>
+        <p>Insira suas credenciais para continuar</p>
+      </header>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        
+        @if (errorMessage()) {
+          <div class="error-message-box">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" formControlName="email" placeholder="admin@havoc.com.br" class="havoc-input">
+        </div>
+
+        <div class="form-group">
+          <div class="label-wrapper">
+            <label>Senha</label>
+            <a href="#" class="forgot-link">Esqueceu a senha?</a>
+          </div>
+          <input type="password" formControlName="password" placeholder="••••••••" class="havoc-input">
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-wrapper">
+            <input type="checkbox"> Lembrar deste Dispositivo
+          </label>
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="loginForm.invalid || isLoading()">
+          
+          @if (isLoading()) {
+            <lucide-icon [img]="RefreshCwIcon" class="loading-icon"></lucide-icon>
+            Entrando...
+          } @else {
+            Entrar
+          }
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>

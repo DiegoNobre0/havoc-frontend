@@ -1,6 +1,5 @@
 // Importação dos tokens
-@import 'styles/variables';
-
+@use 'styles/variables' as *;
 // Reset Global e Tema Base
 html, body {
   margin: 0;

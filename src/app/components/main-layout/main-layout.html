@@ -1,1 +1,19 @@
-<p>main-layout works!</p>
+<div class="layout-wrapper">
+  
+  @if (isMobileMenuOpen()) {
+    <div class="mobile-backdrop" (click)="closeMobileMenu()"></div>
+  }
+
+  <app-sidebar 
+    [isCollapsed]="isCollapsed()" 
+    [isMobileOpen]="isMobileMenuOpen()">
+  </app-sidebar> 
+
+  <div class="main-content">
+    <app-header (toggleMenu)="toggleMenu()"></app-header>
+    
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

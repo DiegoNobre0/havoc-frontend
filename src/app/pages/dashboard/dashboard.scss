@@ -1,0 +1,641 @@
+@use '../../../styles/variables' as var;
+
+// ==========================================
+// 1. LAYOUT PRINCIPAL E GRID
+// ==========================================
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.col-span-1 {
+    grid-column: span 1;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.col-span-3 {
+    grid-column: span 3;
+}
+
+@media (max-width: 1200px) {
+    .col-span-3 {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .col-span-2,
+    .col-span-3 {
+        grid-column: span 1;
+    }
+}
+
+// ==========================================
+// 2. WELCOME CARD (Destaque Amarelo Havoc)
+// ==========================================
+.welcome-card {
+    background: var.$havoc-yellow; // Fundo Amarelo
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var.$havoc-bg-dark; // Texto Preto/Escuro para Contraste
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(242, 185, 15, 0.2); // Sombra Amarela
+
+    .welcome-content {
+        position: relative;
+        z-index: 2;
+        max-width: 70%;
+
+        h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        p {
+            margin: 0 0 1.5rem 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .welcome-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(0, 0, 0, 0.08); // Leve escurecida
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+
+            .stat {
+                display: flex;
+                flex-direction: column;
+
+                .value {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                }
+
+                .label {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+            }
+
+            .divider {
+                width: 1px;
+                height: 30px;
+                background: rgba(0, 0, 0, 0.15);
+            }
+        }
+    }
+
+    .welcome-illustration {
+        position: absolute;
+        right: 20px;
+        bottom: -20px;
+        opacity: 0.15; // Deixa o ícone sutil ao fundo
+        color: var.$havoc-bg-dark;
+
+        .ai-icon {
+            width: 180px;
+            height: 180px;
+        }
+    }
+}
+
+// ==========================================
+// 3. CARDS DE MÉTRICAS 
+// ==========================================
+.metric-card {
+    background: var.$havoc-bg-surface;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    border: 1px solid var.$havoc-border;
+
+    &:hover {
+        transform: translateY(-3px);
+    }
+
+    // Cores Semânticas
+    &.card-success {
+        border-color: rgba(23, 177, 105, 0.3);
+
+        .card-icon-wrapper {
+            color: var.$havoc-success;
+            background: rgba(23, 177, 105, 0.1);
+        }
+    }
+
+    &.card-warning {
+        border-color: rgba(242, 185, 15, 0.3);
+
+        .card-icon-wrapper {
+            color: var.$havoc-yellow;
+            background: rgba(242, 185, 15, 0.1);
+        }
+    }
+
+    &.card-info {
+        border-color: rgba(45, 136, 255, 0.3);
+
+        .card-icon-wrapper {
+            color: var.$havoc-info;
+            background: rgba(45, 136, 255, 0.1);
+        }
+    }
+
+    .card-icon-wrapper {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+
+        lucide-icon {
+            width: 22px;
+            height: 22px;
+            stroke-width: 2.5px;
+        }
+    }
+
+    .card-info {
+        .value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0;
+            color: var.$havoc-text-main;
+        }
+
+        .label {
+            font-size: 0.85rem;
+            color: var.$havoc-text-muted;
+            font-weight: 500;
+        }
+    }
+
+    .card-footer {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed rgba(51, 51, 51, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+
+        .trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+
+            &.positive {
+                color: var.$havoc-success;
+                background: rgba(23, 177, 105, 0.1);
+                padding: 2px 8px;
+                border-radius: 20px;
+            }
+
+            &.warning {
+                color: var.$havoc-yellow;
+                background: rgba(242, 185, 15, 0.1);
+                padding: 2px 8px;
+                border-radius: 20px;
+            }
+        }
+
+        .compare {
+            color: var.$havoc-text-muted;
+        }
+    }
+}
+
+// ==========================================
+// 4. ÁREA DOS GRÁFICOS (E Filtros de Data)
+// ==========================================
+.chart-section {
+    background: var.$havoc-bg-surface;
+    border-radius: 12px;
+    border: 1px solid var.$havoc-border;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+
+    .chart-header {
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+
+            .title-area {
+                h4 {
+                    margin: 0 0 1rem 0;
+                    font-size: 1.125rem;
+                    color: var.$havoc-text-main;
+                }
+
+                .chart-tabs {
+                    display: flex;
+                    // background: var.$havoc-bg-dark;
+                    padding: 4px;
+                    border-radius: 8px;
+                    gap: 4px;
+
+                    button {
+                        background: transparent;
+                        border: none;
+                        color: var.$havoc-text-muted;
+                        padding: 6px 16px;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: 0.2s;
+
+                        &.active {
+                            background: var.$havoc-bg-surface-2;
+                            color: var.$havoc-yellow;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+                        }
+                    }
+                }
+            }
+
+            .filter-group {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                .datepicker-wrapper {
+                    position: relative;
+
+                    .hidden-mat-input {
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 0;
+                        visibility: hidden;
+                        pointer-events: none;
+
+                        ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+                        ::ng-deep .mdc-line-ripple {
+                            display: none;
+                        }
+
+                        ::ng-deep .mdc-text-field {
+                            padding: 0;
+                            background: transparent;
+                        }
+                    }
+                }
+
+                .custom-datepicker {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: var.$havoc-bg-dark;
+                    border: 1px solid var.$havoc-border;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    color: var.$havoc-text-main;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: 0.2s;
+
+                    &:hover {
+                        border-color: var.$havoc-yellow;
+                    }
+
+                    &.active {
+                        background: rgba(242, 185, 15, 0.1);
+                        border-color: var.$havoc-yellow;
+                        color: var.$havoc-yellow;
+
+                        .icon,
+                        .icon-arrow {
+                            color: var.$havoc-yellow;
+                        }
+                    }
+
+                    .icon-arrow {
+                        width: 14px;
+                        height: 14px;
+                        color: var.$havoc-text-muted;
+                        margin-left: 4px;
+                    }
+                }
+
+                .btn-refresh {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: transparent;
+                    color: var.$havoc-text-muted;
+                    border: 1px solid var.$havoc-border;
+                    padding: 8px 16px;
+                    border-radius: 8px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: 0.2s;
+
+                    &:hover {
+                        background: var.$havoc-bg-surface-2;
+                        color: var.$havoc-text-main;
+                    }
+
+                    &.active-btn {
+                        background: var.$havoc-yellow;
+                        color: var.$havoc-bg-dark;
+                        border-color: var.$havoc-yellow;
+                    }
+                }
+            }
+        }
+    }
+
+    .chart-content {
+        min-height: 320px;
+        margin-top: 1.5rem;
+    }
+}
+
+// ==========================================
+// 5. TABELAS (Top Produtos e Últimos Pedidos)
+// ==========================================
+.table-card {
+    background: var.$havoc-bg-surface;
+    border-radius: 12px;
+    border: 1px solid var.$havoc-border;
+    padding: 1.5rem;
+
+    .card-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        h4 {
+            margin: 0;
+            font-size: 1.125rem;
+            color: var.$havoc-text-main;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var.$havoc-text-muted;
+            cursor: pointer;
+        }
+    }
+
+    .modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+
+        th {
+            padding: 0.75rem 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var.$havoc-text-muted;
+            border-bottom: 1px solid var.$havoc-border;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+            font-size: 0.85rem;
+            color: var.$havoc-text-main;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .primary-col {
+            font-weight: 600;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+
+            &.proteína {
+                background: rgba(59, 130, 246, 0.1);
+                color: #3B82F6;
+            }
+
+            &.aminoácido {
+                background: rgba(245, 158, 11, 0.1);
+                color: #F59E0B;
+            }
+
+            &.energia {
+                background: rgba(217, 56, 56, 0.1);
+                color: var.$havoc-danger;
+            }
+        }
+
+        .trend-sm {
+            font-size: 0.75rem;
+            margin-left: 6px;
+
+            &.up {
+                color: var.$havoc-success;
+            }
+
+            &.down {
+                color: var.$havoc-danger;
+            }
+        }
+    }
+
+    .prof-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .prof-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: var.$havoc-bg-dark;
+            border: 1px solid transparent;
+            transition: 0.2s;
+
+            &:hover {
+                border-color: var.$havoc-yellow;
+            }
+
+            .prof-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+
+                .avatar {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                h5 {
+                    margin: 0 0 4px 0;
+                    font-size: 0.95rem;
+                    color: var.$havoc-text-main;
+                }
+
+                .badge-status {
+                    font-size: 0.7rem;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-weight: bold;
+
+                    &.success {
+                        background: rgba(23, 177, 105, 0.1);
+                        color: var.$havoc-success;
+                    }
+
+                    &.warning {
+                        background: rgba(245, 158, 11, 0.1);
+                        color: #F59E0B;
+                    }
+
+                    &.info {
+                        background: rgba(45, 136, 255, 0.1);
+                        color: var.$havoc-info;
+                    }
+                }
+            }
+
+            .prof-stats {
+                display: flex;
+                gap: 1.5rem;
+
+                .stat-col {
+                    display: flex;
+                    flex-direction: column;
+
+                    span {
+                        font-size: 0.75rem;
+                        color: var.$havoc-text-muted;
+                        margin-bottom: 2px;
+                    }
+
+                    strong {
+                        font-size: 0.9rem;
+                        color: var.$havoc-text-main;
+                    }
+
+                    .text-primary {
+                        color: var.$havoc-yellow;
+                    }
+                }
+
+                .text-right {
+                    text-align: right;
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
+// 6. ANGULAR MATERIAL DATEPICKER THEME
+// ==========================================
+::ng-deep .cdk-overlay-container {
+    z-index: 9999;
+}
+
+::ng-deep .mat-mdc-datepicker-content,
+::ng-deep .mat-datepicker-content {
+    background-color: var.$havoc-bg-surface !important;
+    border: 1px solid var.$havoc-border !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 12px !important;
+    color: var.$havoc-text-main !important;
+    padding: 8px;
+
+    .mat-calendar-arrow,
+    .mat-calendar-previous-button,
+    .mat-calendar-next-button,
+    .mat-calendar-period-button {
+        color: var.$havoc-text-main !important;
+        font-weight: 600;
+    }
+
+    .mat-calendar-table-header th {
+        color: var.$havoc-text-muted !important;
+        font-size: 0.8rem;
+    }
+
+    .mat-calendar-body-cell-content {
+        color: var.$havoc-text-main !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: rgba(242, 185, 15, 0.2) !important;
+            color: white !important;
+        }
+    }
+
+    .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+        border-color: rgba(242, 185, 15, 0.5) !important;
+    }
+
+    .mat-calendar-body-selected {
+        background-color: var.$havoc-yellow !important;
+        color: var.$havoc-bg-dark !important;
+        font-weight: bold !important;
+        box-shadow: 0 2px 10px rgba(242, 185, 15, 0.4) !important;
+        border: none !important;
+    }
+}

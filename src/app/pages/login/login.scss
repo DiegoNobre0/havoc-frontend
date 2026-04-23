@@ -1,0 +1,323 @@
+@use '../../../styles/variables' as var;
+
+// Como você está usando as cores da Havoc, vou mapeá-las diretamente aqui 
+// para o código ficar idêntico às suas variáveis, garantindo o Dark Mode!
+$primary: #F2B90F;
+$primary-dark: #D9A40D;
+$background: #0D0D0D;
+$surface: #1A1A1A;
+$surface-2: #262626;
+$text-primary: #F2F2F2;
+$text-secondary: #8C8C8C;
+$border: #333333;
+
+// ==========================================
+// 1. WRAPPER PRINCIPAL
+// ==========================================
+.login-page-wrapper {
+    height: 100dvh;
+    width: 100%;
+    display: flex;
+    background-color: $background;
+    overflow: hidden;
+}
+
+// ==========================================
+// 2. LADO ESQUERDO: BRANDING (Só Desktop)
+// ==========================================
+.brand-section {
+    display: none;
+    // Gradiente escuro e agressivo para combinar com a Havoc
+    background: radial-gradient(circle at center, $surface 0%, $background 100%);
+    position: relative;
+    overflow: hidden;
+
+    @media (min-width: 1024px) {
+        display: flex;
+        flex: 1.2;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem;
+    }
+
+    .giant-bg-logo {
+        position: absolute;
+        top: 20%;
+        transform: translateY(-50%);
+        width: 50%;
+        opacity: 0.8;
+        pointer-events: none;
+        z-index: 1;
+        // Sombra dourada super suave
+        filter: drop-shadow(0 0 60px rgba(242, 185, 15, 0.15));
+    }
+
+    .brand-content {
+        max-width: 480px;
+        z-index: 2;
+        position: relative;
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: $text-primary;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+
+            .highlight {
+                color: $primary;
+            }
+        }
+
+        .welcome-text {
+            color: $text-secondary;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .btn-learn-more {
+            background: $primary;
+            color: $background; // Texto escuro no botão amarelo dá um contraste absurdo
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+
+            &:hover {
+                background: $primary-dark;
+            }
+        }
+    }
+
+    .abstract-graphic {
+        position: absolute;
+        bottom: -100px;
+        left: -100px;
+        width: 600px;
+        height: 600px;
+        // Reflexo amarelo/dourado no canto inferior
+        background: radial-gradient(circle, rgba(242, 185, 15, 0.1) 0%, transparent 70%);
+        filter: blur(60px);
+        z-index: 0;
+    }
+}
+
+// ==========================================
+// 3. LADO DIREITO: FORMULÁRIO
+// ==========================================
+.form-section {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: $background; // Fundo dark principal
+    padding: 1.5rem;
+
+    @media (min-width: 1024px) {
+        padding: 3rem;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 420px;
+        background: $surface;
+        padding: 2.5rem 2rem;
+        border-radius: 12px;
+        border: 1px solid $border;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); // Sombra mais densa pro dark mode
+        transition: all 0.3s ease;
+
+        @media (max-width: 480px) {
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .logo {
+                height: 2.5rem; // Ajustei o tamanho para ficar harmonioso no form
+                width: auto;
+                object-fit: contain;
+                margin-bottom: 1.5rem;
+                transition: transform 0.3s ease;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+            }
+
+            h2 {
+                font-size: 1.8rem;
+                color: $text-primary;
+                margin: 0 0 0.5rem 0;
+                font-weight: 700;
+            }
+
+            p {
+                color: $text-secondary;
+                font-size: 0.9rem;
+                margin: 0;
+            }
+        }
+    }
+}
+
+// ==========================================
+// 4. ELEMENTOS INTERNOS DO FORM
+// ==========================================
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            font-size: 0.85rem;
+            color: $text-primary;
+            font-weight: 500;
+        }
+
+        .label-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .forgot-link {
+                font-size: 0.8rem;
+                color: $primary;
+                text-decoration: none;
+                font-weight: 500;
+
+                &:hover {
+                    color: $primary-dark;
+                }
+            }
+        }
+    }
+
+    .havoc-input {
+        background: $surface-2; // Cor de fundo do input sutilmente mais clara que o card
+        border: 1px solid $border;
+        padding: 14px 16px;
+        border-radius: 8px;
+        color: $text-primary;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+
+        &::placeholder {
+            color: rgba(242, 242, 242, 0.3);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: $primary;
+            // Brilho amarelo/dourado ao focar no input
+            box-shadow: 0 0 0 3px rgba(242, 185, 15, 0.2);
+        }
+    }
+
+    .form-options {
+        font-size: 0.85rem;
+        color: $text-secondary;
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+
+            input[type="checkbox"] {
+                accent-color: $primary;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .btn-login {
+        background: $primary;
+        color: $background; // Letra escura no fundo amarelo
+        border: none;
+        padding: 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        margin-top: 0.5rem;
+
+        &:hover:not(:disabled) {
+            background: $primary-dark;
+        }
+
+        &:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+// ==========================================
+// 5. ESTADOS DE ERRO E LOADING
+// ==========================================
+.error-message-box {
+    background: rgba(217, 56, 56, 0.1); // Usando sua variável $havoc-danger
+    border: 1px solid rgba(217, 56, 56, 0.4);
+    color: #ff8a8a;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+}
+
+.loading-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

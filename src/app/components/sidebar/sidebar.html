@@ -1,1 +1,88 @@
-<p>sidebar works!</p>
+<aside class="sidebar" [class.collapsed]="isCollapsed()" [class.mobile-open]="isMobileOpen()">
+
+    <div class="brand">
+        @if (isCollapsed()) {
+        <img src="/HavocV1.png" class="brand-icon" alt="Ícone Havoc">
+        } @else {
+        <img src="/HavocV1.png" class="brand-full" alt="Logo Havoc">
+        }
+    </div>
+
+    <div class="menu-section">
+        @if (!isCollapsed()) { <span class="section-title">Visão Geral</span> }
+        <nav class="nav-group">
+            <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
+                <lucide-icon name="layout-dashboard" class="sidebar-icon"></lucide-icon>
+                @if (!isCollapsed()) { <span class="label">Dashboard</span> }
+            </a>
+        </nav>
+    </div>
+
+    <div class="menu-section">
+        @if (!isCollapsed()) { <span class="section-title">Operação</span> }
+        <nav class="nav-group">
+
+            <!-- <a routerLink="/pdv" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="shopping-cart" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) { <span class="label">Frente de Caixa (PDV)</span> }
+      </a>
+
+      <a routerLink="/orders" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) { <span class="label">Fila de Pedidos</span> }
+      </a>
+       -->
+            <div class="menu-group">
+                <a class="menu-item cursor-pointer" [class.active]="isCatalogRoute()" (click)="toggleCatalog()">
+                    <lucide-icon name="package" class="sidebar-icon"></lucide-icon>
+                    @if (!isCollapsed()) {
+                    <span class="label" style="flex: 1;">Catálogo</span>
+                    <lucide-icon [name]="isCatalogOpen() ? 'chevron-down' : 'chevron-right'"
+                        class="w-4 h-4"></lucide-icon>
+                    }
+                </a>
+
+                @if (!isCollapsed() && (isCatalogOpen() || isCatalogRoute())) {
+                <div class="submenu">
+                    <a routerLink="/catalog" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active"
+                        class="submenu-item">Visão Geral</a>
+                    <a routerLink="/catalog/products" routerLinkActive="active" class="submenu-item">Produtos</a>
+                    <a routerLink="/catalog/categories" routerLinkActive="active" class="submenu-item">Categorias</a>
+                </div>
+                }
+            </div>
+
+            <!-- <a routerLink="/crm" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="users" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) { <span class="label">Clientes & CRM</span> }
+      </a> -->
+
+            <a routerLink="/whatsapp" routerLinkActive="active" class="menu-item">
+                <lucide-icon name="message-square" class="sidebar-icon"></lucide-icon>
+                @if (!isCollapsed()) { <span class="label">Atendimento IA</span> }
+            </a>
+        </nav>
+    </div>
+
+    <div class="menu-section">
+        @if (!isCollapsed()) { <span class="section-title">Sistema</span> }
+        <nav class="nav-group">
+            <a routerLink="/settings" routerLinkActive="active" class="menu-item">
+                <lucide-icon name="settings" class="sidebar-icon"></lucide-icon>
+                @if (!isCollapsed()) { <span class="label">Configurações</span> }
+            </a>
+        </nav>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="sidebar-footer">
+        <div class="user-badge">{{ getInitials() }}</div>
+        @if (!isCollapsed()) {
+        <div class="user-info">
+            <span class="user-name">{{ authService.currentUser()?.name || 'Administrador' }}</span>
+            <span class="user-role">{{ authService.currentUser()?.role || 'Admin' }}</span>
+        </div>
+        }
+    </div>
+</aside>

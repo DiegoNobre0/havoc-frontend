@@ -1,1 +1,158 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <div class="dashboard-grid">
+
+    <div class="welcome-card col-span-2">
+      <div class="welcome-content">
+        <h2>Olá, {{ authService.currentUser()?.name?.split(' ')?.[0] || 'Gestor' }}! ⚡</h2>
+        <p>Aqui está o resumo do desempenho da sua loja hoje. Continue o excelente trabalho!</p>
+        <div class="welcome-stats">
+          <div class="stat"><span class="value">42</span><span class="label">Pedidos Hoje</span></div>
+          <div class="divider"></div>
+          <div class="stat"><span class="value">87%</span><span class="label">Conversão</span></div>
+        </div>
+      </div>
+      <div class="welcome-illustration"><lucide-icon name="shopping-bag" class="ai-icon"></lucide-icon></div>
+    </div>
+
+    <div class="metric-card card-info col-span-1">
+      <div class="card-icon-wrapper"><lucide-icon name="users"></lucide-icon></div>
+      <div class="card-info">
+        <h3 class="value">24</h3>
+        <span class="label">Novos Clientes</span>
+      </div>
+      <div class="card-footer">
+        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> Destaque</span>
+        <span class="compare">na semana</span>
+      </div>
+    </div>
+
+    <div class="metric-card card-warning">
+      <div class="card-icon-wrapper"><lucide-icon name="package"></lucide-icon></div>
+      <div class="card-info">
+        <h3 class="value">18</h3>
+        <span class="label">Pedidos Pendentes</span>
+      </div>
+      <div class="card-footer">
+        <span class="trend warning"><lucide-icon name="clock"></lucide-icon> Aguardando envio</span>
+      </div>
+    </div>
+
+    <div class="metric-card card-success">
+      <div class="card-icon-wrapper"><lucide-icon name="dollar-sign"></lucide-icon></div>
+      <div class="card-info">
+        <h3 class="value">R$ 1.280,00</h3>
+        <span class="label">Receita Hoje</span>
+      </div>
+      <div class="card-footer">
+        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> +12%</span>
+        <span class="compare">vs ontem</span>
+      </div>
+    </div>
+
+    <div class="chart-section havoc-card col-span-3">
+      <div class="chart-header">
+        <div class="header-main">
+          <div class="title-area">
+            <h4>Relatório Financeiro</h4>
+            <div class="chart-tabs">
+              <button [class.active]="viewTab() === 'faturamento'" (click)="setTab('faturamento')">Faturamento</button>
+              <!-- <button [class.active]="viewTab() === 'despesas'" (click)="setTab('despesas')">Lucro x Despesa</button> -->
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="datepicker-wrapper">
+              <div class="custom-datepicker" [class.active]="!isCurrentWeek" (click)="picker.open()">
+                <lucide-icon name="calendar" class="icon"></lucide-icon>
+                <span class="display-value">{{ displayMonthYear }}</span>
+                <lucide-icon name="chevron-down" class="icon-arrow"></lucide-icon>
+              </div>
+
+              <mat-form-field class="hidden-mat-input">
+                <input matInput [matDatepicker]="picker">
+                <mat-datepicker #picker startView="multi-year" (monthSelected)="onMonthSelected($event, picker)"></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <button class="btn-refresh" [class.active-btn]="isCurrentWeek" (click)="setSemanaAtual()">
+              <lucide-icon name="clock"></lucide-icon>
+              <span>Semana atual</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-content">
+        @if (viewTab() === 'faturamento') {
+          <apx-chart #areaChart [series]="chartOptions.series!" [chart]="chartOptions.chart!" 
+            [xaxis]="chartOptions.xaxis!" [stroke]="chartOptions.stroke!" [colors]="chartOptions.colors!" 
+            [yaxis]="chartOptions.yaxis!" [theme]="chartOptions.theme!" [grid]="chartOptions.grid!">
+          </apx-chart>
+        }
+        <!-- @if (viewTab() === 'despesas') {
+          <apx-chart #barChart [series]="barChartOptions.series!" [chart]="barChartOptions.chart!" 
+            [xaxis]="barChartOptions.xaxis!" [yaxis]="chartOptions.yaxis!" [plotOptions]="barChartOptions.plotOptions!" 
+            [colors]="barChartOptions.colors!" [theme]="barChartOptions.theme!" [legend]="barChartOptions.legend!" 
+            [grid]="barChartOptions.grid!">
+          </apx-chart>
+        } -->
+      </div>
+    </div>
+
+    <div class="table-card col-span-2">
+      <div class="card-header-flex">
+        <h4>Top Produtos Vendidos</h4>
+        <button class="btn-icon"><lucide-icon name="more-vertical"></lucide-icon></button>
+      </div>
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Qtd</th>
+              <th>Receita</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (prod of topProdutos; track prod.nome) {
+            <tr>
+              <td class="primary-col">{{ prod.nome }}</td>
+              <td><span class="badge" [class]="prod.categoria | lowercase">{{ prod.categoria }}</span></td>
+              <td>{{ prod.qtd }}</td>
+              <td class="font-bold">R$ {{ prod.valor }} 
+                <span class="trend-sm" [class.up]="prod.up" [class.down]="!prod.up">{{ prod.trend }}</span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card col-span-2">
+      <div class="card-header-flex">
+        <h4>Últimos Pedidos</h4>
+        <button class="btn-icon"><lucide-icon name="more-vertical"></lucide-icon></button>
+      </div>
+      <div class="prof-list">
+        @for (pedido of ultimosPedidos; track pedido.cliente) {
+        <div class="prof-item">
+          <div class="prof-info">
+            <div class="avatar" [style.background]="pedido.cor">{{ pedido.avatar }}</div>
+            <div>
+              <h5>{{ pedido.cliente }}</h5>
+              <span class="badge-status" [class]="pedido.badge">{{ pedido.status }}</span>
+            </div>
+          </div>
+          <div class="prof-stats">
+            <div class="stat-col"><span>Itens</span><strong>{{ pedido.itens }} un.</strong></div>
+            <div class="stat-col text-right"><span>Total</span><strong class="text-primary">{{ pedido.valor }}</strong></div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,1 +1,66 @@
-<p>header works!</p>
+<header class="top-header">
+  
+  <div class="header-left">
+    <button class="action-btn menu-btn" (click)="toggleMenu.emit()">
+      <lucide-icon name="menu"></lucide-icon>
+    </button>
+    
+    <div class="store-info" style="margin-left: 1rem; display: flex; flex-direction: column;">
+      <h2 style="margin: 0; font-size: 1rem; font-weight: 700; color: white;">HAVOC SUPLEMENTOS</h2>
+      <!-- <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem;">
+        @if(isPosOpen()) {
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #4AD0AF; box-shadow: 0 0 8px rgba(74, 208, 175, 0.8);"></div>
+          <span style="color: #4AD0AF; font-weight: 600;">Caixa Aberto</span>
+        } @else {
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #EF4444;"></div>
+          <span style="color: #EF4444; font-weight: 600;">Caixa Fechado</span>
+        }
+      </div> -->
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button class="action-btn">
+      <lucide-icon name="search"></lucide-icon>
+    </button>
+
+    <div class="dropdown-container">
+      <button class="action-btn" (click)="toggleNotif()" [class.active]="isNotifOpen()">
+        <lucide-icon name="bell"></lucide-icon>
+        <span class="badge danger">2</span>
+      </button>
+
+      @if (isNotifOpen()) {
+        <div class="dropdown-menu">
+          <div class="dropdown-header">
+            <h3>Notificações</h3>
+            <span class="badge-pill info">2 novas</span>
+          </div>
+          <div class="dropdown-list">
+            <div class="list-item">
+              <div class="icon-circle info"><lucide-icon name="shopping-bag"></lucide-icon></div>
+              <div class="item-content">
+                <h4>Novo Pedido #1024</h4>
+                <p>Mesa 04 ou Delivery</p>
+              </div>
+              <span class="time">agora</span>
+            </div>
+            <div class="list-item">
+              <div class="icon-circle warning"><lucide-icon name="alert-triangle"></lucide-icon></div>
+              <div class="item-content">
+                <h4>Estoque Baixo</h4>
+                <p>Coca-Cola 2L (Apenas 3 un.)</p>
+              </div>
+              <span class="time">10 min</span>
+            </div>
+          </div>
+          <button class="btn-block">Ver todas as Notificações</button>
+        </div>
+      }
+    </div>
+
+    <div class="user-profile">
+      <div class="avatar-profile">{{ getInitials() }}</div>
+    </div>
+  </div>
+</header>
