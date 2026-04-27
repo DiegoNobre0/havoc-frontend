@@ -20,10 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/main-layout/main-layout').then(m => m.MainLayout),
     children: [
       // Se acessar apenas a raiz ('/'), joga direto pro dashboard
-      { 
-        path: '', 
-        redirectTo: 'dashboard', 
-        pathMatch: 'full' 
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
       },
       {
         path: 'dashboard',
@@ -31,9 +31,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
       },
       {
-        path: 'catalog',
-        title: 'Havoc | Catálogo',
-        loadComponent: () => import('./pages/catalog/catalog').then(m => m.Catalog)
+        path: 'catalog/products',
+        title: 'Havoc | Produtos',
+        loadComponent: () => import('./pages/catalog/products/products').then(m => m.Products)
+      },
+      {
+        path: 'catalog/categories',
+        title: 'Havoc | Categorias',
+        loadComponent: () => import('./pages/catalog/categories/categories').then(m => m.Categories)
+      },
+      {
+        path: 'catalog/kits',
+        title: 'Havoc | Kits',
+        loadComponent: () => import('./pages/catalog/kits/kits').then(m => m.Kits)
       },
       {
         path: 'orders',
@@ -51,8 +61,8 @@ export const routes: Routes = [
   // ----------------------------------------------------
   // ROTA DE FALLBACK (Erro 404)
   // ----------------------------------------------------
-  { 
-    path: '**', 
+  {
+    path: '**',
     redirectTo: 'dashboard' // Manda pro dashboard (Se não estiver logado, o authGuard chuta pro login)
   }
 ];

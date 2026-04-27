@@ -1,0 +1,562 @@
+<div class="products-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-header__title">Catálogo de Produtos</h1>
+      <p class="page-header__subtitle">Gerencie estoque, preços e disponibilidade.</p>
+    </div>
+    <button (click)="openModal()" class="btn-primary">
+      <lucide-icon name="plus" class="btn-icon"></lucide-icon>
+      Novo Produto
+    </button>
+  </div>
+
+  <!-- Alerta estoque baixo -->
+  @if (lowStockCount() > 0) {
+  <div class="alert alert--warning">
+    <lucide-icon name="alert-triangle" class="alert__icon"></lucide-icon>
+    <p class="alert__text">
+      <strong>{{ lowStockCount() }} produto(s)</strong> com estoque abaixo do mínimo.
+      <button (click)="filterByLowStock()" class="alert__cta">Ver agora</button>
+    </p>
+  </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar__item toolbar__item--search">
+      <lucide-icon name="search" class="toolbar__search-icon"></lucide-icon>
+      <input type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
+        placeholder="Buscar por nome ou código..." class="nexora-input toolbar__search-input">
+    </div>
+
+    <div class="toolbar__item toolbar__item--category">
+      <mat-select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event); onSearch()"
+        class="havoc-mat-select w-full" placeholder="Todas as categorias">
+        <mat-option value="">Todas as categorias</mat-option>
+        @for (cat of categories(); track cat.id) {
+        <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+        }
+      </mat-select>
+    </div>
+
+    <div class="toolbar__item toolbar__item--status">
+      <mat-select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event); onSearch()"
+        class="havoc-mat-select w-full" placeholder="Todos os Status">
+        <mat-option value="">Todos os Status</mat-option>
+        <mat-option value="true">Ativos</mat-option>
+        <mat-option value="false">Pausados</mat-option>
+      </mat-select>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="data-table-wrapper">
+    <div class="data-table-scroll">
+      <table class="data-table">
+        <thead class="data-table__head">
+          <tr>
+            <th class="data-table__th">Produto</th>
+            <th class="data-table__th">Categoria</th>
+            <th class="data-table__th data-table__th--right">Preço</th>
+            <th class="data-table__th data-table__th--center">Estoque</th>
+            <th class="data-table__th data-table__th--center">Status</th>
+            <th class="data-table__th data-table__th--right">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @if (isLoading()) {
+          @for (i of [1,2,3,4,5]; track i) {
+          <tr class="data-table__row">
+            <td class="data-table__td">
+              <div class="skeleton-row">
+                <div class="skeleton skeleton--product-img"></div>
+                <div>
+                  <div class="skeleton skeleton--text-md"></div>
+                  <div class="skeleton skeleton--text-xs" style="margin-top: 6px; width: 3rem;"></div>
+                </div>
+              </div>
+            </td>
+            <td class="data-table__td">
+              <div class="skeleton skeleton--text-sm"></div>
+            </td>
+            <td class="data-table__td data-table__td--right">
+              <div class="skeleton skeleton--text-sm skeleton--right"></div>
+            </td>
+            <td class="data-table__td data-table__td--center">
+              <div class="skeleton skeleton--text-sm skeleton--centered"></div>
+            </td>
+            <td class="data-table__td data-table__td--center">
+              <div class="skeleton skeleton--badge skeleton--centered"></div>
+            </td>
+            <td class="data-table__td"></td>
+          </tr>
+          }
+          } @else {
+          @for (product of products(); track product.id) {
+          <tr class="data-table__row data-table__row--hoverable">
+
+            <!-- Produto -->
+            <td class="data-table__td">
+              <div class="product-cell">
+                <div class="product-cell__thumb">
+                  @if (product.imageUrl) {
+                  <img [src]="product.imageUrl" class="product-cell__img" [alt]="product.name">
+                  } @else {
+                  <lucide-icon name="package" class="product-cell__placeholder-icon"></lucide-icon>
+                  }
+                </div>
+                <div class="product-cell__info">
+                  <span class="product-cell__name">{{ product.name }}</span>
+                  <span class="product-cell__unit">{{ product.unit }}</span>
+                </div>
+              </div>
+            </td>
+
+            <!-- Categoria -->
+            <td class="data-table__td">
+              @if (product.categories && product.categories.length > 0) {
+              <div class="category-badges">
+                @for (cat of product.categories; track cat.id) {
+                <span class="category-badge">
+                  {{ cat.name }}
+                </span>
+                }
+              </div>
+              } @else {
+              <span class="data-table__secondary">—</span>
+              }
+            </td>
+
+            <!-- Preço -->
+            <td class="data-table__td data-table__td--right">
+              <span class="data-table__value">R$ {{ product.price | number:'1.2-2' }}</span>
+            </td>
+
+            <!-- Estoque -->
+            <td class="data-table__td data-table__td--center">
+              <div class="stock-cell">
+                <span class="stock-cell__qty" [class.stock-cell__qty--low]="product.stock">
+                  {{ product.stock}}
+                </span>
+                <!-- @if (product.stock_qty <= product.stock_min) { <span class="badge badge--warning">Baixo</span>
+                  } -->
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="data-table__td data-table__td--center">
+              <span class="badge" [ngClass]="product.isActive ? 'badge--active' : 'badge--inactive'">
+                {{ product.isActive ? 'Ativo' : 'Pausado' }}
+              </span>
+            </td>
+
+            <!-- Ações -->
+            <td class="data-table__td data-table__td--right">
+              <div class="row-actions">
+                <button (click)="openStockModal(product)" class="action-btn action-btn--primary"
+                  title="Movimentar estoque">
+                  <lucide-icon name="package-plus" class="action-btn__icon"></lucide-icon>
+                </button>
+                <button (click)="openModal(product)" class="action-btn action-btn--primary" title="Editar">
+                  <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+                </button>
+                <button (click)="toggleProduct(product)" class="action-btn action-btn--primary"
+                  [title]="product.isActive ? 'Pausar' : 'Reativar'">
+                  <lucide-icon [name]="product.isActive ? 'eye-off' : 'eye'" class="action-btn__icon"></lucide-icon>
+                </button>
+                <button (click)="openDeleteConfirm(product)" class="action-btn action-btn--danger" title="Excluir">
+                  <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6" class="data-table__empty">
+              <div class="empty-state">
+                <div class="empty-state__icon-wrap">
+                  <lucide-icon name="package" class="empty-state__icon"></lucide-icon>
+                </div>
+                <p class="empty-state__text">Nenhum produto encontrado</p>
+                <button (click)="openModal()" class="empty-state__cta">
+                  Cadastrar primeiro produto
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    @if (totalPages() > 1) {
+    <div class="pagination">
+      <span class="pagination__info">
+        Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong>
+        · <strong>{{ totalItems() }}</strong> produtos
+      </span>
+      <div class="pagination__controls">
+        <button [disabled]="currentPage() === 1" (click)="changePage(currentPage() - 1)" class="pagination__btn">
+          ← Anterior
+        </button>
+        <button [disabled]="currentPage() === totalPages()" (click)="changePage(currentPage() + 1)"
+          class="pagination__btn">
+          Próxima →
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Modal Estoque -->
+  @if (isStockModalOpen()) {
+  <div class="modal-overlay" (click)="closeStockModal()">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2 class="modal-header__title">Movimentar Estoque</h2>
+        <button (click)="closeStockModal()" class="modal-header__close">
+          <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="modal-form">
+        <div class="product-summary-card">
+          <p class="product-summary-card__label">Produto</p>
+          <p class="product-summary-card__name">{{ selectedProduct()?.name }}</p>
+          <p class="product-summary-card__stock">
+            Estoque atual:
+            <strong>{{ selectedProduct()?.stock_qty }} {{ selectedProduct()?.unit }}</strong>
+          </p>
+        </div>
+
+        <form [formGroup]="stockForm" (ngSubmit)="onStockSubmit()" class="stock-form">
+
+          <div class="form-field">
+            <label class="form-label">Operação</label>
+            <div class="op-selector">
+              @for (op of stockOperations; track op.value) {
+              <button type="button" (click)="stockForm.patchValue({operation: op.value})" class="op-selector__btn"
+                [class.op-selector__btn--active]="stockForm.value.operation === op.value">
+                {{ op.label }}
+              </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Quantidade</label>
+            <input type="number" formControlName="quantity" min="1"
+              class="nexora-input nexora-input--center nexora-input--lg" placeholder="0">
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Motivo <span class="form-label__optional">(opcional)</span></label>
+            <input type="text" formControlName="reason" class="nexora-input"
+              placeholder="Ex: Compra fornecedor, Perda, Inventário">
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeStockModal()" class="btn-cancel">Cancelar</button>
+            <button type="submit" [disabled]="stockForm.invalid || isSaving()" class="btn-primary">
+              @if (isSaving()) {
+              <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+              }
+              Confirmar
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+  }
+
+  <!-- Modal Criar / Editar Produto -->
+  @if (isModalOpen()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div class="modal-header__info">
+          <h2 class="modal-header__title">
+            {{ isEditing() ? 'Editar Produto' : 'Novo Produto' }}
+          </h2>
+          <p class="modal-header__subtitle">
+            {{ isEditing() ? 'Atualize as informações do produto.' : 'Preencha os dados para cadastrar no catálogo.' }}
+          </p>
+        </div>
+        <button (click)="closeModal()" class="modal-header__close">
+          <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+        </button>
+      </div>
+      @if (isModalOpen()) {
+      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form">
+
+        <!-- Seção: Identificação -->
+        <div class="product-form__section">
+          <p class="product-form__section-label">Identificação</p>
+
+          <div class="product-form__row">
+            <div class="form-field product-form__col--grow">
+              <label class="form-label">Nome do Produto <span class="form-label--required">*</span></label>
+              <input type="text" formControlName="name" class="nexora-input"
+                placeholder="Ex: Arroz Branco Tipo 1 - 5kg">
+              @if (productForm.get('name')?.invalid && productForm.get('name')?.touched) {
+              <p class="form-error">Nome é obrigatório (mínimo 2 caracteres).</p>
+              }
+            </div>
+
+            <div class="form-field product-form__col--sm">
+              <label class="form-label">Unidade</label>
+              <mat-select formControlName="unit" class="havoc-mat-select w-full">
+                <mat-option value="UN">UN</mat-option>
+                <mat-option value="KG">KG</mat-option>
+                <mat-option value="G">G</mat-option>
+                <mat-option value="L">L</mat-option>
+                <mat-option value="ML">ML</mat-option>
+                <mat-option value="CX">CX</mat-option>
+                <mat-option value="PCT">PCT</mat-option>
+                <mat-option value="FD">FD</mat-option>
+              </mat-select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Categorias <span class="form-label--optional">(Múltiplas)</span></label>
+
+            <mat-select formControlName="category_ids" multiple class="havoc-mat-select w-full"
+              placeholder="Selecione as categorias...">
+              @for (cat of categories(); track cat.id) {
+              <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+              }
+            </mat-select>
+
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Descrição <span class="form-label--optional">(opcional)</span></label>
+            <textarea formControlName="description" class="nexora-input product-form__textarea"
+              placeholder="Descreva o produto — será usado pelo bot no WhatsApp..."></textarea>
+          </div>
+        </div>
+
+        <!-- <div class="product-form__section">
+          <div class="product-form__section-header barcode-header">
+            <p class="product-form__section-label">Códigos de Barras</p>
+            <button type="button" (click)="addBarcode()" class="btn-primary btn-add-barcode">
+              <lucide-icon name="plus" [size]="16"></lucide-icon>
+              Adicionar
+            </button>
+          </div>
+
+          <div formArrayName="barcodes" class="barcode-list">
+            @for (bc of barcodes.controls; track $index) {
+            <div [formGroupName]="$index" class="barcode-item">
+
+              <div class="form-field barcode-item__code">
+                <label class="form-label">EAN / Código</label>
+                <input type="text" formControlName="code" class="nexora-input barcode-input"
+                  placeholder="Ler com o scanner ou digitar...">
+                @if (bc.get('code')?.invalid && bc.get('code')?.touched) {
+                <p class="form-error">Obrigatório.</p>
+                }
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Categoria</label>
+                <select formControlName="category_id" class="havoc-select w-full">
+                  <option value="">Selecione a categoria</option>
+                  @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <button type="button" (click)="removeBarcode($index)" class="barcode-item__delete" title="Remover código">
+                <lucide-icon name="trash-2" [size]="20"></lucide-icon>
+              </button>
+
+            </div>
+            } @empty {
+            <div class="barcode-empty">
+              Nenhum código cadastrado. Clique em "Adicionar" para inserir EANs.
+            </div>
+            }
+          </div>
+        </div> -->
+        <div class="product-form__section">
+          <p class="product-form__section-label">Foto do Produto</p>
+
+          @if (!imagePreview()) {
+          <label class="upload-zone">
+            <lucide-icon name="image-plus" class="upload-zone__icon"></lucide-icon>
+            <span class="upload-zone__label">Clique para selecionar a imagem</span>
+            <span class="upload-zone__hint">PNG, JPG até 5MB</span>
+            <input type="file" accept="image/*" class="upload-zone__input" (change)="onFileSelected($event)">
+          </label>
+          } @else {
+          <div style="display: flex; gap: 1rem;">
+            <div class="image-thumb" style="width: 120px; height: 120px;">
+              <img [src]="imagePreview()" class="image-thumb__img" alt="Preview do Produto">
+              <div class="image-thumb__overlay">
+                <button type="button" (click)="removeImage()" class="image-thumb__remove">
+                  <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Seção: Preços -->
+        <div class="product-form__section">
+          <p class="product-form__section-label">Identificação</p>
+          <!-- <p class="product-form__section-label">Preços</p> -->
+
+          <div class="product-form__row">
+            <div class="form-field product-form__col">
+              <label class="form-label">Preço de Venda (R$) <span class="form-label--required">*</span></label>
+              <div class="input-prefix">
+                <span class="input-prefix__symbol">R$</span>
+                <input type="number" formControlName="price" class="nexora-input input-prefix__input" placeholder="0,00"
+                  step="0.01" min="0">
+              </div>
+              @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {
+              <p class="form-error">Informe um preço válido.</p>
+              }
+            </div>
+
+            <div class="form-field product-form__col">
+              <label class="form-label">Custo (R$) <span class="form-label--optional">(para margem)</span></label>
+              <div class="input-prefix">
+                <span class="input-prefix__symbol">R$</span>
+                <input type="number" formControlName="cost_price" class="nexora-input input-prefix__input"
+                  placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+
+            <div class="form-field product-form__col">
+              <label class="form-label">Preço Atacado (R$) <span class="form-label--optional">(PJ)</span></label>
+              <div class="input-prefix">
+                <span class="input-prefix__symbol">R$</span>
+                <input type="number" formControlName="price_wholesale" class="nexora-input input-prefix__input"
+                  placeholder="0,00" step="0.01" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Indicador de margem calculada -->
+          @if (calculatedMargin() !== null) {
+          <div class="margin-indicator" [ngClass]="{
+              'margin-indicator--danger':  calculatedMargin()! < 10,
+              'margin-indicator--warning': calculatedMargin()! >= 10 && calculatedMargin()! < 30,
+              'margin-indicator--success': calculatedMargin()! >= 30
+            }">
+            <lucide-icon name="trending-up" class="margin-indicator__icon"></lucide-icon>
+            <span>Margem estimada: <strong>{{ calculatedMargin() | number:'1.1-1' }}%</strong></span>
+          </div>
+          }
+        </div>
+
+        <!-- Seção: Estoque -->
+        <div class="product-form__section">
+          <p class="product-form__section-label">Estoque</p>
+
+          <div class="product-form__row">
+            <div class="form-field product-form__col">
+              <label class="form-label">Estoque Inicial</label>
+              <div class="nx-number-input">
+                <button type="button" (click)="decrementStock('stock_qty')" class="nx-number-input__btn">−</button>
+                <input type="number" formControlName="stock_qty" class="nx-number-input__field" min="0">
+                <button type="button" (click)="incrementStock('stock_qty')" class="nx-number-input__btn">+</button>
+              </div>
+            </div>
+
+            <div class="form-field product-form__col">
+              <label class="form-label">Estoque Mínimo</label>
+              <div class="nx-number-input">
+                <button type="button" (click)="decrementStock('stock_min')" class="nx-number-input__btn">−</button>
+                <input type="number" formControlName="stock_min" class="nx-number-input__field" min="0">
+                <button type="button" (click)="incrementStock('stock_min')" class="nx-number-input__btn">+</button>
+              </div>
+              <p class="form-hint">Alerta disparado abaixo deste valor.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Fiscal (colapsável) -->
+        <div class="product-form__section product-form__section--collapsible">
+          <button type="button" class="product-form__collapse-btn" (click)="toggleFiscal()">
+            <div class="product-form__collapse-left">
+              <lucide-icon name="file-text" class="product-form__collapse-icon"></lucide-icon>
+              <span class="product-form__section-label product-form__section-label--inline">
+                Dados Fiscais
+              </span>
+              <span class="form-label--optional">— NF-e / NFC-e</span>
+            </div>
+            <lucide-icon [name]="showFiscal() ? 'chevron-up' : 'chevron-down'" class="product-form__collapse-chevron">
+            </lucide-icon>
+          </button>
+
+          @if (showFiscal()) {
+          <div class="product-form__row product-form__fiscal-fields">
+            <div class="form-field product-form__col">
+              <label class="form-label">NCM</label>
+              <input type="text" formControlName="ncm" class="nexora-input" placeholder="Ex: 1006.30.21" maxlength="10">
+            </div>
+            <div class="form-field product-form__col">
+              <label class="form-label">CFOP</label>
+              <input type="text" formControlName="cfop" class="nexora-input" placeholder="Ex: 5102" maxlength="5">
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Toggle ativo -->
+        <div class="toggle-field" (click)="productForm.patchValue({isActive: !productForm.value.isActive})">
+          <div class="toggle-field__info">
+            <p class="toggle-field__label">Produto disponível para venda</p>
+            <p class="toggle-field__desc">O bot e o catálogo irão exibir este produto.</p>
+          </div>
+          <div class="toggle-switch" [class.toggle-switch--active]="productForm.value.isActive"></div>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="modal-actions">
+          <button type="button" (click)="closeModal()" class="btn-cancel">Cancelar</button>
+          <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn-primary">
+            @if (isSaving()) {
+            <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+            Salvando...
+            } @else {
+            <lucide-icon name="save" class="btn-icon"></lucide-icon>
+            {{ isEditing() ? 'Salvar Alterações' : 'Cadastrar Produto' }}
+            }
+          </button>
+        </div>
+
+      </form>
+      }
+    </div>
+  </div>
+  }
+
+</div>
+
+<!-- <nx-dialog *ngIf="isConfirmModalOpen()" type="danger" title="Excluir Produto"
+  [message]="'Deseja excluir o produto <strong>' + itemToDelete()?.name + '</strong>?'" confirmLabel="Sim, Excluir"
+  confirmIcon="trash-2" [isLoading]="isDeleting()" (confirm)="confirmDelete()" (cancel)="closeDeleteConfirm()">
+</nx-dialog>
+
+<nx-dialog *ngIf="showErrorModal()" type="error" title="Erro na Operação"
+  message="Não foi possível salvar os dados. Tente novamente mais tarde." confirmLabel="Entendido"
+  (confirm)="closeErrorModal()" (cancel)="closeErrorModal()">
+</nx-dialog> -->

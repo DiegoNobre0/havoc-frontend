@@ -1,0 +1,1295 @@
+// ==========================================
+// VARIÁVEIS HAVOC
+// ==========================================
+$havoc-yellow: #F2B90F;
+$havoc-yellow-dark: #D9A40D;
+$havoc-bg-main: #0F172A;
+$havoc-bg-surface: rgba(15, 23, 42, 0.6);
+$havoc-border: rgba(51, 65, 85, 0.6);
+$havoc-text-main: #F8FAFC;
+$havoc-text-muted: #94A3B8;
+
+// ─── Layout da Página ──────────────────────────────────────────
+.products-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: $havoc-text-main;
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+  }
+}
+
+.w-full {
+  width: 100%;
+}
+
+// ─── Header ───────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: $havoc-bg-surface;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid $havoc-border;
+  backdrop-filter: blur(8px);
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: $havoc-text-muted;
+    margin: 0;
+  }
+}
+
+// ─── Componentes Nativos Havoc (Inputs e Selects) ─────────────
+.nexora-input,
+.havoc-select {
+  background: #020617;
+  border: 1px solid #334155;
+  padding: 0.8rem 1rem;
+  border-radius: 0.75rem;
+  color: #F1F5F9;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  // width: 100%;
+  outline: none;
+
+  &::placeholder {
+    color: #64748B;
+  }
+
+  &:focus {
+    border-color: $havoc-yellow;
+    box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15);
+  }
+}
+
+.havoc-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="%238C8C8C"><polygon points="0,0 14,0 7,7"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 36px;
+
+  option {
+    background: #0F172A;
+    color: #F8FAFC;
+    padding: 10px;
+  }
+}
+
+.nx-number-input {
+    display: flex;
+    align-items: center;
+    background-color: #020617 !important; // Força o fundo escuro
+    border: 1px solid #334155 !important;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s;
+    height: 48px; // Trava a altura
+  
+    &:focus-within {
+      border-color: $havoc-yellow !important;
+      box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15);
+    }
+  
+    &__btn {
+      width: 2.5rem;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent !important; // Mata o fundo branco
+      border: none !important;
+      color: #94A3B8 !important;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      
+      &:hover { background-color: #1E293B !important; color: #ffffff !important; }
+    }
+  
+    &__field {
+      flex: 1;
+      min-width: 0; 
+      background-color: transparent !important; // Mata o fundo branco
+      border: none !important;
+      color: #F1F5F9 !important;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+      padding: 0;
+      
+      &:focus { outline: none; }
+    }
+}
+// Ocultar setas nativas do input type number
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+// ─── Botões ───────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: $havoc-yellow;
+  color: #111111;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: $havoc-yellow-dark;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 0.625rem;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #CBD5E1;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: #1E293B;
+    color: #ffffff;
+  }
+}
+
+// ─── Toolbar (Busca e Filtros) ────────────────────────────────
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: $havoc-bg-surface;
+  border: 1px solid $havoc-border;
+  border-radius: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    &--search {
+      flex: 2 1 40%;
+      position: relative;
+    }
+
+    &--category,
+    &--status {
+      flex: 0 1 25%;
+    }
+
+    @media (max-width: 768px) {
+      flex: 1 1 100%;
+    }
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.125rem;
+    height: 1.125rem;
+    color: #64748B;
+    pointer-events: none;
+  }
+
+  &__search-input {
+    padding-left: 2.75rem !important;
+  }
+}
+
+// ─── Tabela e Paginação ───────────────────────────────────────
+.data-table-wrapper {
+  background: #0F172A;
+  border: 1px solid $havoc-border;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.data-table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  min-width: 700px;
+
+  &__head {
+    background: rgba(2, 6, 23, 0.4);
+    border-bottom: 1px solid $havoc-border;
+  }
+
+  &__th {
+    padding: 1rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $havoc-text-muted;
+    white-space: nowrap;
+
+    &--center {
+      text-align: center;
+    }
+
+    &--right {
+      text-align: right;
+    }
+  }
+
+  &__row {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  }
+
+  &__row--hoverable {
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.4);
+    }
+  }
+
+  &__td {
+    padding: 1rem 0.8rem;
+    font-size: 0.875rem;
+    vertical-align: middle;
+
+    &--center {
+      text-align: center;
+    }
+
+    &--right {
+      text-align: right;
+    }
+
+    &:last-child {
+      width: 1%;
+      white-space: nowrap;
+    }
+  }
+
+  &__value {
+    color: #E2E8F0;
+    font-weight: 600;
+  }
+
+  &__empty {
+    padding: 4rem 1.25rem;
+    text-align: center;
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #1E293B;
+  background: #0F172A;
+
+  &__info {
+    font-size: 0.875rem;
+    color: #94A3B8;
+
+    strong {
+      color: #E2E8F0;
+    }
+  }
+
+  &__controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__btn {
+    padding: 0.5rem 1rem;
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 0.5rem;
+    color: #E2E8F0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #334155;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ─── Células e Badges ─────────────────────────────────────────
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &__thumb {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.5rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__placeholder-icon {
+    color: #64748B;
+    width: 1.2rem;
+  }
+
+  &__name {
+    color: #E2E8F0;
+    font-weight: 600;
+  }
+
+  &__unit {
+    font-size: 0.75rem;
+    color: #64748B;
+  }
+}
+
+.stock-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+
+  &__qty {
+    font-weight: 600;
+    color: #E2E8F0;
+
+    &--low {
+      color: #F59E0B;
+    }
+  }
+}
+
+.category-badges {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.category-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #334155;
+  border-radius: 0.375rem;
+  background: #1E293B;
+  color: #E2E8F0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  &--active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+
+    &::before {
+      background-color: #34D399;
+    }
+  }
+
+  &--inactive {
+    background: rgba(30, 41, 59, 0.5);
+    color: #94A3B8;
+    border: 1px solid #334155;
+
+    &::before {
+      background-color: #64748B;
+    }
+  }
+
+  &--warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #FBBF24;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+
+    &::before {
+      background-color: #FBBF24;
+    }
+  }
+}
+
+// ─── Ações da Tabela ──────────────────────────────────────────
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.action-btn {
+    padding: 0.5rem; 
+    border-radius: 0.5rem; 
+    color: #94A3B8 !important; 
+    background-color: transparent !important; // Bloqueia o fundo branco global
+    border: none !important; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s;
+    
+    &__icon { width: 1.125rem; height: 1.125rem; }
+    
+    &:hover { color: #ffffff !important; background-color: #334155 !important; }
+    &--primary:hover { color: $havoc-yellow !important; background-color: rgba(242, 185, 15, 0.1) !important; }
+    &--danger:hover { color: #F87171 !important; background-color: rgba(239, 68, 68, 0.1) !important; }
+}
+
+// ─── Modais ───────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-card {
+  background: #0F172A;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &--sm {
+    max-width: 28rem;
+  }
+
+  &--lg {
+    max-width: 640px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #1E293B;
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: #94A3B8;
+    font-weight: 400;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-right: -0.5rem;
+
+    &:hover {
+      color: #fff;
+      background: #1E293B;
+    }
+  }
+}
+
+.modal-form {
+  padding: 1.5rem;
+}
+
+// ─── Formulário de Produto ────────────────────────────────────
+.product-form {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 1.5rem;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+  }
+
+  &>*+* {
+    margin-top: 2rem;
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.6);
+
+    &:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    &--collapsible {
+      gap: 0;
+    }
+  }
+
+  &__section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748B;
+    margin: 0;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  &__col {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  &__col--grow {
+    flex: 2;
+    min-width: 200px;
+  }
+
+  &__col--sm {
+    width: 100px;
+    flex-grow: 0;
+  }
+
+  &__textarea {
+    height: 6rem;
+    resize: none;
+  }
+
+  // Dados Fiscais Collapse
+  &__collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    padding: 1rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(30, 41, 59, 0.6);
+    }
+  }
+
+  &__collapse-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__collapse-icon,
+  &__collapse-chevron {
+    width: 1.125rem;
+    height: 1.125rem;
+    color: #64748B;
+  }
+
+  &__fiscal-fields {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed rgba(51, 65, 85, 0.6);
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #CBD5E1;
+
+  &--required {
+    color: #F87171;
+    margin-left: 0.25rem;
+    font-weight: bold;
+  }
+
+  &--optional {
+    color: #64748B;
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+  }
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-top: 0.375rem;
+}
+
+.form-error {
+  color: #F87171;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+// Input R$
+.input-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &__symbol {
+    position: absolute;
+    left: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748B;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &__input {
+    padding-left: 2.75rem;
+    width: 100%;
+  }
+}
+
+// Indicador Margem
+.margin-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  width: fit-content;
+  margin-top: -0.5rem;
+
+  &__icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &--success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  &--warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #FBBF24;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  &--danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+}
+
+// ─── Novo Switch de Ativo/Inativo ─────────────────────────────
+.toggle-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.5);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #F1F5F9;
+    margin: 0;
+  }
+
+  &__desc {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    margin: 0;
+  }
+}
+
+.toggle-switch {
+  width: 44px;
+  height: 24px;
+  background: #334155;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  &--active {
+    background: $havoc-yellow;
+
+    &::after {
+      transform: translateX(20px);
+    }
+  }
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  margin-top: 0;
+}
+
+// ─── Upload de Imagem ─────────────────────────────────────────
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+  border: 2px dashed #334155;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(15, 23, 42, 0.4);
+
+  &:hover {
+    border-color: $havoc-yellow;
+    background: rgba(242, 185, 15, 0.05);
+  }
+
+  &:hover .upload-zone__icon {
+    color: $havoc-yellow;
+  }
+
+  &__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #64748B;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+  }
+
+  &__label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #E2E8F0;
+  }
+
+  &__hint {
+    font-size: 0.875rem;
+    color: #94A3B8;
+    margin-top: 0.5rem;
+  }
+
+  &__input {
+    display: none;
+  }
+}
+
+.image-thumb {
+  position: relative;
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  overflow: hidden;
+  aspect-ratio: 1;
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  &:hover &__overlay {
+    opacity: 1;
+  }
+
+  &__remove {
+    padding: 0.75rem;
+    background: #EF4444;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s;
+
+    &:hover {
+      background: #DC2626;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// ─── Códigos de Barras ────────────────────────────────────────
+.barcode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-add-barcode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background-color: $havoc-yellow;
+  color: #111111;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+}
+
+.barcode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.barcode-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background-color: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  &__code {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  &__unit {
+    width: 120px;
+    margin-bottom: 0;
+  }
+
+  .barcode-input {
+    height: 48px;
+  }
+
+  .havoc-select {
+    height: 48px;
+  }
+
+  // Iguala a altura do input
+
+  &__delete {
+    margin-top: 26px;
+    padding: 0.5rem;
+    color: #64748B;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid transparent;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #F87171;
+      background-color: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+  }
+}
+
+.barcode-empty {
+  font-size: 0.875rem;
+  color: #64748b;
+  text-align: center;
+  padding: 2rem;
+  border: 2px dashed #334155;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+// ─── Modal Estoque Extra ──────────────────────────────────────
+.product-summary-card {
+  padding: 1rem;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  &__label {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  &__name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #F1F5F9;
+    margin: 0.25rem 0 0 0;
+  }
+
+  &__stock {
+    font-size: 0.875rem;
+    color: #94A3B8;
+    margin: 0.5rem 0 0 0;
+
+    strong {
+      color: #E2E8F0;
+    }
+  }
+}
+
+.op-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+
+  &__btn {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #334155;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: #475569;
+      color: #E2E8F0;
+    }
+
+    &--active {
+      border-color: $havoc-yellow;
+      background: rgba(242, 185, 15, 0.1);
+      color: $havoc-yellow;
+    }
+  }
+}
+
+// ─── Animações Base ───────────────────────────────────────────
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #1E293B 25%, #273449 50%, #1E293B 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+  height: 1rem;
+
+  &--product-img {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.5rem;
+  }
+
+  &--text-md {
+    width: 8rem;
+  }
+
+  &--text-xs {
+    height: 0.75rem;
+  }
+
+  &--text-sm {
+    width: 2rem;
+    margin: 0 auto;
+    height: 1rem;
+  }
+
+  &--badge {
+    width: 4rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    margin: 0 auto;
+  }
+
+  &--right {
+    width: 4rem;
+    margin-left: auto;
+    height: 1.25rem;
+  }
+
+  &--centered {
+    margin: 0 auto;
+  }
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+// ─── Ajuste Escuro para o Mat-Select Múltiplo (Cápsula e Dropdown) ───
+
+::ng-deep mat-select.havoc-mat-select {
+  /* 1. Criando a "Caixa" do Input */
+  background-color: #020617 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 0.75rem !important;
+  padding: 0 1rem !important;
+  height: 46px !important; // Mesma altura dos inputs
+  display: flex !important;
+  align-items: center !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s;
+
+  /* 2. Efeito de Foco (Amarelo Havoc) */
+  &:focus, &.mat-mdc-select-focused {
+    outline: none !important;
+    border-color: #F2B90F !important;
+    box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15) !important;
+  }
+
+  /* 3. Alinhamento Interno (Texto e Seta) */
+  .mat-mdc-select-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* 4. Cores do Texto e Placeholder */
+  .mat-mdc-select-value {
+    color: #F1F5F9 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+  }
+
+  .mat-mdc-select-placeholder {
+    color: #64748B !important;
+  }
+
+  /* 5. Cor da Seta Dropdown */
+  .mat-mdc-select-arrow {
+    color: #64748B !important;
+  }
+}
+
+// ─── Fundo do menu flutuante (Dropdown) ───
+::ng-deep .cdk-overlay-pane {
+  .mat-mdc-select-panel {
+    background-color: #0F172A !important;
+    border: 1px solid #334155 !important;
+    border-radius: 0.75rem !important;
+    padding: 0.5rem 0 !important;
+    margin-top: 4px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    
+    .mat-mdc-option {
+      color: #E2E8F0 !important;
+      font-size: 0.875rem !important;
+      
+      /* Efeito Hover nas opções */
+      &:hover, &.mdc-list-item--selected, &.mat-mdc-option-active { 
+        background-color: rgba(242, 185, 15, 0.1) !important; 
+        color: #F2B90F !important; 
+      }
+    }
+    
+    /* Customizando a cor do Checkbox Múltiplo para Amarelo */
+    .mat-pseudo-checkbox-checked, 
+    .mat-pseudo-checkbox-indeterminate {
+      background-color: #F2B90F !important;
+      border-color: #F2B90F !important;
+    }
+    
+    .mat-pseudo-checkbox::after {
+      color: #111111 !important; // Cor do "V" do check
+    }
+  }
+}

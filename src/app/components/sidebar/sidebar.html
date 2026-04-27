@@ -44,10 +44,17 @@
 
                 @if (!isCollapsed() && (isCatalogOpen() || isCatalogRoute())) {
                 <div class="submenu">
-                    <a routerLink="/catalog" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active"
-                        class="submenu-item">Visão Geral</a>
-                    <a routerLink="/catalog/products" routerLinkActive="active" class="submenu-item">Produtos</a>
-                    <a routerLink="/catalog/categories" routerLinkActive="active" class="submenu-item">Categorias</a>
+                    <a routerLink="/catalog/products" routerLinkActive="active" class="submenu-item">
+                        Produtos
+                    </a>
+
+                    <a routerLink="/catalog/categories" routerLinkActive="active" class="submenu-item">
+                        Categorias
+                    </a>
+
+                    <a routerLink="/catalog/kits" routerLinkActive="active" class="submenu-item">
+                        Kits
+                    </a>
                 </div>
                 }
             </div>

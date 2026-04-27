@@ -1,14 +1,42 @@
+<header class="page-header">
+  <div class="header-titles">
+    <h1 class="page-title">Visão Geral</h1>
+    <p class="page-subtitle">Acompanhe as métricas da sua loja em tempo real.</p>
+  </div>
+
+  <div class="header-actions">
+    
+    <div class="export-group">
+      <select #reportPeriod class="export-select">
+        <option value="hoje">Diário (Hoje)</option>
+        <option value="semana">Semanal (7 dias)</option>
+        <option value="mes">Mensal (30 dias)</option>
+      </select>
+
+      <button class="btn-export" (click)="exportRealReport(reportPeriod.value)">
+        <lucide-icon name="download" class="icon-sm"></lucide-icon>
+        <span>CSV</span>
+      </button>
+    </div>
+
+    <button class="btn-primary" (click)="loadSummary(); fetchDataForPeriod(); loadRecentOrders();">
+      <lucide-icon name="refresh-cw" class="icon-sm"></lucide-icon>
+      Atualizar
+    </button>
+    
+  </div>
+</header>
 <div class="dashboard-container">
   <div class="dashboard-grid">
-
     <div class="welcome-card col-span-2">
       <div class="welcome-content">
         <h2>Olá, {{ authService.currentUser()?.name?.split(' ')?.[0] || 'Gestor' }}! ⚡</h2>
         <p>Aqui está o resumo do desempenho da sua loja hoje. Continue o excelente trabalho!</p>
         <div class="welcome-stats">
-          <div class="stat"><span class="value">42</span><span class="label">Pedidos Hoje</span></div>
-          <div class="divider"></div>
-          <div class="stat"><span class="value">87%</span><span class="label">Conversão</span></div>
+          <div class="stat"><span class="value">{{ ordersToday() }}</span><span class="label">Pedidos Hoje</span></div>
+          <div class="stat"></div>
+          <div class="stat"><span class="value">{{ revenue() | currency:'BRL' }}</span><span class="label">Receita
+              Hoje</span></div>
         </div>
       </div>
       <div class="welcome-illustration"><lucide-icon name="shopping-bag" class="ai-icon"></lucide-icon></div>
@@ -61,6 +89,16 @@
           </div>
 
           <div class="filter-group">
+
+            <select class="havoc-select" [ngModel]="statusFilter()"
+              (ngModelChange)="statusFilter.set($event); onFilterChange()">
+              <option value="">Todos os Status</option>
+              <option value="PENDING">Pendentes</option>
+              <option value="CONFIRMED">Confirmados</option>
+              <option value="DELIVERED">Entregues</option>
+              <option value="CANCELLED">Cancelados</option>
+            </select>
+
             <div class="datepicker-wrapper">
               <div class="custom-datepicker" [class.active]="!isCurrentWeek" (click)="picker.open()">
                 <lucide-icon name="calendar" class="icon"></lucide-icon>
@@ -70,7 +108,8 @@
 
               <mat-form-field class="hidden-mat-input">
                 <input matInput [matDatepicker]="picker">
-                <mat-datepicker #picker startView="multi-year" (monthSelected)="onMonthSelected($event, picker)"></mat-datepicker>
+                <mat-datepicker #picker startView="multi-year"
+                  (monthSelected)="onMonthSelected($event, picker)"></mat-datepicker>
               </mat-form-field>
             </div>
 
@@ -84,10 +123,10 @@
 
       <div class="chart-content">
         @if (viewTab() === 'faturamento') {
-          <apx-chart #areaChart [series]="chartOptions.series!" [chart]="chartOptions.chart!" 
-            [xaxis]="chartOptions.xaxis!" [stroke]="chartOptions.stroke!" [colors]="chartOptions.colors!" 
-            [yaxis]="chartOptions.yaxis!" [theme]="chartOptions.theme!" [grid]="chartOptions.grid!">
-          </apx-chart>
+        <apx-chart #areaChart [series]="chartOptions.series!" [chart]="chartOptions.chart!"
+          [xaxis]="chartOptions.xaxis!" [stroke]="chartOptions.stroke!" [colors]="chartOptions.colors!"
+          [yaxis]="chartOptions.yaxis!" [theme]="chartOptions.theme!" [grid]="chartOptions.grid!">
+        </apx-chart>
         }
         <!-- @if (viewTab() === 'despesas') {
           <apx-chart #barChart [series]="barChartOptions.series!" [chart]="barChartOptions.chart!" 
@@ -120,7 +159,7 @@
               <td class="primary-col">{{ prod.nome }}</td>
               <td><span class="badge" [class]="prod.categoria | lowercase">{{ prod.categoria }}</span></td>
               <td>{{ prod.qtd }}</td>
-              <td class="font-bold">R$ {{ prod.valor }} 
+              <td class="font-bold">R$ {{ prod.valor }}
                 <span class="trend-sm" [class.up]="prod.up" [class.down]="!prod.up">{{ prod.trend }}</span>
               </td>
             </tr>
@@ -130,27 +169,48 @@
       </div>
     </div>
 
-    <div class="table-card col-span-2">
+    <div class="table-card col-span-2" style="display: flex; flex-direction: column;">
       <div class="card-header-flex">
         <h4>Últimos Pedidos</h4>
-        <button class="btn-icon"><lucide-icon name="more-vertical"></lucide-icon></button>
+        <button class="btn-icon" (click)="loadRecentOrders()"><lucide-icon name="refresh-cw"></lucide-icon></button>
       </div>
-      <div class="prof-list">
-        @for (pedido of ultimosPedidos; track pedido.cliente) {
+
+      <div class="prof-list" style="flex: 1;">
+        @for (pedido of recentOrders(); track pedido.id) {
         <div class="prof-item">
           <div class="prof-info">
-            <div class="avatar" [style.background]="pedido.cor">{{ pedido.avatar }}</div>
+            <div class="avatar" style="background: var(--havoc-surface-2)">
+              <lucide-icon name="shopping-bag" class="text-primary"></lucide-icon>
+            </div>
             <div>
-              <h5>{{ pedido.cliente }}</h5>
-              <span class="badge-status" [class]="pedido.badge">{{ pedido.status }}</span>
+              <h5>{{ pedido.customer }} <span style="font-size: 0.75rem; color: #888;">{{ pedido.code }}</span></h5>
+
+              <span class="badge-status" [class.success]="pedido.status === 'PAGO' || pedido.status === 'ENVIADO'"
+                [class.warning]="pedido.status === 'PENDENTE'" [class.danger]="pedido.status === 'CANCELADO'">
+                {{ pedido.status }}
+              </span>
             </div>
           </div>
           <div class="prof-stats">
-            <div class="stat-col"><span>Itens</span><strong>{{ pedido.itens }} un.</strong></div>
-            <div class="stat-col text-right"><span>Total</span><strong class="text-primary">{{ pedido.valor }}</strong></div>
+            <div class="stat-col"><span>Itens</span><strong>{{ pedido.itemsCount }} un.</strong></div>
+            <div class="stat-col text-right"><span>Total</span><strong class="text-primary">{{ pedido.total |
+                currency:'BRL' }}</strong></div>
           </div>
         </div>
         }
+
+        @if (recentOrders().length === 0) {
+        <div style="text-align: center; padding: 2rem; color: #888;">Nenhum pedido encontrado.</div>
+        }
+      </div>
+
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(51,51,51,0.5);">
+        <button (click)="prevPage()" [disabled]="currentPage() === 1"
+          style="background: transparent; border: 1px solid #333; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Anterior</button>
+        <span style="font-size: 0.8rem; color: #888;">Página {{ currentPage() }} de {{ totalPages() || 1 }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages() || totalPages() === 0"
+          style="background: transparent; border: 1px solid #333; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Próxima</button>
       </div>
     </div>
 

@@ -1,0 +1,133 @@
+<div class="categories-page">
+  <div class="page-header">
+    <div class="page-header__info">
+      <h1 class="page-header__title">Categorias</h1>
+      <p class="page-header__subtitle">Organize seus produtos e otimize a busca da IA.</p>
+    </div>
+    <button (click)="openModal()" class="btn-primary">
+      <lucide-icon name="plus" class="btn-icon"></lucide-icon>
+      Nova Categoria
+    </button>
+  </div>
+
+  <div class="data-table-wrapper">
+    <div class="data-table-scroll">
+      <table class="data-table">
+        <thead class="data-table__head">
+          <tr>
+            <th class="data-table__th">Categoria</th>
+            <th class="data-table__th data-table__th--center">Produtos</th>
+            <th class="data-table__th data-table__th--center">Status</th>
+            <th class="data-table__th data-table__th--right">Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @if (isLoading()) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="data-table__row">
+                <td class="data-table__td">
+                  <div class="skeleton-row">
+                    <div class="skeleton skeleton--icon"></div>
+                    <div class="skeleton skeleton--text-md"></div>
+                  </div>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <div class="skeleton skeleton--text-sm skeleton--centered"></div>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <div class="skeleton skeleton--badge skeleton--centered"></div>
+                </td>
+                <td class="data-table__td data-table__td--right">
+                  <div class="skeleton skeleton--text-sm skeleton--right"></div>
+                </td>
+              </tr>
+            }
+          } @else {
+            @for (cat of categories(); track cat.id) {
+              <tr class="data-table__row data-table__row--hoverable">
+                <td class="data-table__td">
+                  <div class="item-cell">
+                    <div class="item-cell__icon">
+                      <lucide-icon name="tag" class="item-cell__icon-svg"></lucide-icon>
+                    </div>
+                    <span class="item-cell__name">{{ cat.name }}</span>
+                  </div>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <span class="data-table__value">{{ cat._count?.products || 0 }}</span>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <span class="badge" [ngClass]="cat.isActive !== false ? 'badge--active' : 'badge--inactive'">
+                    {{ cat.isActive !== false ? 'Visível' : 'Oculta' }}
+                  </span>
+                </td>
+                <td class="data-table__td data-table__td--right">
+                  <div class="row-actions">
+                    <button (click)="openModal(cat)" class="action-btn" title="Editar">
+                      <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+                    </button>
+                    <button (click)="confirmDelete(cat)" class="action-btn action-btn--danger" title="Excluir">
+                      <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="data-table__empty">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <lucide-icon name="tag" class="empty-state__icon"></lucide-icon>
+                    </div>
+                    <p class="empty-state__text">Nenhuma categoria cadastrada</p>
+                    <button (click)="openModal()" class="empty-state__cta">
+                      Criar primeira categoria
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (isModalOpen()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-header__title">
+            {{ isEditing() ? 'Editar Categoria' : 'Nova Categoria' }}
+          </h2>
+          <button (click)="closeModal()" class="modal-header__close">
+            <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="modal-form">
+          <div class="form-field">
+            <label class="form-label">Nome da Categoria</label>
+            <input type="text" formControlName="name" class="nexora-input" placeholder="Ex: Proteínas, Energéticos">
+            @if (categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched) {
+              <p class="form-error">Nome é obrigatório (mínimo 2 caracteres).</p>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeModal()" class="btn-cancel">Cancelar</button>
+            <button type="submit" [disabled]="categoryForm.invalid || isSaving()" class="btn-primary">
+              @if (isSaving()) {
+                <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                Salvando...
+              } @else {
+                Salvar Categoria
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

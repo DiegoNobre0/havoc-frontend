@@ -639,3 +639,169 @@
         border: none !important;
     }
 }
+
+
+// Estilo para o Dropdown (Select) da Havoc
+.havoc-select {
+  background: var.$havoc-bg-dark;
+  color: var.$havoc-text-main;
+  border: 1px solid var.$havoc-border;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+  
+  // Apaga a setinha nativa feia de alguns navegadores (opcional)
+  appearance: none; 
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="%238C8C8C"><polygon points="0,0 14,0 7,7"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+
+  &:hover, &:focus {
+    border-color: var.$havoc-yellow;
+  }
+}
+
+// Botão Secundário (Exportar)
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var.$havoc-text-main;
+  border: 1px solid var.$havoc-border;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var.$havoc-bg-surface-2;
+    border-color: var.$havoc-text-muted;
+  }
+}
+
+
+// ==========================================
+// CABEÇALHO DA PÁGINA (Page Header)
+// ==========================================
+.page-header {
+  display: flex;
+  justify-content: space-between; // Joga o título pra esquerda e os botões pra direita
+  align-items: center; // Alinha tudo no centro verticalmente
+  margin-bottom: 2rem;
+
+  .header-titles {
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--havoc-text-main); // ou use a variável $havoc-text-main se estiver importando o arquivo de variáveis
+      margin: 0 0 0.25rem 0;
+    }
+    .page-subtitle {
+      font-size: 0.9rem;
+      color: #8C8C8C;
+      margin: 0;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    
+    .header-actions {
+      width: 100%;
+      flex-wrap: wrap; // No celular, os botões quebram linha bonito
+    }
+  }
+}
+
+// ==========================================
+// BOTÕES DO CABEÇALHO
+// ==========================================
+
+// Grupo de Exportação (Select + Botão unidos)
+.export-group {
+  display: flex;
+  background: #1A1A1A; // Fundo escuro
+  border: 1px solid #F2B90F;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #F2B90F; // Amarelo Havoc no hover
+  }
+
+  .export-select {
+    background:#1A1A1A;;
+    border: none;
+    color: #CCCCCC;
+    padding: 10px 12px 10px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+    border-right: 1px solid #333333;
+    appearance: none; // Remove a seta feia padrão do Windows
+    
+    // Seta customizada minimalista
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%238C8C8C"><polygon points="0,0 12,0 6,6"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+
+    &:hover { color: #FFFFFF; }
+  }
+
+  .btn-export {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+}
+
+// Botão Primário (Certificando que ele fica Amarelo!)
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F2B90F; // Amarelo Havoc
+  color: #111111; // Texto bem escuro para dar contraste
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #D9A40D;
+    transform: translateY(-1px);
+  }
+}

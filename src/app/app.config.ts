@@ -16,7 +16,21 @@ import {
   Clock,
   DollarSign,
   Calendar,
-  MoreVertical
+  MoreVertical,
+  FileText,
+  Download,
+  Plus,
+  PackagePlus,
+  Pencil,
+  Eye,
+  Trash2,
+  EyeOff,
+  X,
+  ImagePlus,
+  Save,
+  ChevronUp,
+  Tag,
+  Gift
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
@@ -48,7 +62,9 @@ export const appConfig: ApplicationConfig = {
       LucideAngularModule.pick({
         LayoutDashboard, ShoppingCart, Trello, Package, ChevronDown, ChevronRight,
         Users, MessageSquare, Menu, Search, Bell, ShoppingBag, AlertTriangle, RefreshCw,
-        Settings, TrendingUp, Clock, DollarSign ,Calendar, MoreVertical
+        Settings, TrendingUp, Clock, DollarSign ,Calendar, MoreVertical , FileText , Download,
+        Plus, PackagePlus, Pencil, Eye, Trash2, EyeOff, X , ImagePlus, Save, ChevronUp, Tag,
+        Gift
       })
     )
   ]
