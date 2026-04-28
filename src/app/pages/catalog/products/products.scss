@@ -3,11 +3,11 @@
 // ==========================================
 $havoc-yellow: #F2B90F;
 $havoc-yellow-dark: #D9A40D;
-$havoc-bg-main: #0F172A;
-$havoc-bg-surface: rgba(15, 23, 42, 0.6);
-$havoc-border: rgba(51, 65, 85, 0.6);
-$havoc-text-main: #F8FAFC;
-$havoc-text-muted: #94A3B8;
+$havoc-bg-main: #000000;
+$havoc-bg-surface: #000000;
+$havoc-border: #F2B90F;
+$havoc-text-main: #ffffff;
+$havoc-text-muted: #ffffff;
 
 // ─── Layout da Página ──────────────────────────────────────────
 .products-page {
@@ -57,19 +57,18 @@ $havoc-text-muted: #94A3B8;
 // ─── Componentes Nativos Havoc (Inputs e Selects) ─────────────
 .nexora-input,
 .havoc-select {
-  background: #020617;
-  border: 1px solid #334155;
+  background: #000000;
+  border: 1px solid #ffffff;
   padding: 0.8rem 1rem;
   border-radius: 0.75rem;
-  color: #F1F5F9;
+  color: #ffffff;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s;
-  // width: 100%;
   outline: none;
 
   &::placeholder {
-    color: #64748B;
+    color: #94A3B8;
   }
 
   &:focus {
@@ -96,12 +95,12 @@ $havoc-text-muted: #94A3B8;
 .nx-number-input {
     display: flex;
     align-items: center;
-    background-color: #020617 !important; // Força o fundo escuro
-    border: 1px solid #334155 !important;
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
     border-radius: 0.75rem;
     overflow: hidden;
     transition: all 0.2s;
-    height: 48px; // Trava a altura
+    height: 48px;
   
     &:focus-within {
       border-color: $havoc-yellow !important;
@@ -114,9 +113,9 @@ $havoc-text-muted: #94A3B8;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: transparent !important; // Mata o fundo branco
+      background-color: transparent !important;
       border: none !important;
-      color: #94A3B8 !important;
+      color: $havoc-yellow !important;
       font-size: 1.25rem;
       cursor: pointer;
       transition: background 0.2s, color 0.2s;
@@ -127,7 +126,7 @@ $havoc-text-muted: #94A3B8;
     &__field {
       flex: 1;
       min-width: 0; 
-      background-color: transparent !important; // Mata o fundo branco
+      background-color: transparent !important;
       border: none !important;
       color: #F1F5F9 !important;
       font-size: 0.875rem;
@@ -138,6 +137,7 @@ $havoc-text-muted: #94A3B8;
       &:focus { outline: none; }
     }
 }
+
 // Ocultar setas nativas do input type number
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
@@ -233,7 +233,7 @@ input[type="number"] {
     transform: translateY(-50%);
     width: 1.125rem;
     height: 1.125rem;
-    color: #64748B;
+    color: #ffffff;
     pointer-events: none;
   }
 
@@ -244,7 +244,7 @@ input[type="number"] {
 
 // ─── Tabela e Paginação ───────────────────────────────────────
 .data-table-wrapper {
-  background: #0F172A;
+  background: #000000;
   border: 1px solid $havoc-border;
   border-radius: 1rem;
   overflow: hidden;
@@ -261,7 +261,7 @@ input[type="number"] {
   min-width: 700px;
 
   &__head {
-    background: rgba(2, 6, 23, 0.4);
+    background: rgba(0, 0, 0, 0.4);
     border-bottom: 1px solid $havoc-border;
   }
 
@@ -501,7 +501,7 @@ input[type="number"] {
     padding: 0.5rem; 
     border-radius: 0.5rem; 
     color: #94A3B8 !important; 
-    background-color: transparent !important; // Bloqueia o fundo branco global
+    background-color: transparent !important; 
     border: none !important; 
     cursor: pointer; 
     display: flex; 
@@ -531,7 +531,7 @@ input[type="number"] {
 }
 
 .modal-card {
-  background: #0F172A;
+  background: #000000;
   width: 100%;
   border-radius: 1rem;
   border: 1px solid #334155;
@@ -566,12 +566,12 @@ input[type="number"] {
   &__title {
     font-size: 1.25rem;
     font-weight: 800;
-    color: #ffffff;
+    color: $havoc-yellow
   }
 
   &__subtitle {
     font-size: 0.875rem;
-    color: #94A3B8;
+    color: $havoc-yellow;
     font-weight: 400;
   }
 
@@ -642,7 +642,7 @@ input[type="number"] {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #64748B;
+    color: $havoc-yellow;
     margin: 0;
   }
 
@@ -715,6 +715,7 @@ input[type="number"] {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: 0.4rem;
 }
 
 .form-label {
@@ -890,7 +891,7 @@ input[type="number"] {
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.2s;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(0, 0, 0, 0.4);
 
   &:hover {
     border-color: $havoc-yellow;
@@ -971,101 +972,6 @@ input[type="number"] {
   }
 }
 
-// ─── Códigos de Barras ────────────────────────────────────────
-.barcode-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.btn-add-barcode {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border-radius: 9999px;
-  background-color: $havoc-yellow;
-  color: #111111;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-}
-
-.barcode-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.barcode-item {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  background-color: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(51, 65, 85, 0.6);
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-
-  &__code {
-    flex: 1;
-    margin-bottom: 0;
-  }
-
-  &__unit {
-    width: 120px;
-    margin-bottom: 0;
-  }
-
-  .barcode-input {
-    height: 48px;
-  }
-
-  .havoc-select {
-    height: 48px;
-  }
-
-  // Iguala a altura do input
-
-  &__delete {
-    margin-top: 26px;
-    padding: 0.5rem;
-    color: #64748B;
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid transparent;
-    cursor: pointer;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      color: #F87171;
-      background-color: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.2);
-    }
-  }
-}
-
-.barcode-empty {
-  font-size: 0.875rem;
-  color: #64748b;
-  text-align: center;
-  padding: 2rem;
-  border: 2px dashed #334155;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.2);
-}
-
 // ─── Modal Estoque Extra ──────────────────────────────────────
 .product-summary-card {
   padding: 1rem;
@@ -1131,13 +1037,8 @@ input[type="number"] {
 
 // ─── Animações Base ───────────────────────────────────────────
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes scaleIn {
@@ -1145,7 +1046,6 @@ input[type="number"] {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1153,13 +1053,8 @@ input[type="number"] {
 }
 
 @keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-
-  to {
-    background-position: -200% 0;
-  }
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 .skeleton {
@@ -1175,36 +1070,25 @@ input[type="number"] {
     border-radius: 0.5rem;
   }
 
-  &--text-md {
-    width: 8rem;
-  }
-
-  &--text-xs {
-    height: 0.75rem;
-  }
-
+  &--text-md { width: 8rem; }
+  &--text-xs { height: 0.75rem; }
   &--text-sm {
     width: 2rem;
     margin: 0 auto;
     height: 1rem;
   }
-
   &--badge {
     width: 4rem;
     height: 1.5rem;
     border-radius: 9999px;
     margin: 0 auto;
   }
-
   &--right {
     width: 4rem;
     margin-left: auto;
     height: 1.25rem;
   }
-
-  &--centered {
-    margin: 0 auto;
-  }
+  &--centered { margin: 0 auto; }
 }
 
 .skeleton-row {
@@ -1216,26 +1100,23 @@ input[type="number"] {
 // ─── Ajuste Escuro para o Mat-Select Múltiplo (Cápsula e Dropdown) ───
 
 ::ng-deep mat-select.havoc-mat-select {
-  /* 1. Criando a "Caixa" do Input */
-  background-color: #020617 !important;
-  border: 1px solid #334155 !important;
+  background-color: #000000 !important;
+  border: 1px solid #ffffff !important;
   border-radius: 0.75rem !important;
   padding: 0 1rem !important;
-  height: 46px !important; // Mesma altura dos inputs
+  height: 46px !important; 
   display: flex !important;
   align-items: center !important;
   font-family: inherit !important;
   box-sizing: border-box !important;
   transition: all 0.2s;
 
-  /* 2. Efeito de Foco (Amarelo Havoc) */
   &:focus, &.mat-mdc-select-focused {
     outline: none !important;
     border-color: #F2B90F !important;
     box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15) !important;
   }
 
-  /* 3. Alinhamento Interno (Texto e Seta) */
   .mat-mdc-select-trigger {
     width: 100%;
     display: flex;
@@ -1243,28 +1124,21 @@ input[type="number"] {
     justify-content: space-between;
   }
 
-  /* 4. Cores do Texto e Placeholder */
   .mat-mdc-select-value {
     color: #F1F5F9 !important;
     font-size: 0.875rem !important;
     font-weight: 500 !important;
   }
 
-  .mat-mdc-select-placeholder {
-    color: #64748B !important;
-  }
-
-  /* 5. Cor da Seta Dropdown */
-  .mat-mdc-select-arrow {
+  .mat-mdc-select-placeholder, .mat-mdc-select-arrow {
     color: #64748B !important;
   }
 }
 
-// ─── Fundo do menu flutuante (Dropdown) ───
 ::ng-deep .cdk-overlay-pane {
   .mat-mdc-select-panel {
-    background-color: #0F172A !important;
-    border: 1px solid #334155 !important;
+    background-color: #000000 !important;
+    border: 1px solid #ffffff !important;
     border-radius: 0.75rem !important;
     padding: 0.5rem 0 !important;
     margin-top: 4px !important;
@@ -1274,14 +1148,12 @@ input[type="number"] {
       color: #E2E8F0 !important;
       font-size: 0.875rem !important;
       
-      /* Efeito Hover nas opções */
       &:hover, &.mdc-list-item--selected, &.mat-mdc-option-active { 
         background-color: rgba(242, 185, 15, 0.1) !important; 
         color: #F2B90F !important; 
       }
     }
     
-    /* Customizando a cor do Checkbox Múltiplo para Amarelo */
     .mat-pseudo-checkbox-checked, 
     .mat-pseudo-checkbox-indeterminate {
       background-color: #F2B90F !important;
@@ -1289,7 +1161,30 @@ input[type="number"] {
     }
     
     .mat-pseudo-checkbox::after {
-      color: #111111 !important; // Cor do "V" do check
+      color: #111111 !important;
     }
+  }
+}
+
+// ─── Estilos do MatSnackBar (Popups Nativos) ───
+::ng-deep .havoc-snackbar-success {
+  background-color: #F2B90F !important; 
+  border-left: 4px solid #17B169 !important; 
+  color: #000000 !important;
+  border-radius: 6px !important;
+
+  .mat-mdc-snack-bar-action {
+    color: #000000 !important; 
+  }
+}
+
+::ng-deep .havoc-snackbar-error {
+  background-color: #F2B90F  !important; 
+  border-left: 4px solid #EF4444 !important; 
+  color: #000000 !important;
+  border-radius: 6px !important;
+
+  .mat-mdc-snack-bar-action {
+    color: #000000 !important;
   }
 }

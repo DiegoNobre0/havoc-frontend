@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { CatalogService } from '../../../services/catalog.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxCurrencyDirective } from 'ngx-currency';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-kits',
@@ -11,7 +18,10 @@ import { CatalogService } from '../../../services/catalog.service';
     CommonModule, 
     FormsModule, 
     ReactiveFormsModule, 
-    LucideAngularModule
+    LucideAngularModule,
+    MatOptionModule,
+    MatSelectModule,
+    NgxCurrencyDirective
   ],
   templateUrl: './kits.html',
   styleUrl: './kits.scss'
@@ -19,6 +29,8 @@ import { CatalogService } from '../../../services/catalog.service';
 export class Kits implements OnInit {
   private catalogService = inject(CatalogService);
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   // ─── ESTADOS GERAIS ─────────────────────────────
   kits = signal<any[]>([]); 
@@ -39,19 +51,26 @@ export class Kits implements OnInit {
   kitForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     description: [''],
-    discountValue: [0, [Validators.required, Validators.min(0)]], // Backend espera "FIXED" desconto
+    discountValue: [0, [Validators.required, Validators.min(0)]], 
   });
 
   // ─── CÁLCULOS ─────────────────────────────────
-  rawSubtotal = computed(() => {
+ rawSubtotal = computed(() => {
     return this.selectedItems().reduce((sum, item) => sum + (Number(item.product.price) * item.qty), 0);
   });
 
+  // 👇 Transforma as digitações do input em um Signal reativo em tempo real
+  discountSignal = toSignal(this.kitForm.controls.discountValue.valueChanges, { initialValue: 0 });
+
   finalPrice = computed(() => {
     const subtotal = this.rawSubtotal();
-    const discount = Number(this.kitForm.value.discountValue) || 0;
+    
+    // 👇 Agora o computed escuta o Signal! Ao digitar, a tela atualiza na hora.
+    // Usamos Number() só por segurança extra, mas o ngx-currency já entrega como number.
+    const discount = Number(this.discountSignal()) || 0; 
+    
     const final = subtotal - discount;
-    return final > 0 ? final : 0; // Evita preço negativo!
+    return final > 0 ? final : 0;
   });
 
   ngOnInit() {
@@ -69,6 +88,7 @@ export class Kits implements OnInit {
       error: (err) => {
         console.error('Erro ao carregar kits:', err);
         this.isLoading.set(false);
+        this.showToast('Erro ao carregar a lista de kits.', true);
       }
     });
   }
@@ -79,11 +99,75 @@ export class Kits implements OnInit {
     });
   }
 
-  openModal() {
-    this.isModalOpen.set(true);
-    this.isEditing.set(false);
-    this.currentKitId.set(null);
+  getKitCategories(kit: any): any[] {
+    if (!kit.items) return [];
+    
+    const categoriesMap = new Map();
+    
+    kit.items.forEach((item: any) => {
+      if (item.product?.categories) {
+        item.product.categories.forEach((cat: any) => {
+          categoriesMap.set(cat.id, cat); // O Map não deixa duplicar IDs iguais
+        });
+      }
+    });
+    
+    return Array.from(categoriesMap.values());
+  }
+
+  toggleKit(kit: any) {
+    const newStatus = !kit.isActive;
+
+    // 1. Atualiza a tela NA HORA (Optimistic Update)
+    this.kits.update(kits => kits.map(k => k.id === kit.id ? { ...k, isActive: newStatus } : k));
+
+    // 2. Avisa o Backend silenciosamente
+    this.catalogService.pauseKit(kit.id, newStatus).subscribe({
+      error: () => {
+        // Se der erro na rede ou no banco, desfazemos a animação na tela e avisamos o usuário
+        this.showToast('Erro ao atualizar status. Revertendo...', true);
+        this.kits.update(kits => kits.map(k => k.id === kit.id ? { ...k, isActive: !newStatus } : k));
+      }
+    });
+  }
+
+// ─── ABRIR MODAL (Novo ou Edição) ──────────────────────────
+  openModal(kit?: any) {
+    // 1. Sempre limpamos o formulário e os itens antigos primeiro
     this.resetFormState();
+
+    if (kit) {
+      // 2. MODO EDIÇÃO: Preenchemos os dados com o Kit recebido
+      this.isEditing.set(true);
+      this.currentKitId.set(kit.id);
+      
+      // Carrega a imagem se existir
+      this.imagePreview.set(kit.imageUrl || null);
+
+      // Preenche os textos e o desconto
+      this.kitForm.patchValue({
+        name: kit.name,
+        description: kit.description || '',
+        discountValue: kit.discountValue || 0
+      });
+
+      // Mapeia os itens do Kit para o formato que a nossa UI entende (Signal selectedItems)
+      if (kit.items && kit.items.length > 0) {
+        const mappedItems = kit.items.map((item: any) => ({
+          product: item.product,
+          qty: item.quantity
+        }));
+        this.selectedItems.set(mappedItems);
+      }
+      
+    } else {
+      // 3. MODO CRIAÇÃO: Apenas garantimos que os estados de edição estão falsos
+      this.isEditing.set(false);
+      this.currentKitId.set(null);
+    }
+    
+    // 4. Por fim, exibimos o modal na tela
+    this.isModalOpen.set(true);
   }
 
   closeModal() {
@@ -98,14 +182,34 @@ export class Kits implements OnInit {
     this.imagePreview.set(null);
   }
 
-  deleteKit(id: string) {
-    if (!confirm('Tem certeza que deseja excluir este kit? O histórico de pedidos antigos não será afetado.')) return;
-    
-    this.catalogService.deleteKit(id).subscribe({
+  // ─── DELETAR KIT (Com Dialog Customizado) ────────────
+  confirmDelete(kit: any) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: 'havoc-dialog-container',
+      disableClose: true,
+      data: {
+        title: 'Excluir Kit',
+        message: `Deseja realmente excluir o kit <strong>${kit.name}</strong>?<br>O histórico de pedidos não será afetado.`,
+        confirmText: 'Sim, Excluir',
+        isDanger: true
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) {
+        this.executeDelete(kit);
+      }
+    });
+  }
+
+  private executeDelete(kit: any) {
+    this.catalogService.deleteKit(kit.id).subscribe({
       next: () => {
-        this.kits.update(kits => kits.filter(k => k.id !== id));
+        this.kits.update(kits => kits.filter(k => k.id !== kit.id));
+        this.showToast('Kit excluído com sucesso!');
       },
-      error: () => alert('Não foi possível excluir o Kit.')
+      error: () => this.showToast('Não foi possível excluir o Kit.', true)
     });
   }
 
@@ -126,7 +230,7 @@ export class Kits implements OnInit {
   }
 
   // ─── COMPOSIÇÃO DO COMBO ─────────────────────────────────
-  addProduct(productId: string) {
+  addProduct(productId: string) {    
     if (!productId) return;
 
     const product = this.availableProducts().find(p => p.id === productId);
@@ -157,7 +261,7 @@ export class Kits implements OnInit {
   // ─── SALVAR (Integração Total Zod/Fastify) ───────────────
   onSubmit() {
     if (this.kitForm.invalid || this.selectedItems().length === 0) {
-      alert('Preencha os dados e adicione ao menos um produto no combo.');
+      this.showToast('Preencha os dados e adicione ao menos um produto no combo.', true);
       return;
     }
 
@@ -165,7 +269,6 @@ export class Kits implements OnInit {
     const formValues = this.kitForm.getRawValue();
     const generatedSlug = formValues.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    // Montando o payload JSON idêntico ao Zod Schema do Fastify
     const payload = {
       name: formValues.name,
       slug: generatedSlug,
@@ -184,14 +287,13 @@ export class Kits implements OnInit {
 
     request$.subscribe({
       next: (savedKit) => {
-        // Se escolheu imagem nova, envia pro R2 depois de criar o Kit
         if (this.selectedFile()) {
           const kitId = this.isEditing() ? this.currentKitId()! : savedKit.id;
           
           this.catalogService.uploadKitImage(kitId, this.selectedFile()!).subscribe({
             next: () => this.finalizeSave(),
             error: () => {
-              alert('Kit criado, mas houve erro no upload da foto.');
+              this.showToast('Kit criado, mas houve erro no upload da foto.', true);
               this.finalizeSave();
             }
           });
@@ -201,7 +303,7 @@ export class Kits implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        alert('Erro ao processar. Verifique se os produtos estão ativos.');
+        this.showToast('Erro ao processar. Verifique se os produtos estão ativos.', true);
         this.isSaving.set(false);
       }
     });
@@ -211,5 +313,16 @@ export class Kits implements OnInit {
     this.loadKits();
     this.closeModal();
     this.isSaving.set(false);
+    this.showToast(this.isEditing() ? 'Kit atualizado com sucesso!' : 'Kit criado com sucesso!');
+  }
+
+  // ─── ALERTAS (MatSnackBar) ──────────────────────────────────
+  showToast(message: string, isError: boolean = false) {
+    this.snackBar.open(message, 'X', {
+      duration: 3000, 
+      horizontalPosition: 'right', 
+      verticalPosition: 'top', 
+      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success'] 
+    });
   }
 }

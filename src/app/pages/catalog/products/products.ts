@@ -1,11 +1,16 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
 import { CatalogService } from '../../../services/catalog.service';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog';
+import { NgxCurrencyDirective } from 'ngx-currency';
+
 
 @Component({
   selector: 'app-products',
@@ -16,7 +21,9 @@ import { MatSelectModule } from '@angular/material/select';
     ReactiveFormsModule,
     LucideAngularModule,
     MatOptionModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule,
+    NgxCurrencyDirective
   ],
   templateUrl: './products.html',
   styleUrl: './products.scss'
@@ -24,8 +31,13 @@ import { MatSelectModule } from '@angular/material/select';
 export class Products implements OnInit, OnDestroy {
   private catalogService = inject(CatalogService);
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;
+
+  @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<any>;
 
   // ─── ESTADOS DA LISTAGEM ────────────────────────────────────
   products = signal<any[]>([]);
@@ -43,14 +55,7 @@ export class Products implements OnInit, OnDestroy {
 
   // ─── ESTADOS GERAIS DE MODAIS ───────────────────────────────
   isSaving = signal<boolean>(false);
-
-  // ─── MODAIS UNIVERSAIS (Confirmação e Erro) ─────────────────
-  isConfirmModalOpen = signal(false);
-  itemToDelete = signal<any | null>(null);
-  isDeleting = signal(false);
-
-  showErrorModal = signal(false);
-  errorMessage = signal('');
+  isDeleting = signal<boolean>(false);
 
   // ─── MODAL: MOVIMENTAR ESTOQUE ──────────────────────────────
   isStockModalOpen = signal<boolean>(false);
@@ -81,7 +86,7 @@ export class Products implements OnInit, OnDestroy {
   productForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     unit: ['UN'],
-    category_ids: [[] as string[]], // Mudamos para select único como no backend Zod
+    category_ids: [[] as string[]],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.01)]],
     cost_price: [0],
@@ -90,8 +95,7 @@ export class Products implements OnInit, OnDestroy {
     stock_min: [0, Validators.min(0)],
     ncm: [''],
     cfop: [''],
-    isActive: [true],
-    barcodes: this.fb.array([])
+    isActive: [true]
   });
 
   calculatedMargin = computed(() => {
@@ -101,22 +105,6 @@ export class Products implements OnInit, OnDestroy {
     return ((price - cost) / price) * 100;
   });
 
-  // ─── GETTERS E CONTROLES DO FORMARRAY (BARCODES) ─────────────
-  get barcodes(): FormArray {
-    return this.productForm.get('barcodes') as FormArray;
-  }
-
-  addBarcode(code = '', unit = 'UN') {
-    this.barcodes.push(this.fb.group({
-      code: [code, Validators.required],
-      unit: [unit]
-    }));
-  }
-
-  removeBarcode(index: number) {
-    this.barcodes.removeAt(index);
-  }
-
   ngOnInit() {
     this.loadCategories();
     this.loadProducts();
@@ -124,7 +112,7 @@ export class Products implements OnInit, OnDestroy {
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(400),
       distinctUntilChanged()
-    ).subscribe((searchTerm) => {
+    ).subscribe(() => {
       this.currentPage.set(1);
       this.loadProducts();
     });
@@ -143,7 +131,6 @@ export class Products implements OnInit, OnDestroy {
 
   loadCategories() {
     this.catalogService.getCategories().subscribe((res: any) => {
-      // Ajusta para ler a resposta padrão do Fastify
       this.categories.set(res.data || res);
     });
   }
@@ -157,14 +144,11 @@ export class Products implements OnInit, OnDestroy {
     };
 
     if (this.selectedCategory()) filters.categoryId = this.selectedCategory();
-
-    // NOTA: isActive precisa ser implementado no WHERE do Backend posteriormente
     if (this.selectedStatus()) filters.isActive = this.selectedStatus() === 'true';
 
     this.catalogService.getProducts(filters).subscribe({
       next: (res: any) => {
         this.products.set(res.data);
-        console.log('Produtos carregados:', this.products());
         this.totalPages.set(res.meta.totalPages);
         this.totalItems.set(res.meta.total);
         this.isLoading.set(false);
@@ -187,17 +171,16 @@ export class Products implements OnInit, OnDestroy {
 
   filterByLowStock() {
     this.currentPage.set(1);
-    // this.loadProducts(true); Implementar filtro de baixo estoque no backend no futuro
+    // TODO: Implementar filtro de estoque no backend
   }
 
   toggleProduct(product: any) {
-    debugger
     const newStatus = !product.isActive;
     this.products.update(prods => prods.map(p => p.id === product.id ? { ...p, isActive: newStatus } : p));
 
     this.catalogService.pauseProduct(product.id, newStatus).subscribe({
       error: () => {
-        this.showError('Erro ao atualizar status. Revertendo...');
+        this.showToast('Erro ao atualizar status. Revertendo...', true);
         this.products.update(prods => prods.map(p => p.id === product.id ? { ...p, isActive: !newStatus } : p));
       }
     });
@@ -208,7 +191,6 @@ export class Products implements OnInit, OnDestroy {
   }
 
   openModal(product?: any) {
-    this.barcodes.clear();
     this.imagePreview.set(null);
     this.selectedFile.set(null);
 
@@ -225,9 +207,8 @@ export class Products implements OnInit, OnDestroy {
         category_ids: product.categories ? product.categories.map((c: any) => c.id) : [],
         description: product.description || '',
         price: Number(product.price),
-        stock_qty: product.stock || 0, // Mapeado pro Zod do Backend
+        stock_qty: product.stock || 0,
       });
-      // Demais campos omitidos no patchValue para brevidade, mas podem ser adicionados
 
     } else {
       this.isEditing.set(false);
@@ -244,40 +225,45 @@ export class Products implements OnInit, OnDestroy {
     this.isModalOpen.set(false);
   }
 
-  // ─── DELETAR PRODUTO ────────────────────────────────────────
-  openDeleteConfirm(product: any) {
-    this.itemToDelete.set(product);
-    this.isConfirmModalOpen.set(true);
+  // ─── DELETAR PRODUTO ─────────────
+openDeleteConfirm(product: any) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: 'havoc-dialog-container',
+      disableClose: true,
+      data: {
+        title: 'Excluir Produto',
+        message: `Deseja realmente excluir o produto <strong>${product.name}</strong>?<br>Esta ação não pode ser desfeita.`,
+        confirmText: 'Sim, Excluir',
+        isDanger: true // Ativa as cores vermelhas de alerta!
+      }
+    });
+
+ dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) {
+        this.executeDelete(product);
+      }
+    });
   }
 
-  closeDeleteConfirm() {
-    this.isConfirmModalOpen.set(false);
-    this.itemToDelete.set(null);
-  }
-
-  confirmDelete() {
-    const product = this.itemToDelete();
-    if (!product) return;
-
+executeDelete(product: any) {
     this.isDeleting.set(true);
 
     this.catalogService.deleteProduct(product.id).subscribe({
       next: () => {
         this.products.update(prods => prods.filter(p => p.id !== product.id));
-        this.closeDeleteConfirm();
         this.isDeleting.set(false);
-        this.loadProducts(); // Recarrega para atualizar a paginação
+        this.loadProducts(); 
+        this.showToast('Produto excluído com sucesso!');
       },
-      error: (err: any) => {
+      error: () => {
         this.isDeleting.set(false);
-        this.closeDeleteConfirm();
-        this.showError('Erro ao excluir o produto. Ele pode estar vinculado a outras áreas.');
+        this.showToast('Erro ao excluir o produto. Ele pode estar vinculado.', true);
       }
     });
   }
-
-  // ─── SALVAR PRODUTO (Fluxo Sênior) ──────────────────────────
-  onSubmit() {    
+  // ─── SALVAR PRODUTO ─────────────────────────────────────────
+  onSubmit() {
     if (this.productForm.invalid || this.isSaving()) {
       this.productForm.markAllAsTouched();
       return;
@@ -286,10 +272,8 @@ export class Products implements OnInit, OnDestroy {
     this.isSaving.set(true);
     const formValues = this.productForm.getRawValue();
 
-    // 1. Gera o Slug dinamicamente baseado no nome do produto
     const generatedSlug = formValues.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    // 2. Mapeia exatamente para o Zod Schema do Fastify
     const payload = {
       name: formValues.name,
       slug: generatedSlug,
@@ -305,14 +289,13 @@ export class Products implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: (savedProduct) => {
-        // 3. Sucesso! Vamos ver se tem foto para enviar pro Cloudflare R2
         if (this.selectedFile()) {
           const productId = this.isEditing() ? this.currentId()! : savedProduct.id;
 
           this.catalogService.uploadProductImage(productId, this.selectedFile()!).subscribe({
             next: () => this.finalizeSave(),
             error: () => {
-              this.showError('Produto salvo com sucesso, mas houve uma falha ao enviar a foto para a nuvem.');
+              this.showToast('Produto salvo, mas houve uma falha ao enviar a foto para a nuvem.', true);
               this.finalizeSave();
             }
           });
@@ -322,7 +305,7 @@ export class Products implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error(err);
-        this.showError('Erro ao salvar os dados do produto.');
+        this.showToast('Erro ao salvar os dados do produto.', true);
         this.isSaving.set(false);
       }
     });
@@ -332,6 +315,7 @@ export class Products implements OnInit, OnDestroy {
     this.loadProducts();
     this.closeModal();
     this.isSaving.set(false);
+    this.showToast(this.isEditing() ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
   }
 
   // ─── ESTOQUE E IMAGENS ──────────────────────────────────────
@@ -345,7 +329,7 @@ export class Products implements OnInit, OnDestroy {
     this.isStockModalOpen.set(false);
   }
 
-  onStockSubmit() { /* Integrar com endpoint futuro de movimentação */ }
+  onStockSubmit() { /* TODO: Integrar com endpoint de movimentação */ }
 
   incrementStock(controlName: string) {
     const currentVal = this.productForm.get(controlName)?.value || 0;
@@ -374,14 +358,13 @@ export class Products implements OnInit, OnDestroy {
     this.imagePreview.set(null);
   }
 
-  // ─── ALERTAS ────────────────────────────────────────────────
-  showError(msg: string) {
-    this.errorMessage.set(msg);
-    this.showErrorModal.set(true);
-  }
-
-  closeErrorModal() {
-    this.showErrorModal.set(false);
-    this.errorMessage.set('');
+  // ─── ALERTAS (MatSnackBar) ──────────────────────────────────
+  showToast(message: string, isError: boolean = false) {
+    this.snackBar.open(message, 'X', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success']
+    });
   }
 }

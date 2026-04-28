@@ -93,4 +93,8 @@ export class CatalogService {
         formData.append('image', file);
         return this.http.post<any>(`${this.apiUrl}/kits/${id}/image`, formData);
     }
+
+    pauseKit(id: string, isActive: boolean) {       
+        return this.http.patch(`${this.apiUrl}/kits/${id}/status`, { isActive });
+    }
 }

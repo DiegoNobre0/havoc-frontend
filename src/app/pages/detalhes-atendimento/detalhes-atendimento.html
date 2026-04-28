@@ -1,0 +1,113 @@
+<div class="chat-container">
+  
+  <header class="chat-header">
+    <div class="header-info">
+      <div class="avatar-fallback">{{ (atendimento().clienteNome || '?').charAt(0).toUpperCase() }}</div>
+      
+      <div class="client-details">
+        <span class="client-name">{{ atendimento().clienteNome }}</span>
+        
+        <div class="client-status">
+          @if (atendimento().isBotActive) {
+            <span class="status-indicator status--ai">
+              <lucide-icon name="bot" [size]="12"></lucide-icon> IA Respondendo
+            </span>
+          } @else if (!atendimento().isBotActive && atendimento().status === 'OPEN') {
+            <span class="status-indicator status--human">
+              <lucide-icon name="user" [size]="12"></lucide-icon> Você no controle
+            </span>
+          } @else {
+            <span class="status-indicator status--closed">
+              <lucide-icon name="check-circle" [size]="12"></lucide-icon> Finalizado
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      @if (!atendimento().isBotActive && atendimento().status === 'OPEN') {
+        <button class="btn-ia-toggle" title="Devolver para IA" (click)="devolverParaIA()">
+          <lucide-icon name="bot" [size]="16"></lucide-icon> Devolver p/ IA
+        </button>
+      } @else if (atendimento().isBotActive) {
+        <button class="btn-human-toggle" title="Assumir Atendimento" (click)="assumirAtendimento()">
+          <lucide-icon name="hand" [size]="16"></lucide-icon> Assumir
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="chat-messages" #scrollContainer>
+    @for (msg of mensagens(); track msg.id) {
+      <div class="message-row" [class.row-sent]="msg.remetente === 'atendente'" [class.row-received]="msg.remetente === 'cliente'">
+        
+        <div class="message-bubble" [class.bubble-sent]="msg.remetente === 'atendente'" [class.bubble-received]="msg.remetente === 'cliente'">
+          
+          @if (msg.mediaUrl) {
+            @if (msg.mediaType === 'image') {
+              <img [src]="msg.mediaUrl" class="msg-image" alt="Imagem enviada">
+            }
+            @if (msg.mediaType === 'document') {
+              <div class="msg-document">
+                <lucide-icon name="paperclip" [size]="20"></lucide-icon>
+                <span>{{ msg.fileName || 'Documento Anexado' }}</span>
+              </div>
+            }
+            @if (msg.mediaType === 'audio') {
+              <div class="msg-audio">
+                <lucide-icon name="mic" [size]="20"></lucide-icon>
+                <audio controls [src]="msg.mediaUrl"></audio>
+              </div>
+            }
+          } @else {
+            <div class="msg-text">{{ msg.texto }}</div>
+          }
+
+          <div class="msg-time">{{ msg.data | date:'HH:mm' }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <footer class="chat-footer">
+    <input type="file" #fileInput hidden (change)="aoSelecionarArquivo($event)" multiple>
+
+    @if (gravandoAudio()) {
+      <div class="recording-bar">
+        <div class="recording-timer blink">
+          <lucide-icon name="mic" [size]="16"></lucide-icon>
+          <span>{{ tempoGravacaoFormatado() }}</span>
+        </div>
+        <div class="recording-actions">
+          <button class="action-btn text-red" title="Cancelar" (click)="cancelarGravacao()">
+            <lucide-icon name="trash-2" [size]="20"></lucide-icon>
+          </button>
+          <button class="action-btn text-green" title="Enviar" (click)="pararGravacaoEEnviar()">
+            <lucide-icon name="send" [size]="20"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <button class="action-btn" title="Anexar Arquivo" (click)="fileInput.click()">
+        <lucide-icon name="paperclip" [size]="20"></lucide-icon>
+      </button>
+
+      <input type="text" class="nexora-input flex-1" 
+             placeholder="Digite uma mensagem..." 
+             [ngModel]="novaMensagem()" 
+             (ngModelChange)="novaMensagem.set($event)"
+             (keydown.enter)="enviarMensagem()">
+
+      @if (!novaMensagem().trim()) {
+        <button class="action-btn" title="Gravar Áudio" (click)="iniciarGravacao()">
+          <lucide-icon name="mic" [size]="20"></lucide-icon>
+        </button>
+      } @else {
+        <button class="action-btn text-yellow" title="Enviar Mensagem" (click)="enviarMensagem()">
+          <lucide-icon name="send" [size]="20"></lucide-icon>
+        </button>
+      }
+    }
+  </footer>
+</div>

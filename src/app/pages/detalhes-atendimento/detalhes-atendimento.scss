@@ -1,0 +1,330 @@
+$havoc-yellow: #F2B90F;
+$havoc-bg-main: #000000;
+$havoc-bg-surface: #000000;
+$havoc-border: rgba(255, 255, 255, 0.05);
+$havoc-text: #F8FAFC;
+$havoc-muted: #94A3B8;
+
+* {
+    box-sizing: border-box;
+}
+
+:host {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: $havoc-bg-main;
+    position: relative;
+}
+
+// ─── HEADER ───
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: $havoc-bg-main;    
+    backdrop-filter: blur(10px); // Efeito vidro premium
+    border-bottom: 1px solid $havoc-border;
+    z-index: 10;
+    flex-shrink: 0;
+
+    .header-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .avatar-fallback {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: $havoc-text;
+            font-weight: 800;
+        }
+
+        .client-details {
+            display: flex;
+            flex-direction: column;
+
+            .client-name {
+                color: $havoc-text;
+                font-weight: 700;
+                font-size: 1rem;
+            }
+
+            .client-status {
+                margin-top: 0.125rem;
+
+                .status-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.35rem;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+
+                    &.status--ai {
+                        color: #C084FC;
+                    }
+
+                    &.status--human {
+                        color: $havoc-yellow;
+                    }
+
+                    &.status--closed {
+                        color: $havoc-muted;
+                    }
+                }
+            }
+        }
+    }
+
+    .header-actions {
+
+        .btn-ia-toggle,
+        .btn-human-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ia-toggle {
+            background: rgba(168, 85, 247, 0.1);
+            color: #C084FC;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+
+            &:hover {
+                background: rgba(168, 85, 247, 0.2);
+                transform: translateY(-1px);
+            }
+        }
+
+        .btn-human-toggle {
+            background: rgba(242, 185, 15, 0.1);
+            color: $havoc-yellow;
+            border: 1px solid rgba(242, 185, 15, 0.2);
+
+            &:hover {
+                background: rgba(242, 185, 15, 0.2);
+                transform: translateY(-1px);
+            }
+        }
+    }
+}
+
+// ─── ÁREA DE MENSAGENS ───
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden; // Previne scroll horizontal aqui dentro
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+}
+
+.message-row {
+    display: flex;
+    width: 100%;
+
+    &.row-sent {
+        justify-content: flex-end;
+    }
+
+    &.row-received {
+        justify-content: flex-start;
+    }
+}
+
+.message-bubble {
+    max-width: 70%; // Permite que a mensagem respire melhor
+    padding: 0.85rem 1.15rem;
+    border-radius: 12px;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); // Sombra suave
+
+    .msg-text {
+        color: $havoc-text;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0;
+    }
+
+    .msg-time {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-align: right;
+        margin-top: 0.35rem;
+        display: block;
+    }
+
+    // Estilos Premium (Cores e Bordas)
+    &.bubble-sent {
+        background: linear-gradient(135deg, #26354e 0%, #151d2a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom-right-radius: 2px; // Biquinho fino
+    }
+
+    &.bubble-received {
+         background: linear-gradient(135deg, #26354e 0%, #151d2a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom-left-radius: 2px; // Biquinho fino
+    }
+
+    // Mídias
+    .msg-image {
+        max-width: 250px;
+        width: 100%;
+        border-radius: 8px;
+        cursor: pointer;
+        object-fit: cover;
+    }
+
+    .msg-document {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: $havoc-text;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+}
+
+// ─── FOOTER (INPUTS) ───
+.chat-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background-color: $havoc-bg-main;
+    border-top: 1px solid $havoc-border;
+    flex-shrink: 0;
+
+    .nexora-input {
+        flex: 1;
+        min-width: 0; // Impede que o input empurre a tela
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.875rem 1.25rem;
+        border-radius: 24px; // Mais arredondado
+        color: $havoc-text;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+
+        &:focus {
+            outline: none;
+            border-color: rgba(242, 185, 15, 0.5);
+            background-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 3px rgba(242, 185, 15, 0.1); // Glow effect no input
+        }
+
+        &::placeholder {
+            color: $havoc-muted;
+        }
+    }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: $havoc-muted;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: $havoc-text;
+            transform: scale(1.05);
+        }
+
+        &.text-yellow {
+            color: $havoc-yellow;
+
+            &:hover {
+                background: rgba(242, 185, 15, 0.1);
+            }
+        }
+
+        &.text-red {
+            color: #EF4444;
+        }
+
+        &.text-green {
+            color: #22C55E;
+        }
+    }
+}
+
+// ─── ANIMAÇÕES ───
+.recording-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 0.65rem 1.25rem;
+    border-radius: 24px;
+
+    .recording-timer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #EF4444;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .recording-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+}
+
+.blink {
+    animation: blinker 1.5s ease-in-out infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0.4;
+    }
+}

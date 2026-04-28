@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { CatalogService } from '../../../services/catalog.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog';
+
 
 @Component({
   selector: 'app-categories',
@@ -14,6 +18,8 @@ import { CatalogService } from '../../../services/catalog.service';
 export class Categories implements OnInit {
   private catalogService = inject(CatalogService);
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   // ─── ESTADOS GERAIS ─────────────────────────────────────────
   categories = signal<any[]>([]);
@@ -39,13 +45,13 @@ export class Categories implements OnInit {
     
     this.catalogService.getCategories().subscribe({
       next: (res: any) => {        
-        // Fastify sempre devolve o array limpo na rota de categorias se não houver paginação
         this.categories.set(res.data || res || []); 
         this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Erro ao buscar categorias:', err);
         this.isLoading.set(false);
+        this.showToast('Erro ao carregar as categorias.', true);
       }
     });
   }
@@ -93,28 +99,58 @@ export class Categories implements OnInit {
         this.loadCategories();
         this.closeModal();
         this.isSaving.set(false);
+        this.showToast(this.isEditing() ? 'Categoria atualizada!' : 'Categoria criada!');
       },
       error: (err) => {
         console.error('Erro ao salvar categoria:', err);
-        alert('Erro ao salvar os dados.');
+        const backendMessage = err.error?.message || 'Erro ao salvar os dados da categoria.';
+        this.showToast(backendMessage, true);
         this.isSaving.set(false);
       }
     });
   }
 
-  // ─── LÓGICA DE EXCLUSÃO (DIRETA) ───────────────────────
+  // ─── LÓGICA DE EXCLUSÃO (Com Dialog Customizado) ────────────
   confirmDelete(category: any) {
-    if (!confirm(`Deseja realmente excluir a categoria "${category.name}"?`)) return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: 'havoc-dialog-container',
+      disableClose: true,
+      data: {
+        title: 'Excluir Categoria',
+        message: `Deseja realmente excluir a categoria <strong>${category.name}</strong>?<br>Esta ação não pode ser desfeita.`,
+        confirmText: 'Sim, Excluir',
+        isDanger: true
+      }
+    });
 
+    dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) {
+        this.executeDelete(category);
+      }
+    });
+  }
+
+  private executeDelete(category: any) {
     this.catalogService.deleteCategory(category.id).subscribe({
       next: () => {
-        // Atualiza a interface otimista removendo o item
         this.categories.update(cats => cats.filter(c => c.id !== category.id));
+        this.showToast('Categoria excluída com sucesso!');
       },
       error: (err) => {
         console.error('Erro ao deletar:', err);
-        alert(`Não é possível deletar a categoria "${category.name}" pois existem produtos vinculados a ela.`);
+        this.showToast(`Não é possível deletar "${category.name}" pois existem produtos vinculados.`, true);
       }
+    });
+  }
+
+  // ─── ALERTAS (MatSnackBar) ──────────────────────────────────
+  showToast(message: string, isError: boolean = false) {
+    this.snackBar.open(message, 'X', {
+      duration: 3000, 
+      horizontalPosition: 'right', 
+      verticalPosition: 'top', 
+      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success'] 
     });
   }
 }

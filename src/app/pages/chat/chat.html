@@ -1,0 +1,85 @@
+<div class="layout-chat">
+  
+  <aside class="chat-sidebar">
+    <div class="sidebar-header">
+      <div class="header-top">
+        <h2 class="sidebar-title">Atendimentos</h2>
+        <button class="action-btn" title="Atualizar">
+          <lucide-icon name="refresh-cw" [size]="18"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="search-container">
+        <lucide-icon name="search" class="search-icon" [size]="16"></lucide-icon>
+        <input type="text" class="nexora-input w-full pl-4" 
+               placeholder="Pesquisar cliente..." 
+               [ngModel]="termoBusca()" 
+               (ngModelChange)="termoBusca.set($event)">
+      </div>
+    </div>
+
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="abaAtual() === 'PENDENTES'" (click)="trocarAba('PENDENTES')">
+        Abertos
+        @if (qtdPendentes() > 0) {
+          <span class="badge">{{ qtdPendentes() }}</span>
+        }
+      </button>
+      <button class="tab-btn" [class.active]="abaAtual() === 'FINALIZADOS'" (click)="trocarAba('FINALIZADOS')">
+        Resolvidos
+      </button>
+    </div>
+
+    <div class="chat-list">
+      @for (chat of conversasFiltradas(); track chat.id) {
+        <div class="chat-item" 
+             [class.active]="idSelecionado() === chat.id" 
+             (click)="selecionarAtendimento(chat)">
+          
+          <div class="avatar-wrap">
+            <div class="avatar-fallback">{{ (chat.cliente.nome || '?').charAt(0).toUpperCase() }}</div>
+            <!-- <div class="channel-icon">
+              <lucide-icon name="message-circle" [size]="10"></lucide-icon>
+            </div> -->
+          </div>
+
+          <div class="chat-info">
+            <div class="row-top">
+              <span class="chat-name">{{ chat.cliente.nome || 'Desconhecido' }}</span>
+              <span class="chat-time" [class.unread-time]="chat.naoLidas > 0">14:30</span>
+            </div>
+
+            <div class="row-bottom">
+              <p class="chat-message" [class.unread-msg]="chat.naoLidas > 0">
+                {{ chat.ultimaMensagem }}
+              </p>
+              @if (chat.naoLidas > 0) {
+                <div class="unread-badge">{{ chat.naoLidas }}</div>
+              }
+            </div>
+
+            <div class="tags-container">
+              @if (chat.isBotActive) {
+                <span class="status-tag tag--ai">
+                  <lucide-icon name="bot" [size]="10"></lucide-icon> IA Ativa
+                </span>
+              } @else {
+                <span class="status-tag tag--human">
+                  <lucide-icon name="user" [size]="10"></lucide-icon> Em Atendimento
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          Nenhuma conversa encontrada.
+        </div>
+      }
+    </div>
+  </aside>
+
+  <main class="chat-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>

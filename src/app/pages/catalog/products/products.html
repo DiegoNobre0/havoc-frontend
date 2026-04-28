@@ -1,6 +1,5 @@
 <div class="products-page">
 
-  <!-- Header -->
   <div class="page-header">
     <div class="page-header__info">
       <h1 class="page-header__title">Catálogo de Produtos</h1>
@@ -12,7 +11,6 @@
     </button>
   </div>
 
-  <!-- Alerta estoque baixo -->
   @if (lowStockCount() > 0) {
   <div class="alert alert--warning">
     <lucide-icon name="alert-triangle" class="alert__icon"></lucide-icon>
@@ -23,7 +21,6 @@
   </div>
   }
 
-  <!-- Toolbar -->
   <div class="toolbar">
     <div class="toolbar__item toolbar__item--search">
       <lucide-icon name="search" class="toolbar__search-icon"></lucide-icon>
@@ -51,7 +48,6 @@
     </div>
   </div>
 
-  <!-- Tabela -->
   <div class="data-table-wrapper">
     <div class="data-table-scroll">
       <table class="data-table">
@@ -98,7 +94,6 @@
           @for (product of products(); track product.id) {
           <tr class="data-table__row data-table__row--hoverable">
 
-            <!-- Produto -->
             <td class="data-table__td">
               <div class="product-cell">
                 <div class="product-cell__thumb">
@@ -115,7 +110,6 @@
               </div>
             </td>
 
-            <!-- Categoria -->
             <td class="data-table__td">
               @if (product.categories && product.categories.length > 0) {
               <div class="category-badges">
@@ -130,30 +124,24 @@
               }
             </td>
 
-            <!-- Preço -->
             <td class="data-table__td data-table__td--right">
               <span class="data-table__value">R$ {{ product.price | number:'1.2-2' }}</span>
             </td>
 
-            <!-- Estoque -->
             <td class="data-table__td data-table__td--center">
               <div class="stock-cell">
-                <span class="stock-cell__qty" [class.stock-cell__qty--low]="product.stock">
+                <span class="stock-cell__qty" [class.stock-cell__qty--low]="product.stock <= product.stock_min">
                   {{ product.stock}}
                 </span>
-                <!-- @if (product.stock_qty <= product.stock_min) { <span class="badge badge--warning">Baixo</span>
-                  } -->
               </div>
             </td>
 
-            <!-- Status -->
             <td class="data-table__td data-table__td--center">
               <span class="badge" [ngClass]="product.isActive ? 'badge--active' : 'badge--inactive'">
                 {{ product.isActive ? 'Ativo' : 'Pausado' }}
               </span>
             </td>
 
-            <!-- Ações -->
             <td class="data-table__td data-table__td--right">
               <div class="row-actions">
                 <button (click)="openStockModal(product)" class="action-btn action-btn--primary"
@@ -194,7 +182,6 @@
       </table>
     </div>
 
-    <!-- Paginação -->
     @if (totalPages() > 1) {
     <div class="pagination">
       <span class="pagination__info">
@@ -214,7 +201,6 @@
     }
   </div>
 
-  <!-- Modal Estoque -->
   @if (isStockModalOpen()) {
   <div class="modal-overlay" (click)="closeStockModal()">
     <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
@@ -279,7 +265,6 @@
   </div>
   }
 
-  <!-- Modal Criar / Editar Produto -->
   @if (isModalOpen()) {
   <div class="modal-overlay" (click)="closeModal()">
     <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
@@ -300,7 +285,6 @@
       @if (isModalOpen()) {
       <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form">
 
-        <!-- Seção: Identificação -->
         <div class="product-form__section">
           <p class="product-form__section-label">Identificação</p>
 
@@ -331,14 +315,12 @@
 
           <div class="form-field">
             <label class="form-label">Categorias <span class="form-label--optional">(Múltiplas)</span></label>
-
             <mat-select formControlName="category_ids" multiple class="havoc-mat-select w-full"
               placeholder="Selecione as categorias...">
               @for (cat of categories(); track cat.id) {
               <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
               }
             </mat-select>
-
           </div>
 
           <div class="form-field">
@@ -348,50 +330,6 @@
           </div>
         </div>
 
-        <!-- <div class="product-form__section">
-          <div class="product-form__section-header barcode-header">
-            <p class="product-form__section-label">Códigos de Barras</p>
-            <button type="button" (click)="addBarcode()" class="btn-primary btn-add-barcode">
-              <lucide-icon name="plus" [size]="16"></lucide-icon>
-              Adicionar
-            </button>
-          </div>
-
-          <div formArrayName="barcodes" class="barcode-list">
-            @for (bc of barcodes.controls; track $index) {
-            <div [formGroupName]="$index" class="barcode-item">
-
-              <div class="form-field barcode-item__code">
-                <label class="form-label">EAN / Código</label>
-                <input type="text" formControlName="code" class="nexora-input barcode-input"
-                  placeholder="Ler com o scanner ou digitar...">
-                @if (bc.get('code')?.invalid && bc.get('code')?.touched) {
-                <p class="form-error">Obrigatório.</p>
-                }
-              </div>
-
-              <div class="form-field">
-                <label class="form-label">Categoria</label>
-                <select formControlName="category_id" class="havoc-select w-full">
-                  <option value="">Selecione a categoria</option>
-                  @for (cat of categories(); track cat.id) {
-                  <option [value]="cat.id">{{ cat.name }}</option>
-                  }
-                </select>
-              </div>
-
-              <button type="button" (click)="removeBarcode($index)" class="barcode-item__delete" title="Remover código">
-                <lucide-icon name="trash-2" [size]="20"></lucide-icon>
-              </button>
-
-            </div>
-            } @empty {
-            <div class="barcode-empty">
-              Nenhum código cadastrado. Clique em "Adicionar" para inserir EANs.
-            </div>
-            }
-          </div>
-        </div> -->
         <div class="product-form__section">
           <p class="product-form__section-label">Foto do Produto</p>
 
@@ -416,18 +354,16 @@
           }
         </div>
 
-        <!-- Seção: Preços -->
         <div class="product-form__section">
-          <p class="product-form__section-label">Identificação</p>
-          <!-- <p class="product-form__section-label">Preços</p> -->
+          <p class="product-form__section-label">Valores</p>
 
           <div class="product-form__row">
             <div class="form-field product-form__col">
               <label class="form-label">Preço de Venda (R$) <span class="form-label--required">*</span></label>
               <div class="input-prefix">
                 <span class="input-prefix__symbol">R$</span>
-                <input type="number" formControlName="price" class="nexora-input input-prefix__input" placeholder="0,00"
-                  step="0.01" min="0">
+                <input type="text" formControlName="price" class="nexora-input input-prefix__input" currencyMask
+                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
               </div>
               @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {
               <p class="form-error">Informe um preço válido.</p>
@@ -438,8 +374,8 @@
               <label class="form-label">Custo (R$) <span class="form-label--optional">(para margem)</span></label>
               <div class="input-prefix">
                 <span class="input-prefix__symbol">R$</span>
-                <input type="number" formControlName="cost_price" class="nexora-input input-prefix__input"
-                  placeholder="0,00" step="0.01" min="0">
+                <input type="text" formControlName="cost_price" class="nexora-input input-prefix__input" currencyMask
+                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
               </div>
             </div>
 
@@ -447,13 +383,13 @@
               <label class="form-label">Preço Atacado (R$) <span class="form-label--optional">(PJ)</span></label>
               <div class="input-prefix">
                 <span class="input-prefix__symbol">R$</span>
-                <input type="number" formControlName="price_wholesale" class="nexora-input input-prefix__input"
-                  placeholder="0,00" step="0.01" min="0">
+                <input type="text" formControlName="price_wholesale" class="nexora-input input-prefix__input"
+                  currencyMask
+                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
               </div>
             </div>
           </div>
 
-          <!-- Indicador de margem calculada -->
           @if (calculatedMargin() !== null) {
           <div class="margin-indicator" [ngClass]="{
               'margin-indicator--danger':  calculatedMargin()! < 10,
@@ -466,7 +402,6 @@
           }
         </div>
 
-        <!-- Seção: Estoque -->
         <div class="product-form__section">
           <p class="product-form__section-label">Estoque</p>
 
@@ -492,7 +427,6 @@
           </div>
         </div>
 
-        <!-- Seção: Fiscal (colapsável) -->
         <div class="product-form__section product-form__section--collapsible">
           <button type="button" class="product-form__collapse-btn" (click)="toggleFiscal()">
             <div class="product-form__collapse-left">
@@ -520,7 +454,6 @@
           }
         </div>
 
-        <!-- Toggle ativo -->
         <div class="toggle-field" (click)="productForm.patchValue({isActive: !productForm.value.isActive})">
           <div class="toggle-field__info">
             <p class="toggle-field__label">Produto disponível para venda</p>
@@ -529,7 +462,6 @@
           <div class="toggle-switch" [class.toggle-switch--active]="productForm.value.isActive"></div>
         </div>
 
-        <!-- Rodapé -->
         <div class="modal-actions">
           <button type="button" (click)="closeModal()" class="btn-cancel">Cancelar</button>
           <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn-primary">
@@ -550,13 +482,3 @@
   }
 
 </div>
-
-<!-- <nx-dialog *ngIf="isConfirmModalOpen()" type="danger" title="Excluir Produto"
-  [message]="'Deseja excluir o produto <strong>' + itemToDelete()?.name + '</strong>?'" confirmLabel="Sim, Excluir"
-  confirmIcon="trash-2" [isLoading]="isDeleting()" (confirm)="confirmDelete()" (cancel)="closeDeleteConfirm()">
-</nx-dialog>
-
-<nx-dialog *ngIf="showErrorModal()" type="error" title="Erro na Operação"
-  message="Não foi possível salvar os dados. Tente novamente mais tarde." confirmLabel="Entendido"
-  (confirm)="closeErrorModal()" (cancel)="closeErrorModal()">
-</nx-dialog> -->

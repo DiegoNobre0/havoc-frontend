@@ -1,0 +1,24 @@
+<div class="havoc-dialog">
+  
+  <div class="havoc-dialog__icon" 
+       [ngStyle]="{'color': data.isDanger ? '#EF4444' : '#F2B90F', 'background': data.isDanger ? 'rgba(239, 68, 68, 0.1)' : 'rgba(242, 185, 15, 0.1)'}">
+    <lucide-icon [name]="data.isDanger ? 'alert-triangle' : 'help-circle'"></lucide-icon>
+  </div>
+  
+  <h2 class="havoc-dialog__title">{{ data.title }}</h2>
+  
+  <p class="havoc-dialog__text" [innerHTML]="data.message"></p>
+
+  <div class="modal-actions" style="margin-top: 2rem; width: 100%;">
+    <button (click)="onCancel()" class="btn-cancel">
+      {{ data.cancelText || 'Cancelar' }}
+    </button>
+    
+    <button (click)="onConfirm()" class="btn-primary" 
+            [ngStyle]="data.isDanger ? {'background': '#EF4444', 'color': 'white'} : {}" 
+            style="border: none;">
+      <lucide-icon [name]="data.isDanger ? 'trash-2' : 'check'" class="btn-icon"></lucide-icon>
+      {{ data.confirmText || 'Confirmar' }}
+    </button>
+  </div>
+</div>

@@ -31,6 +31,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
       },
       {
+        path: 'whatsapp',
+        title: 'Havoc | Atendimento IA',
+        loadComponent: () => import('./pages/chat/chat').then(m => m.Chat),
+        children: [
+          {
+            // O :id captura a sessão da URL (ex: /whatsapp/session-123) e renderiza o chat na direita
+            path: ':id',
+            title: 'Havoc | Chat',
+            loadComponent: () => import('./pages/detalhes-atendimento/detalhes-atendimento').then(m => m.DetalhesAtendimento)
+          }
+        ]
+      },
+      {
         path: 'catalog/products',
         title: 'Havoc | Produtos',
         loadComponent: () => import('./pages/catalog/products/products').then(m => m.Products)

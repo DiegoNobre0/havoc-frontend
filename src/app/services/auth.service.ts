@@ -28,6 +28,7 @@ export class AuthService {
   accessToken = signal<string | null>(null);
 
   login(credentials: { email: string; password: string }): Observable<any> {
+    console.log('Tentando logar com', credentials);
     return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap(response => {
         // 1. Salva o UUID longo no HD do navegador (Sobrevive ao F5)
