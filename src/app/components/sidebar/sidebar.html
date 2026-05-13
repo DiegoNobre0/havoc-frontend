@@ -90,6 +90,9 @@
             <span class="user-name">{{ authService.currentUser()?.name || 'Administrador' }}</span>
             <span class="user-role">{{ authService.currentUser()?.role || 'Admin' }}</span>
         </div>
+        <button class="btn-logout" title="Sair do sistema" (click)="fazerLogout()">
+            <lucide-icon name="log-out" [size]="18"></lucide-icon>
+        </button>
         }
     </div>
 </aside>

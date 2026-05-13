@@ -9,6 +9,14 @@ export interface DashboardSummary {
   ordersToday: number;
   revenueToday: number;
   pendingOrders: number;
+  newCustomers: number;
+}
+
+export interface TopProduct {
+  nome: string;
+  categoria: string;
+  qtd: number;
+  valor: number;
 }
 
 export interface SalesReportItem {
@@ -21,7 +29,7 @@ export interface RecentOrder {
   code: string;
   customer: string;
   total: number;
-  status: 'PENDENTE' | 'PAGO' | 'ENVIADO' | 'CANCELADO';
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
   itemsCount: number;
   createdAt: string;
 }
@@ -53,6 +61,10 @@ export class DashboardService {
     if (endDate) params = params.set('endDate', endDate);
 
     return this.http.get<SalesReportItem[]>(`${this.apiUrl}/sales-report`, { params });
+  }
+
+  getTopProducts(): Observable<TopProduct[]> {
+    return this.http.get<TopProduct[]>(`${this.apiUrl}/top-products`);
   }
 
   getRecentOrders(page: number = 1, limit: number = 5, status?: string): Observable<PaginatedResponse<RecentOrder>> {

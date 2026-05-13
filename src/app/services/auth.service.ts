@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, of, catchError } from 'rxjs';
+import { Observable, tap, switchMap, of, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
 
@@ -84,5 +84,24 @@ export class AuthService {
     this.accessToken.set(null);
     this.currentUser.set(null);
     this.router.navigate(['/login']);
+  }
+
+  // Renova o token de acesso usando o Refresh Token
+  refreshToken() {
+    const refresh = localStorage.getItem(this.REFRESH_KEY);
+    
+    if (!refresh) {
+      this.logout();
+      return throwError(() => new Error('Sem refresh token'));
+    }
+
+    // Chama a sua rota do Fastify /refresh
+    return this.http.post<any>(`${this.apiUrl}/auth/refresh`, { refreshToken: refresh }).pipe(
+      tap(response => {
+        // Atualiza os tokens novos no frontend
+        localStorage.setItem(this.REFRESH_KEY, response.refreshToken);
+        this.accessToken.set(response.accessToken);
+      })
+    );
   }
 }

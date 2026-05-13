@@ -149,6 +149,7 @@ export class Products implements OnInit, OnDestroy {
     this.catalogService.getProducts(filters).subscribe({
       next: (res: any) => {
         this.products.set(res.data);
+        console.log('Produtos carregados:', res.data);
         this.totalPages.set(res.meta.totalPages);
         this.totalItems.set(res.meta.total);
         this.isLoading.set(false);
@@ -343,9 +344,27 @@ executeDelete(product: any) {
     }
   }
 
-  onFileSelected(event: any) {
+onFileSelected(event: any) {
     const file = event.target.files[0];
+    
     if (file) {
+      // 1. Trava de Formato (Bloqueia WEBP, GIF, SVG, etc)
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Formato inválido! O WhatsApp exige imagens JPG ou PNG. Por favor, escolha outra foto.');
+        event.target.value = ''; // Limpa o campo para o usuário tentar de novo
+        return;
+      }
+
+      // 2. Trava de Tamanho (5MB = 5 * 1024 * 1024 bytes)
+      const maxSizeInBytes = 5 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        alert('A imagem é muito pesada! O tamanho máximo permitido é de 5MB.');
+        event.target.value = ''; // Limpa o campo
+        return;
+      }
+
+      // Se passou por todas as travas, salva a imagem e gera o preview
       this.selectedFile.set(file);
       const reader = new FileReader();
       reader.onload = (e: any) => this.imagePreview.set(e.target.result);

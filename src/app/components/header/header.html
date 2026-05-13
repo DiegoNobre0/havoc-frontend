@@ -7,54 +7,69 @@
     
     <div class="store-info" style="margin-left: 1rem; display: flex; flex-direction: column;">
       <h2 style="margin: 0; font-size: 1rem; font-weight: 700; color: white;">HAVOC SUPLEMENTOS</h2>
-      <!-- <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem;">
-        @if(isPosOpen()) {
-          <div style="width: 8px; height: 8px; border-radius: 50%; background: #4AD0AF; box-shadow: 0 0 8px rgba(74, 208, 175, 0.8);"></div>
-          <span style="color: #4AD0AF; font-weight: 600;">Caixa Aberto</span>
-        } @else {
-          <div style="width: 8px; height: 8px; border-radius: 50%; background: #EF4444;"></div>
-          <span style="color: #EF4444; font-weight: 600;">Caixa Fechado</span>
-        }
-      </div> -->
     </div>
   </div>
 
   <div class="header-right">
-    <button class="action-btn">
+    <!-- <button class="action-btn">
       <lucide-icon name="search"></lucide-icon>
-    </button>
+    </button> -->
 
     <div class="dropdown-container">
       <button class="action-btn" (click)="toggleNotif()" [class.active]="isNotifOpen()">
         <lucide-icon name="bell"></lucide-icon>
-        <span class="badge danger">2</span>
+        
+        <!-- 👉 SÓ MOSTRA O BADGE SE TIVER NOTIFICAÇÃO NÃO LIDA -->
+        @if (unreadCount() > 0) {
+          <span class="badge danger">{{ unreadCount() }}</span>
+        }
       </button>
 
       @if (isNotifOpen()) {
         <div class="dropdown-menu">
           <div class="dropdown-header">
             <h3>Notificações</h3>
-            <span class="badge-pill info">2 novas</span>
+            @if (unreadCount() > 0) {
+              <span class="badge-pill info">{{ unreadCount() }} novas</span>
+            }
           </div>
+          
           <div class="dropdown-list">
-            <div class="list-item">
-              <div class="icon-circle info"><lucide-icon name="shopping-bag"></lucide-icon></div>
-              <div class="item-content">
-                <h4>Novo Pedido #1024</h4>
-                <p>Mesa 04 ou Delivery</p>
+            <!-- 👉 LAÇO DE REPETIÇÃO DAS NOTIFICAÇÕES -->
+            @for (notif of notificacoes(); track notif.id) {
+              <div class="list-item" [style.background]="notif.read ? 'transparent' : 'rgba(242, 185, 15, 0.05)'" (click)="clicarNotificacao(notif)">
+                
+                <!-- ÍCONE DINÂMICO BASEADO NO TIPO -->
+                <div class="icon-circle" 
+                     [class.info]="notif.type === 'order'" 
+                     [class.warning]="notif.type === 'alert'"
+                     [style.background]="notif.type === 'chat' ? 'rgba(34, 197, 94, 0.1)' : ''"
+                     [style.color]="notif.type === 'chat' ? '#22C55E' : ''">
+                  
+                  @if (notif.type === 'order') { <lucide-icon name="shopping-bag"></lucide-icon> }
+                  @if (notif.type === 'alert') { <lucide-icon name="alert-triangle"></lucide-icon> }
+                  @if (notif.type === 'chat') { <lucide-icon name="message-circle"></lucide-icon> }
+                </div>
+                
+                <div class="item-content">
+                  <h4 [style.font-weight]="notif.read ? '500' : '700'">{{ notif.title }}</h4>
+                  <p>{{ notif.message }}</p>
+                </div>
+                
+                <span class="time">{{ notif.time | date:'HH:mm' }}</span>
               </div>
-              <span class="time">agora</span>
-            </div>
-            <div class="list-item">
-              <div class="icon-circle warning"><lucide-icon name="alert-triangle"></lucide-icon></div>
-              <div class="item-content">
-                <h4>Estoque Baixo</h4>
-                <p>Coca-Cola 2L (Apenas 3 un.)</p>
+            } @empty {
+              <!-- ESTADO VAZIO -->
+              <div style="padding: 2rem; text-align: center; color: #888;">
+                <lucide-icon name="bell-off" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></lucide-icon>
+                <p style="margin: 0; font-size: 0.85rem;">Nenhuma notificação por aqui.</p>
               </div>
-              <span class="time">10 min</span>
-            </div>
+            }
           </div>
-          <button class="btn-block">Ver todas as Notificações</button>
+          
+          @if (notificacoes().length > 0) {
+            <button class="btn-block" (click)="marcarTodasComoLidas()">Marcar todas como lidas</button>
+          }
         </div>
       }
     </div>

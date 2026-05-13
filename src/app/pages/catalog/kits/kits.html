@@ -51,10 +51,10 @@
         <h3 class="kit-card__name">{{ kit.name }}</h3>
         <div class="kit-card__categories">
           @for (cat of getKitCategories(kit); track cat.id) {
-            <span class="kit-category-badge">
-              <lucide-icon name="tag" [size]="10"></lucide-icon>
-              {{ cat.name }}
-            </span>
+          <span class="kit-category-badge">
+            <lucide-icon name="tag" [size]="10"></lucide-icon>
+            {{ cat.name }}
+          </span>
           }
         </div>
         <div class="kit-card__items">
@@ -68,13 +68,14 @@
         <div class="kit-card__footer">
           <span class="kit-card__price">R$ {{ kit.finalPrice | number:'1.2-2' }}</span>
           <div class="kit-card__actions">
-            <button (click)="toggleKit(kit)" class="action-btn action-btn--primary" [title]="kit.isActive ? 'Pausar Kit' : 'Reativar Kit'">
-                  <lucide-icon [name]="kit.isActive ? 'eye-off' : 'eye'" class="action-btn__icon"></lucide-icon>
-                </button>
-                
-                <button (click)="openModal(kit)" class="action-btn action-btn--primary" title="Editar">
-                  <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
-                </button>
+            <button (click)="toggleKit(kit)" class="action-btn action-btn--primary"
+              [title]="kit.isActive ? 'Pausar Kit' : 'Reativar Kit'">
+              <lucide-icon [name]="kit.isActive ? 'eye-off' : 'eye'" class="action-btn__icon"></lucide-icon>
+            </button>
+
+            <button (click)="openModal(kit)" class="action-btn action-btn--primary" title="Editar">
+              <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+            </button>
             <button (click)="confirmDelete(kit)" class="action-btn action-btn--danger" title="Excluir">
               <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
             </button>
@@ -123,9 +124,11 @@
           @if (!imagePreview()) {
           <label class="upload-zone">
             <lucide-icon name="image-plus" class="upload-zone__icon"></lucide-icon>
-            <span class="upload-zone__label">Selecionar a arte do kit</span>
-            <span class="upload-zone__hint">PNG, JPG ou WEBP até 5MB</span>
-            <input type="file" accept="image/*" class="upload-zone__input" (change)="onFileSelected($event)">
+            <span class="upload-zone__label">Selecionar a arte da imagem</span>
+            <span class="upload-zone__hint">Apenas PNG e JPG até 5MB (WEBP não suportado)</span>
+
+            <input type="file" accept="image/jpeg, image/png, image/jpg" class="upload-zone__input"
+              (change)="onFileSelected($event)">
           </label>
           } @else {
           <div class="image-thumb" style="width: 140px; height: 140px;">

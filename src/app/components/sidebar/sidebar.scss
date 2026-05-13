@@ -210,6 +210,28 @@ $sidebar-collapsed: 85px;
         gap: 12px;
         margin-top: auto;
 
+
+        .btn-logout {
+            margin-left: auto; // Empurra o botão pro canto direito
+            background: transparent;
+            border: none;
+            color: $havoc-text-muted;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: rgba(239, 68, 68, 0.1); // Fundo vermelho suave
+                color: #EF4444; // Ícone fica vermelho (Havoc Danger)
+                transform: translateX(2px); // Dá um mini "pulinho" pro lado indicando saída
+            }
+        }
+
+
         .user-badge {
             min-width: 40px;
             height: 40px;

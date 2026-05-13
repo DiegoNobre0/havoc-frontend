@@ -58,16 +58,26 @@
               }
             </div>
 
-            <div class="tags-container">
+            <div class="tags-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               @if (chat.isBotActive) {
                 <span class="status-tag tag--ai">
-                  <lucide-icon name="bot" [size]="10"></lucide-icon> IA Ativa
+                  <lucide-icon name="bot" [size]="10"></lucide-icon> IA
                 </span>
               } @else {
                 <span class="status-tag tag--human">
-                  <lucide-icon name="user" [size]="10"></lucide-icon> Em Atendimento
+                  <lucide-icon name="user" [size]="10"></lucide-icon> Humano
                 </span>
               }
+
+              <span class="status-tag" [ngClass]="{
+                'tag--novo': chat.statusReal === 'NOVO_ATENDIMENTO',
+                'tag--andamento': chat.statusReal === 'EM_ANDAMENTO' || chat.statusReal === 'ATENDIMENTO_HUMANO',
+                'tag--pagamento': chat.statusReal === 'AGUARDANDO_PAGAMENTO',
+                'tag--finalizado': chat.statusReal === 'FINALIZADO',
+                'tag--cancelado': chat.statusReal === 'CANCELADO'
+              }">
+                {{ formatarStatus(chat.statusReal) }}
+              </span>
             </div>
           </div>
         </div>

@@ -1,0 +1,582 @@
+// ==========================================
+// VARIÁVEIS HAVOC
+// ==========================================
+$havoc-yellow: #F2B90F;
+$havoc-yellow-dark: #D9A40D;
+$havoc-bg-main: #000000;
+$havoc-bg-surface: #000000;
+$havoc-border: #F2B90F;
+$havoc-text-main: #ffffff;
+$havoc-text-muted: #94A3B8;
+
+// ─── Layout da Página ──────────────────────────────────────────
+.settings-page {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: $havoc-text-main;
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+  }
+}
+
+.w-full {
+  width: 100%;
+}
+
+// ─── Navegação por Abas ────────────────────────────────────────
+.settings-tabs {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  padding-bottom: 1px;
+  overflow-x: auto;
+  margin-bottom: -1rem;
+
+  &::-webkit-scrollbar { height: 0; }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: $havoc-text-muted;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      color: #E2E8F0;
+    }
+
+    &--active {
+      color: $havoc-yellow;
+      border-bottom-color: $havoc-yellow;
+    }
+  }
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+// ─── Header ───────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: $havoc-bg-surface;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid $havoc-border;
+  backdrop-filter: blur(8px);
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: $havoc-text-muted;
+    margin: 0;
+  }
+}
+
+// ─── Componentes Nativos Havoc (Inputs e Selects) ─────────────
+.nexora-input,
+.havoc-select {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.8rem 1rem;
+  border-radius: 0.75rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  outline: none;
+  
+
+  &::placeholder {
+    color: #64748B;
+  }
+
+  &:focus {
+    border-color: $havoc-yellow;
+    box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15);
+  }
+}
+
+.havoc-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="%238C8C8C"><polygon points="0,0 14,0 7,7"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 36px;
+
+  option {
+    background: #0F172A;
+    color: #F8FAFC;
+    padding: 10px;
+  }
+}
+
+// ─── Botões ───────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: $havoc-yellow;
+  color: #111111;
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: $havoc-yellow-dark;
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 0.625rem;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #CBD5E1;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    background: #1E293B;
+    color: #ffffff;
+  }
+}
+
+.action-btn {
+  padding: 0.5rem; 
+  border-radius: 0.5rem; 
+  color: #94A3B8 !important; 
+  background-color: transparent !important; 
+  border: none !important; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  transition: all 0.2s;
+  
+  &__icon { width: 1.125rem; height: 1.125rem; }
+  
+  &:hover { color: #ffffff !important; background-color: #334155 !important; }
+  &--primary:hover { color: $havoc-yellow !important; background-color: rgba(242, 185, 15, 0.1) !important; }
+  &--danger:hover { color: #F87171 !important; background-color: rgba(239, 68, 68, 0.1) !important; }
+}
+
+// ─── Toolbar (Busca e Filtros) ────────────────────────────────
+.toolbar {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: $havoc-bg-surface;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+// ─── Tabela ───────────────────────────────────────
+.data-table-wrapper {
+  background: #000000;
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.data-table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  min-width: 700px;
+
+  &__head {
+    background: rgba(30, 41, 59, 0.3);
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  }
+
+  &__th {
+    padding: 1rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $havoc-text-muted;
+    white-space: nowrap;
+
+    &--center { text-align: center; }
+    &--right { text-align: right; }
+  }
+
+  &__row {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  }
+
+  &__row--hoverable {
+    transition: background-color 0.2s;
+    &:hover { background: rgba(30, 41, 59, 0.4); }
+  }
+
+  &__td {
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    vertical-align: middle;
+
+    &--center { text-align: center; }
+    &--right { text-align: right; }
+  }
+
+  &__value {
+    color: #E2E8F0;
+    font-weight: 600;
+  }
+
+  &__empty {
+    padding: 4rem 1.25rem;
+    text-align: center;
+    color: #64748B;
+  }
+}
+
+// ─── Badges ─────────────────────────────────────────
+.category-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid #334155;
+  border-radius: 0.375rem;
+  background: #1E293B;
+  color: #E2E8F0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  &--active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    &::before { background-color: #34D399; }
+  }
+
+  &--inactive {
+    background: rgba(30, 41, 59, 0.5);
+    color: #94A3B8;
+    border: 1px solid #334155;
+    &::before { background-color: #64748B; }
+  }
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// ─── Modais e Formulários ───────────────────────────────────────────────────
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(2, 6, 23, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-card {
+  background: #000000;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &--sm { max-width: 28rem; }
+  &--lg { max-width: 640px; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #1E293B;
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: $havoc-yellow;
+    margin: 0;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-right: -0.5rem;
+
+    &:hover {
+      color: #fff;
+      background: #1E293B;
+    }
+  }
+}
+
+.modal-form, .product-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.product-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.product-form__section-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $havoc-yellow;
+  margin: 0;
+}
+
+.product-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.product-form__col {
+  flex: 1;
+  min-width: 140px;
+}
+
+.product-form__textarea {
+  resize: none;
+  font-family: inherit;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #CBD5E1;
+
+  &--required {
+    color: #F87171;
+    margin-left: 0.25rem;
+    font-weight: bold;
+  }
+
+  &--optional {
+    color: #64748B;
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+  }
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  margin-top: 0;
+}
+
+// ─── Switch Ativo/Inativo ─────────────────────────────
+.toggle-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.5);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #F1F5F9;
+    margin: 0;
+  }
+
+  &__desc {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    margin: 0;
+  }
+}
+
+.toggle-switch {
+  width: 44px;
+  height: 24px;
+  background: #334155;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.3s;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  &--active {
+    background: $havoc-yellow;
+
+    &::after {
+      transform: translateX(20px);
+    }
+  }
+}
+
+// ─── Animações Base ───────────────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+::ng-deep .havoc-snackbar-success {
+  background-color: #F2B90F !important; 
+  border-left: 4px solid #17B169 !important; 
+  color: #000000 !important;
+  border-radius: 6px !important;
+
+  .mat-mdc-snack-bar-action {
+    color: #000000 !important; 
+  }
+}
+
+::ng-deep .havoc-snackbar-error {
+  background-color: #F2B90F  !important; 
+  border-left: 4px solid #EF4444 !important; 
+  color: #000000 !important;
+  border-radius: 6px !important;
+
+  .mat-mdc-snack-bar-action {
+    color: #000000 !important;
+  }
+}

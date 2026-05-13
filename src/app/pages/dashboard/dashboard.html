@@ -5,7 +5,6 @@
   </div>
 
   <div class="header-actions">
-    
     <div class="export-group">
       <select #reportPeriod class="export-select">
         <option value="hoje">Diário (Hoje)</option>
@@ -23,41 +22,49 @@
       <lucide-icon name="refresh-cw" class="icon-sm"></lucide-icon>
       Atualizar
     </button>
-    
   </div>
 </header>
+
 <div class="dashboard-container">
   <div class="dashboard-grid">
+    
+    <!-- CARD BOAS VINDAS -->
     <div class="welcome-card col-span-2">
       <div class="welcome-content">
         <h2>Olá, {{ authService.currentUser()?.name?.split(' ')?.[0] || 'Gestor' }}! ⚡</h2>
         <p>Aqui está o resumo do desempenho da sua loja hoje. Continue o excelente trabalho!</p>
         <div class="welcome-stats">
-          <div class="stat"><span class="value">{{ ordersToday() }}</span><span class="label">Pedidos Hoje</span></div>
-          <div class="stat"></div>
-          <div class="stat"><span class="value">{{ revenue() | currency:'BRL' }}</span><span class="label">Receita
-              Hoje</span></div>
+          <div class="stat">
+            <span class="value">{{ ordersToday() }}</span>
+            <span class="label">Pedidos Hoje</span>
+          </div>
+          <div class="stat">
+            <span class="value">{{ revenue() | currency:'BRL' }}</span>
+            <span class="label">Receita Hoje</span>
+          </div>
         </div>
       </div>
-      <div class="welcome-illustration"><lucide-icon name="shopping-bag" class="ai-icon"></lucide-icon></div>
+      <div class="welcome-illustration">
+        <lucide-icon name="shopping-bag" class="ai-icon"></lucide-icon>
+      </div>
     </div>
 
+    <!-- CARDS DE MÉTRICAS -->
     <div class="metric-card card-info col-span-1">
       <div class="card-icon-wrapper"><lucide-icon name="users"></lucide-icon></div>
       <div class="card-info">
-        <h3 class="value">24</h3>
+        <h3 class="value">{{ newCustomers() }}</h3> 
         <span class="label">Novos Clientes</span>
       </div>
       <div class="card-footer">
-        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> Destaque</span>
-        <span class="compare">na semana</span>
+        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> Hoje</span>
       </div>
     </div>
 
     <div class="metric-card card-warning">
       <div class="card-icon-wrapper"><lucide-icon name="package"></lucide-icon></div>
       <div class="card-info">
-        <h3 class="value">18</h3>
+        <h3 class="value">{{ pendingOrders() }}</h3> 
         <span class="label">Pedidos Pendentes</span>
       </div>
       <div class="card-footer">
@@ -68,15 +75,15 @@
     <div class="metric-card card-success">
       <div class="card-icon-wrapper"><lucide-icon name="dollar-sign"></lucide-icon></div>
       <div class="card-info">
-        <h3 class="value">R$ 1.280,00</h3>
+        <h3 class="value">{{ revenue() | currency:'BRL' }}</h3>
         <span class="label">Receita Hoje</span>
       </div>
       <div class="card-footer">
-        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> +12%</span>
-        <span class="compare">vs ontem</span>
+        <span class="trend positive"><lucide-icon name="trending-up"></lucide-icon> Em tempo real</span>
       </div>
     </div>
 
+    <!-- GRÁFICO FINANCEIRO -->
     <div class="chart-section havoc-card col-span-3">
       <div class="chart-header">
         <div class="header-main">
@@ -84,14 +91,11 @@
             <h4>Relatório Financeiro</h4>
             <div class="chart-tabs">
               <button [class.active]="viewTab() === 'faturamento'" (click)="setTab('faturamento')">Faturamento</button>
-              <!-- <button [class.active]="viewTab() === 'despesas'" (click)="setTab('despesas')">Lucro x Despesa</button> -->
             </div>
           </div>
 
           <div class="filter-group">
-
-            <select class="havoc-select" [ngModel]="statusFilter()"
-              (ngModelChange)="statusFilter.set($event); onFilterChange()">
+            <select class="havoc-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); onFilterChange()">
               <option value="">Todos os Status</option>
               <option value="PENDING">Pendentes</option>
               <option value="CONFIRMED">Confirmados</option>
@@ -108,8 +112,7 @@
 
               <mat-form-field class="hidden-mat-input">
                 <input matInput [matDatepicker]="picker">
-                <mat-datepicker #picker startView="multi-year"
-                  (monthSelected)="onMonthSelected($event, picker)"></mat-datepicker>
+                <mat-datepicker #picker startView="multi-year" (monthSelected)="onMonthSelected($event, picker)"></mat-datepicker>
               </mat-form-field>
             </div>
 
@@ -123,21 +126,16 @@
 
       <div class="chart-content">
         @if (viewTab() === 'faturamento') {
-        <apx-chart #areaChart [series]="chartOptions.series!" [chart]="chartOptions.chart!"
-          [xaxis]="chartOptions.xaxis!" [stroke]="chartOptions.stroke!" [colors]="chartOptions.colors!"
-          [yaxis]="chartOptions.yaxis!" [theme]="chartOptions.theme!" [grid]="chartOptions.grid!">
-        </apx-chart>
-        }
-        <!-- @if (viewTab() === 'despesas') {
-          <apx-chart #barChart [series]="barChartOptions.series!" [chart]="barChartOptions.chart!" 
-            [xaxis]="barChartOptions.xaxis!" [yaxis]="chartOptions.yaxis!" [plotOptions]="barChartOptions.plotOptions!" 
-            [colors]="barChartOptions.colors!" [theme]="barChartOptions.theme!" [legend]="barChartOptions.legend!" 
-            [grid]="barChartOptions.grid!">
+          <apx-chart #areaChart 
+            [series]="chartOptions.series!" [chart]="chartOptions.chart!"
+            [xaxis]="chartOptions.xaxis!" [stroke]="chartOptions.stroke!" [colors]="chartOptions.colors!"
+            [yaxis]="chartOptions.yaxis!" [theme]="chartOptions.theme!" [grid]="chartOptions.grid!" [tooltip]="chartOptions.tooltip!">
           </apx-chart>
-        } -->
+        }
       </div>
     </div>
 
+    <!-- TOP PRODUTOS -->
     <div class="table-card col-span-2">
       <div class="card-header-flex">
         <h4>Top Produtos Vendidos</h4>
@@ -154,21 +152,26 @@
             </tr>
           </thead>
           <tbody>
-            @for (prod of topProdutos; track prod.nome) {
-            <tr>
-              <td class="primary-col">{{ prod.nome }}</td>
-              <td><span class="badge" [class]="prod.categoria | lowercase">{{ prod.categoria }}</span></td>
-              <td>{{ prod.qtd }}</td>
-              <td class="font-bold">R$ {{ prod.valor }}
-                <span class="trend-sm" [class.up]="prod.up" [class.down]="!prod.up">{{ prod.trend }}</span>
-              </td>
-            </tr>
+            @for (prod of topProdutos(); track prod.nome) {
+              <tr>
+                <td class="primary-col">{{ prod.nome }}</td>
+                <td><span class="badge" [class]="prod.categoria | lowercase">{{ prod.categoria }}</span></td>
+                <td>{{ prod.qtd }}</td>
+                <td class="font-bold text-primary">{{ prod.valor | currency:'BRL' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" style="text-align: center; padding: 2rem; color: #888;">
+                  Nenhum produto vendido neste período.
+                </td>
+              </tr>
             }
           </tbody>
         </table>
       </div>
     </div>
 
+    <!-- ÚLTIMOS PEDIDOS -->
     <div class="table-card col-span-2" style="display: flex; flex-direction: column;">
       <div class="card-header-flex">
         <h4>Últimos Pedidos</h4>
@@ -177,34 +180,41 @@
 
       <div class="prof-list" style="flex: 1;">
         @for (pedido of recentOrders(); track pedido.id) {
-        <div class="prof-item">
-          <div class="prof-info">
-            <div class="avatar" style="background: var(--havoc-surface-2)">
-              <lucide-icon name="shopping-bag" class="text-primary"></lucide-icon>
+          <div class="prof-item">
+            <div class="prof-info">
+              <div class="avatar" style="background: var(--havoc-surface-2)">
+                <lucide-icon name="shopping-bag" class="text-primary"></lucide-icon>
+              </div>
+              <div>
+                <h5>{{ pedido.customer }} <span style="font-size: 0.75rem; color: #888;">{{ pedido.code }}</span></h5>
+                <span class="badge-status" 
+                  [class.success]="pedido.status === 'DELIVERED'"
+                  [class.info]="pedido.status === 'CONFIRMED' || pedido.status === 'PROCESSING' || pedido.status === 'SHIPPED'"
+                  [class.warning]="pedido.status === 'PENDING'" 
+                  [class.danger]="pedido.status === 'CANCELLED' || pedido.status === 'REFUNDED'">
+                  
+                  @if(pedido.status === 'PENDING') { Pendente }
+                  @else if(pedido.status === 'CONFIRMED') { Confirmado }
+                  @else if(pedido.status === 'PROCESSING') { Em Separação }
+                  @else if(pedido.status === 'SHIPPED') { Enviado }
+                  @else if(pedido.status === 'DELIVERED') { Entregue }
+                  @else if(pedido.status === 'CANCELLED') { Cancelado }
+                  @else if(pedido.status === 'REFUNDED') { Reembolsado }
+                </span>
+              </div>
             </div>
-            <div>
-              <h5>{{ pedido.customer }} <span style="font-size: 0.75rem; color: #888;">{{ pedido.code }}</span></h5>
-
-              <span class="badge-status" [class.success]="pedido.status === 'PAGO' || pedido.status === 'ENVIADO'"
-                [class.warning]="pedido.status === 'PENDENTE'" [class.danger]="pedido.status === 'CANCELADO'">
-                {{ pedido.status }}
-              </span>
+            <div class="prof-stats">
+              <div class="stat-col"><span>Itens</span><strong>{{ pedido.itemsCount }} un.</strong></div>
+              <div class="stat-col text-right"><span>Total</span><strong class="text-primary">{{ pedido.total | currency:'BRL' }}</strong></div>
             </div>
           </div>
-          <div class="prof-stats">
-            <div class="stat-col"><span>Itens</span><strong>{{ pedido.itemsCount }} un.</strong></div>
-            <div class="stat-col text-right"><span>Total</span><strong class="text-primary">{{ pedido.total |
-                currency:'BRL' }}</strong></div>
-          </div>
-        </div>
-        }
-
-        @if (recentOrders().length === 0) {
-        <div style="text-align: center; padding: 2rem; color: #888;">Nenhum pedido encontrado.</div>
+        } @empty {
+          <div style="text-align: center; padding: 2rem; color: #888;">Nenhum pedido encontrado.</div>
         }
       </div>
 
-      <div
+      
+     <div
         style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(51,51,51,0.5);">
         <button (click)="prevPage()" [disabled]="currentPage() === 1"
           style="background: transparent; border: 1px solid #333; color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Anterior</button>

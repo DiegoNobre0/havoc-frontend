@@ -330,7 +330,7 @@ input[type="number"] {
   justify-content: space-between;
   padding: 1rem 1.5rem;
   border-top: 1px solid #1E293B;
-  background: #0F172A;
+  background: #000000;
 
   &__info {
     font-size: 0.875rem;
@@ -348,10 +348,10 @@ input[type="number"] {
 
   &__btn {
     padding: 0.5rem 1rem;
-    background: #1E293B;
-    border: 1px solid #334155;
+    background: #000000;
+    border: 1px solid #F2B90F;
     border-radius: 0.5rem;
-    color: #E2E8F0;
+    color: #F2B90F;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;

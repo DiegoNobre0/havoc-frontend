@@ -243,7 +243,7 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">Motivo <span class="form-label__optional">(opcional)</span></label>
+            <label class="form-label">Motivo <span class="form-label__optional"></span></label>
             <input type="text" formControlName="reason" class="nexora-input"
               placeholder="Ex: Compra fornecedor, Perda, Inventário">
           </div>
@@ -324,7 +324,7 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">Descrição <span class="form-label--optional">(opcional)</span></label>
+            <label class="form-label">Descrição </label>
             <textarea formControlName="description" class="nexora-input product-form__textarea"
               placeholder="Descreva o produto — será usado pelo bot no WhatsApp..."></textarea>
           </div>
@@ -336,9 +336,11 @@
           @if (!imagePreview()) {
           <label class="upload-zone">
             <lucide-icon name="image-plus" class="upload-zone__icon"></lucide-icon>
-            <span class="upload-zone__label">Clique para selecionar a imagem</span>
-            <span class="upload-zone__hint">PNG, JPG até 5MB</span>
-            <input type="file" accept="image/*" class="upload-zone__input" (change)="onFileSelected($event)">
+            <span class="upload-zone__label">Selecionar a arte da imagem</span>
+            <span class="upload-zone__hint">Apenas PNG e JPG até 5MB (WEBP não suportado)</span>
+
+            <input type="file" accept="image/jpeg, image/png, image/jpg" class="upload-zone__input"
+              (change)="onFileSelected($event)">
           </label>
           } @else {
           <div style="display: flex; gap: 1rem;">

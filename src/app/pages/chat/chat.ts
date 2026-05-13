@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
+import { ChatService } from '../../services/chat.service';
+import { SocketService } from '../../services/socket.service';
+import { AudioService } from '../../services/audio.service';
+import { Observable, Subject } from 'rxjs'
+
 
 @Component({
   selector: 'app-chat',
@@ -14,33 +19,17 @@ import { LucideAngularModule } from 'lucide-angular';
 export class Chat implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private chatService = inject(ChatService);
+  private socketService = inject(SocketService);
+  private audioService = inject(AudioService);
 
+ 
   // ─── ESTADOS (SIGNALS) ─────────────────────────────────
   termoBusca = signal('');
   abaAtual = signal<'PENDENTES' | 'FINALIZADOS'>('PENDENTES');
   idSelecionado = signal<string | null>(null);
 
-  // Mock simulando o que virá do Prisma (ChatSession)
-  conversas = signal<any[]>([
-    {
-      id: 'session-123',
-      cliente: { nome: 'João Pedro', avatar: null },
-      ultimaMensagem: 'Quero comprar um Whey',
-      hora: new Date(),
-      naoLidas: 2,
-      isBotActive: true, // IA está respondendo
-      status: 'PENDENTES'
-    },
-    {
-      id: 'session-456',
-      cliente: { nome: 'Maria Silva', avatar: null },
-      ultimaMensagem: 'Me passa o código de rastreio?',
-      hora: new Date(Date.now() - 3600000),
-      naoLidas: 0,
-      isBotActive: false, // Humano assumiu
-      status: 'PENDENTES'
-    }
-  ]);
+  conversas = signal<any[]>([]);
 
   // ─── COMPUTED (Filtros Reativos) ───────────────────────
   conversasFiltradas = computed(() => {
@@ -48,18 +37,87 @@ export class Chat implements OnInit {
     const aba = this.abaAtual();
     
     return this.conversas().filter(chat => 
-      chat.status === aba && 
-      chat.cliente.nome.toLowerCase().includes(busca)
+      chat.tab === aba && // 👉 Filtra pela aba lógica
+      (chat.cliente?.nome || chat.sessionKey).toLowerCase().includes(busca)
     );
   });
 
-  qtdPendentes = computed(() => this.conversas().filter(c => c.status === 'PENDENTES').length);
-  qtdFinalizados = computed(() => this.conversas().filter(c => c.status === 'FINALIZADOS').length);
+  qtdPendentes = computed(() => this.conversas().filter(c => c.tab === 'PENDENTES').length);
+  qtdFinalizados = computed(() => this.conversas().filter(c => c.tab === 'FINALIZADOS').length);
 
-  ngOnInit() {
-    // Escuta mudanças na URL para manter o item selecionado na sidebar
+ ngOnInit() {
+    this.carregarConversas();
+
+    // ESCUTA O SOCKET EM TEMPO REAL
+    this.socketService.onChatUpdated.subscribe((dados: any) => {   
+
+      console.log('📡 Socket Recebido:', dados);
+
+      if (dados.role === 'USER') {
+        this.audioService.playNovaMensagem();
+      }
+      
+      this.conversas.update(chatsAtuais => {
+        const index = chatsAtuais.findIndex(c => c.sessionKey === dados.sessionKey);
+        
+        if (index > -1) {
+          // Se o chat já existe na lista, atualiza a mensagem, soma +1 nas não lidas e move pro TOPO
+          const chatAtualizado = { 
+            ...chatsAtuais[index], 
+            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),           
+            naoLidas: chatsAtuais[index].id !== this.idSelecionado() ? chatsAtuais[index].naoLidas + 1 : 0,
+            hora: new Date()
+          };
+          chatsAtuais.splice(index, 1); // Remove da posição antiga
+          return [chatAtualizado, ...chatsAtuais]; // Coloca no topo (índice 0)
+        } else {
+          // Se for um cliente novo que não estava na lista, recarrega a API
+          this.carregarConversas(); 
+          return chatsAtuais;
+        }
+      });
+    });
+
     this.route.firstChild?.paramMap.subscribe(params => {
       this.idSelecionado.set(params.get('id'));
+    });
+
+    this.chatService.onBotStatusChanged.subscribe((status: {sessionId: string, isBotActive: boolean}) => {
+      this.conversas.update((chatsAtuais: any[]) => 
+        chatsAtuais.map((chat: any) => 
+          chat.id === status.sessionId 
+            ? { ...chat, isBotActive: status.isBotActive } 
+            : chat
+        )
+      );
+    });
+  }
+
+  carregarConversas() {
+    this.chatService.getSessions().subscribe({
+      next: (res: any) => {
+        if (!res.data) return;
+
+        const formatado = res.data.map((session: any) => {
+          // 👉 Define a qual aba o atendimento pertence
+          const isResolvido = session.status === 'FINALIZADO' || session.status === 'CANCELADO';
+
+          return {
+            id: session.id,
+            sessionKey: session.sessionKey,
+            cliente: { nome: session.sessionKey, avatar: null },
+            ultimaMensagem: this.formatarPreviewMensagem(session.messages?.[0]?.content || 'Nova conversa'),   
+            hora: session.messages?.[0]?.createdAt || session.updatedAt,
+            naoLidas: 0, 
+            isBotActive: session.isActive,
+            statusReal: session.status, // 👈 Guarda o status do Prisma
+            tab: isResolvido ? 'FINALIZADOS' : 'PENDENTES' // 👈 Aba do layout
+          };
+        });
+
+        this.conversas.set(formatado);
+      },
+      error: (err) => console.error('Erro ao buscar conversas', err)
     });
   }
 
@@ -69,13 +127,31 @@ export class Chat implements OnInit {
 
   selecionarAtendimento(chat: any) {
     this.idSelecionado.set(chat.id);
-    
-    // Marca como lida localmente
-    this.conversas.update(chats => chats.map(c => 
-      c.id === chat.id ? { ...c, naoLidas: 0 } : c
-    ));
-
-    // Navega para o componente filho (Detalhes)
     this.router.navigate(['/whatsapp', chat.id]);
+  }
+
+  // 👉 Helper para formatar o texto da Tag na tela
+  formatarStatus(status: string): string {
+    const mapa: any = {
+      'NOVO_ATENDIMENTO': 'Novo',
+      'EM_ANDAMENTO': 'Em Andamento',
+      'AGUARDANDO_PAGAMENTO': 'Aguard. Pagamento',
+      'ATENDIMENTO_HUMANO': 'Humano Assumiu',
+      'FINALIZADO': 'Finalizado',
+      'CANCELADO': 'Cancelado'
+    };
+    return mapa[status] || status;
+  }
+
+  // 👉 NOVO: Traduz tags feias para ícones amigáveis
+  formatarPreviewMensagem(texto: string): string {
+    if (!texto) return 'Nova conversa';
+    if (texto.includes('[AUDIO:')) return '🎵 Áudio';
+    if (texto.includes('[IMG:')) return '📷 Imagem';
+    if (texto.includes('[DOC:')) return '📄 Documento';
+    
+    // Se for mensagem de texto com tags ocultas (ex: [FINALIZAR]), limpa as tags
+    let limpo = texto.replace(/\[.*?\]/g, '').trim();
+    return limpo.length > 0 ? limpo : '🤖 Ação Interativa';
   }
 }

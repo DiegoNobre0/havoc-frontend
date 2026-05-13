@@ -1,1 +1,337 @@
-<p>settings works!</p>
+<div class="settings-page">
+
+    <div class="page-header">
+        <div class="page-header__info">
+            <h1 class="page-header__title">Configurações do Sistema</h1>
+            <p class="page-header__subtitle">Gerencie usuários e regras de frete</p>
+        </div>
+    </div>
+
+    <div class="settings-tabs">
+        <button (click)="activeTab.set('users')" class="settings-tabs__btn"
+            [class.settings-tabs__btn--active]="activeTab() === 'users'">
+            <lucide-icon name="users" class="btn-icon"></lucide-icon>
+            Usuários da Equipe
+        </button>
+        <button (click)="activeTab.set('shipping')" class="settings-tabs__btn"
+            [class.settings-tabs__btn--active]="activeTab() === 'shipping'">
+            <lucide-icon name="truck" class="btn-icon"></lucide-icon>
+            Regras de Frete
+        </button>
+        <!-- <button (click)="activeTab.set('chatbot')" class="settings-tabs__btn" [class.settings-tabs__btn--active]="activeTab() === 'chatbot'">
+      <lucide-icon name="bot" class="btn-icon"></lucide-icon>
+      Inteligência Artificial
+    </button> -->
+    </div>
+
+    @if (activeTab() === 'users') {
+    <div class="settings-panel">
+        <div class="toolbar" style="justify-content: space-between;">
+            <h2 style="font-size: 1.1rem; margin:0; color: #fff;">Membros da Equipe</h2>
+            <button (click)="openUserModal()" class="btn-primary">
+                <lucide-icon name="user-plus" class="btn-icon"></lucide-icon>
+                Novo Usuário
+            </button>
+        </div>
+
+        <div class="data-table-wrapper">
+            <div class="data-table-scroll">
+                <table class="data-table">
+                    <thead class="data-table__head">
+                        <tr>
+                            <th class="data-table__th">Nome / E-mail</th>
+                            <th class="data-table__th">Nível de Acesso</th>
+                            <th class="data-table__th data-table__th--center">Status</th>
+                            <th class="data-table__th data-table__th--right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (user of users(); track user.id) {
+                        <tr class="data-table__row data-table__row--hoverable">
+                            <td class="data-table__td">
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <span class="data-table__value">{{ user.name }}</span>
+                                    <span style="font-size: 0.75rem; color: #94A3B8;">{{ user.email }}</span>
+                                </div>
+                            </td>
+                            <td class="data-table__td">
+                                <span class="category-badge">{{ user.role }}</span>
+                            </td>
+                            <td class="data-table__td data-table__td--center">
+                                <span class="badge" [ngClass]="user.isActive ? 'badge--active' : 'badge--inactive'">
+                                    {{ user.isActive ? 'Ativo' : 'Inativo' }}
+                                </span>
+                            </td>
+                            <td class="data-table__td data-table__td--right">
+                                <div class="row-actions">
+                                    <button (click)="openUserModal(user)" class="action-btn action-btn--primary"
+                                        title="Editar">
+                                        <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+                                    </button>
+                                    <button (click)="openDeleteConfirm(user)" class="action-btn action-btn--danger"
+                                        title="Excluir">
+                                        <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td colspan="4" class="data-table__empty">Nenhum usuário cadastrado.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (activeTab() === 'shipping') {
+    <div class="settings-panel">
+        <div class="toolbar" style="justify-content: space-between;">
+            <h2 style="font-size: 1.1rem; margin:0; color: #fff;">Regras de Entrega</h2>
+            <button (click)="openShippingModal()" class="btn-primary">
+                <lucide-icon name="plus" class="btn-icon"></lucide-icon>
+                Nova Regra
+            </button>
+        </div>
+
+        <div class="data-table-wrapper">
+            <div class="data-table-scroll">
+                <table class="data-table">
+                    <thead class="data-table__head">
+                        <tr>
+                            <th class="data-table__th">Nome da Regra</th>
+                            <th class="data-table__th">Local</th>
+                            <th class="data-table__th data-table__th--right">Valor (R$)</th>
+                            <th class="data-table__th data-table__th--right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (rule of shippingRules(); track rule.id) {
+                        <tr class="data-table__row data-table__row--hoverable">
+                            <td class="data-table__td"><span class="data-table__value">{{ rule.name }}</span></td>
+                            <td class="data-table__td">{{ rule.region }}</td>
+                            <td class="data-table__td data-table__td--right">
+                                <span class="data-table__value">R$ {{ rule.price | number:'1.2-2' }}</span>
+                            </td>
+                            <td class="data-table__td data-table__td--right">
+                                <div class="row-actions">
+                                    <button (click)="openShippingModal(rule)" class="action-btn action-btn--primary">
+                                        <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+                                    </button>
+                                    <button (click)="openDeleteConfirmShipping(rule)" class="action-btn action-btn--danger">
+                                        <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td colspan="4" class="data-table__empty">Nenhuma regra de frete cadastrada.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (activeTab() === 'chatbot') {
+    <div class="settings-panel">
+        <form [formGroup]="chatbotForm" (ngSubmit)="saveChatbotConfig()" class="data-table-wrapper"
+            style="padding: 1.5rem; background: #000;">
+
+            <div class="product-form__section">
+                <p class="product-form__section-label">Comportamento da IA (Prompt)</p>
+
+                <div class="form-field">
+                    <label class="form-label">System Prompt (Personalidade e Regras) <span
+                            class="form-label--required">*</span></label>
+                    <textarea formControlName="systemPrompt" class="nexora-input product-form__textarea"
+                        style="height: 12rem;" placeholder="Você é a Carol, consultora da Havoc..."></textarea>
+                    <p class="form-hint">Este é o cérebro da Carol. Altere com cuidado.</p>
+                </div>
+            </div>
+
+            <div class="product-form__section">
+                <div class="product-form__row">
+                    <div class="form-field product-form__col">
+                        <label class="form-label">Temperatura (Criatividade) <span class="form-label--optional">0.0 a
+                                1.0</span></label>
+                        <input type="number" formControlName="temperature" class="nexora-input" step="0.1" min="0"
+                            max="1">
+                        <p class="form-hint">Recomendado: 0.7 para vendas.</p>
+                    </div>
+                    <div class="form-field product-form__col">
+                        <label class="form-label">Mensagem de Handoff (Fallback)</label>
+                        <input type="text" formControlName="fallbackMessage" class="nexora-input"
+                            placeholder="Vou chamar um atendente...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-form__section" style="padding-top: 1rem; border-bottom: none;">
+                <div class="toggle-field" (click)="chatbotForm.patchValue({isActive: !chatbotForm.value.isActive})">
+                    <div class="toggle-field__info">
+                        <p class="toggle-field__label">Ativar Inteligência Artificial</p>
+                        <p class="toggle-field__desc">Se desativado, o WhatsApp não responderá automaticamente.</p>
+                    </div>
+                    <div class="toggle-switch" [class.toggle-switch--active]="chatbotForm.value.isActive"></div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="border-top: 1px solid rgba(51, 65, 85, 0.6); margin-top: 1.5rem;">
+                <button type="submit" [disabled]="chatbotForm.invalid || isSaving()" class="btn-primary"
+                    style="margin-left: auto;">
+                    @if (isSaving()) {
+                    <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon> Salvando...
+                    } @else {
+                    <lucide-icon name="save" class="btn-icon"></lucide-icon> Salvar Configurações da IA
+                    }
+                </button>
+            </div>
+        </form>
+    </div>
+    }
+
+</div>
+
+
+@if (isShippingModalOpen()) {
+<div class="modal-overlay" (click)="closeShippingModal()">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <div class="modal-header__info">
+                <h2 class="modal-header__title">{{ selectedShipping() ? 'Editar Taxa' : 'Nova Taxa de Entrega' }}</h2>
+                <p class="modal-header__subtitle">Configure valores para bairros ou cidades vizinhas.</p>
+            </div>
+            <button type="button" (click)="closeShippingModal()" class="modal-header__close">
+                <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+            </button>
+        </div>
+
+        <form [formGroup]="shippingForm" (ngSubmit)="saveShipping()" class="product-form">
+            <div class="product-form__section" style="border-bottom: none; padding-bottom: 0;">
+
+                <div class="form-field">
+                    <label class="form-label">Descrição da Regra <span class="form-label--required">*</span></label>
+                    <input type="text" formControlName="name" class="nexora-input"
+                        placeholder="Ex: Motoboy Setor A, Entrega Expressa">
+                </div>
+
+                <div class="product-form__row">
+                    <div class="form-field product-form__col">
+                        <label class="form-label">Tipo</label>
+                        <select formControlName="type" class="havoc-select">
+                            <option value="BY_REGION">Bairro / Localidade</option>
+                            <option value="FIXED">Valor Fixo (Geral)</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                @if (shippingForm.value.type === 'BY_REGION') {
+                <div class="form-field">
+                    <label class="form-label">Nome do Bairro ou Cidade <span
+                            class="form-label--required">*</span></label>
+                    <input type="text" formControlName="region" class="nexora-input"
+                        placeholder="Ex: Gleba E, Phoc II, Simões Filho">
+                </div>
+                }
+
+                <div class="form-field">
+                    <label class="form-label">Valor da Taxa (R$) <span class="form-label--required">*</span></label>
+                    <input type="number" formControlName="price" class="nexora-input input-prefix__input" step="0.01"
+                        placeholder="0,00">
+                </div>
+
+             
+                <div class="toggle-field" (click)="shippingForm.patchValue({isActive: !shippingForm.value.isActive})"
+                    style="margin-top: 1rem;">
+                    <div class="toggle-field__info">
+                        <p class="toggle-field__label">Regra Ativa</p>
+                        <p class="toggle-field__desc">Disponível para seleção no checkout.</p>
+                    </div>
+                    <div class="toggle-switch" [class.toggle-switch--active]="shippingForm.value.isActive"></div>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" (click)="closeShippingModal()" class="btn-cancel">Cancelar</button>
+                <button type="submit" [disabled]="shippingForm.invalid || isSaving()" class="btn-primary">
+                    @if (isSaving()) {
+                    <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                    } @else {
+                    <lucide-icon name="save" class="btn-icon"></lucide-icon>
+                    }
+                    {{ selectedShipping() ? 'Salvar Alterações' : 'Criar Taxa' }}
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+}
+
+@if (isUserModalOpen()) {
+<div class="modal-overlay" (click)="closeUserModal()">
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <div class="modal-header__info">
+                <h2 class="modal-header__title">{{ selectedUser() ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
+            </div>
+            <button type="button" (click)="closeUserModal()" class="modal-header__close">
+                <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+            </button>
+        </div>
+
+        <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="product-form">
+            <div class="product-form__section" style="border-bottom: none; padding-bottom: 0;">
+
+                <div class="form-field">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" formControlName="name" class="nexora-input" placeholder="Ex: João Silva">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" formControlName="email" class="nexora-input"
+                        placeholder="Ex: joao@havoc.com.br">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Senha <span class="form-label--optional">{{ selectedUser() ? '(Deixe em
+                            branco para manter)' : '' }}</span></label>
+                    <input type="password" formControlName="password" class="nexora-input"
+                        placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Nível de Acesso</label>
+                    <select formControlName="role" class="havoc-select">
+                        <option value="ADMIN">Administrador (Total)</option>
+                        <option value="OPERADOR">Operador (Vendas/Chat)</option>
+                        <option value="VISUALIZADOR">Visualizador (Apenas relatórios)</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" (click)="closeUserModal()" class="btn-cancel">Cancelar</button>
+                <button type="submit" [disabled]="userForm.invalid" class="btn-primary">
+                    <lucide-icon name="save" class="btn-icon"></lucide-icon>
+                    Salvar
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+}

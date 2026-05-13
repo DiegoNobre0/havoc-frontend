@@ -4,14 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { 
   LucideAngularModule, 
-  LayoutDashboard, 
-  ShoppingCart, 
-  Trello, 
-  Package, 
-  ChevronDown, 
-  ChevronRight, 
-  Users, 
-  MessageSquare 
+  
 } from 'lucide-angular';
 
 @Component({
@@ -35,6 +28,10 @@ export class Sidebar {
 
   // Controle do submenu de catálogo
   isCatalogOpen = signal(false);
+
+  fazerLogout() {
+    this.authService.logout(); // Chama exatamente o método que você criou no auth.service.ts
+  }
 
   toggleCatalog() {
     this.isCatalogOpen.update(val => !val);
