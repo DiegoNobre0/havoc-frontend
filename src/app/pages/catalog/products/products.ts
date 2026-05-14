@@ -149,7 +149,7 @@ export class Products implements OnInit, OnDestroy {
     this.catalogService.getProducts(filters).subscribe({
       next: (res: any) => {
         this.products.set(res.data);
-        console.log('Produtos carregados:', res.data);
+        
         this.totalPages.set(res.meta.totalPages);
         this.totalItems.set(res.meta.total);
         this.isLoading.set(false);

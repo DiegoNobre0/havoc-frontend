@@ -112,8 +112,7 @@ export class Dashboard implements OnInit {
     
     this.dashboardService.getRecentOrders(page, 5, currentStatus).subscribe({
       next: (res) => {
-        this.recentOrders.set(res.data);
-        console.log('Pedidos recentes carregados:', res.data);
+        this.recentOrders.set(res.data);   
         this.currentPage.set(res.meta.page);
         this.totalPages.set(res.meta.totalPages);
       },

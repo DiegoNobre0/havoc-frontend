@@ -50,9 +50,7 @@ export class Chat implements OnInit {
 
   
     // ESCUTA O SOCKET EM TEMPO REAL
-    this.socketService.onChatUpdated.subscribe((dados: any) => {   
-      console.log('📡 Socket Recebido:', dados);
-
+    this.socketService.onChatUpdated.subscribe((dados: any) => {
       if (dados.role === 'USER') {
         this.audioService.playNovaMensagem();
       }
@@ -129,8 +127,7 @@ export class Chat implements OnInit {
           };
         });
 
-        this.conversas.set(formatado);
-        console.log('Conversas carregadas:', formatado);
+        this.conversas.set(formatado);        
       },
       error: (err) => console.error('Erro ao buscar conversas', err)
     });
@@ -142,8 +139,8 @@ export class Chat implements OnInit {
 
   selecionarAtendimento(chat: any) {
     // 👇 Impede de clicar e dar o Erro 404 enquanto o banco está processando
-    if (String(chat.id).startsWith('temp_')) {
-      console.warn('Aguarde o banco salvar a sessão...');
+    if (!chat.id || String(chat.id).startsWith('temp_')) {
+      console.warn('Sessão ainda não tem ID real. Aguardando...');
       return; 
     }
 

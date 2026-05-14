@@ -18,7 +18,7 @@
     }
 
     @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+       grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -293,8 +293,21 @@
 
             .filter-group {
                 display: flex;
-                align-items: center;
+                // align-items: center;
                 gap: 12px;
+
+                @media (max-width: 768px) {
+                    flex-direction: column;
+                    width: 100%; // Garante que o grupo ocupe toda a largura
+                    
+                    // Força os itens internos (select, data e botão) a esticarem 100%
+                    .havoc-select, 
+                    .datepicker-wrapper, 
+                    .btn-refresh {
+                        width: 100%;
+                        justify-content: center; // Centraliza o conteúdo
+                    }
+                }
 
                 .datepicker-wrapper {
                     position: relative;
@@ -400,6 +413,8 @@
     border-radius: 12px;
     border: 1px solid var.$havoc-border;
     padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
 
     .card-header-flex {
         display: flex;

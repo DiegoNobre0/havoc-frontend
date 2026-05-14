@@ -42,7 +42,7 @@ export class Header implements OnInit {
   unreadCount = computed(() => this.notificacoes().filter(n => !n.read).length);
 
   // ─── INICIALIZAÇÃO E SOCKETS ──────────────────────────────
-  ngOnInit() {
+ ngOnInit() {
     // 1. Escuta Mensagens do Chat (Sua rota existente)
     this.socketService.onChatUpdated.subscribe((dados: any) => {
       // Só notifica se a mensagem for do cliente
@@ -52,18 +52,19 @@ export class Header implements OnInit {
           type: 'chat',
           title: `Nova mensagem de ${dados.sessionKey}`,
           message: dados.lastMessage || 'Enviou uma mídia',
-          link: `/painel/atendimentos/${dados.sessionKey}`
+          // 👉 CORREÇÃO: Apontando para a rota do WhatsApp usando o UUID real!
+          link: `/whatsapp/${dados.id}` 
         });
       }
     });
 
-// 2. Escuta Novos Pedidos / Delivery (Sem erro de private!)
+    // 2. Escuta Novos Pedidos / Delivery (Sem erro de private!)
     this.socketService.onNewOrder.subscribe((order: any) => {
       this.adicionarNotificacao({
         type: 'order',
         title: `Novo Pedido ${order.code}`,
-        message: `${order.customer} - ${order.total}`,
-        link: `/painel/pedidos`
+        message: `${order.customer} - R$ ${order.total}`, // Coloquei um R$ aqui pra ficar mais bonito!
+        link: `/painel/pedidos` // Esse caminho dos pedidos deve estar correto
       });
     });
 
@@ -73,7 +74,8 @@ export class Header implements OnInit {
         type: 'alert',
         title: 'Atendimento Humano',
         message: `Cliente ${dados.sessionKey} solicitou ajuda.`,
-        link: `/painel/atendimentos/${dados.sessionKey}`
+        // 👉 CORREÇÃO: Apontando para o chat correto também!
+        link: `/whatsapp/${dados.id}` 
       });
     });
   }

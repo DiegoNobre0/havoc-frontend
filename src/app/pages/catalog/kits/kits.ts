@@ -83,7 +83,7 @@ export class Kits implements OnInit {
     this.catalogService.getKits().subscribe({
       next: (res: any) => {
         this.kits.set(res.data || res); 
-        console.log('Kits carregados:', this.kits());
+        
         this.isLoading.set(false);
       },
       error: (err) => {

@@ -15,20 +15,18 @@ export class SocketService {
   public onHandoffRequested = new Subject<any>();
 
   constructor() {
-    // Conecta ao backend
-    const socketUrl = environment.apiUrl
-      .replace('/api', '')
-      .replace(/^https?:\/\//, ''); // Remove http:// ou https://
+    console.log('🔍 URL do environment:', environment.apiUrl);
 
-    this.socket = io(socketUrl, {
-      transports: ['websocket'],
-      secure: true // Força o uso de WSS já que seu domínio tem SSL
+    // Passamos a URL exata do environment, sem nenhum .replace() !
+    this.socket = io(environment.apiUrl, {
+      transports: ['websocket']
     });
 
     this.socket.on('connect', () => {
       console.log('🟢 Conectado ao Socket do Havoc!');
       this.socket.emit('join_chat_list');
     });
+
     this.socket.on('new_message', (data) => {
       this.onNewMessage.next(data);
     });
