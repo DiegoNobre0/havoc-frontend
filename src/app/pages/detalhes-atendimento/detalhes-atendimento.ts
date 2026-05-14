@@ -5,6 +5,10 @@ import { ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { ChatService } from '../../services/chat.service'; // Ajuste o caminho
 import { SocketService } from '../../services/socket.service';
+import { AuthService } from '../../services/auth.service';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog';
+import { MatDialog } from '@angular/material/dialog';
+
 
 @Component({
   selector: 'app-detalhes-atendimento',
@@ -20,6 +24,8 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private chatService = inject(ChatService);
   private socketService = inject(SocketService);
+  authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   private sessionKeyAtual: any | null = null;
 
@@ -177,17 +183,24 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
   }
 
   // ─── AÇÕES DO CHAT ─────────────────────────────────────
-  enviarMensagem() {
-    const texto = this.novaMensagem().trim();
+enviarMensagem() {
+    const textoOriginal = this.novaMensagem().trim();
     const sessionId = this.atendimento()?.id;
-    if (!texto || !sessionId) return;
+    if (!textoOriginal || !sessionId) return;
 
-    // 1. Atualização Otimista (Mostra na tela na hora)
+    // 👉 1. Pegue o nome do atendente logado. 
+    // (Substitua esta linha pela forma como você guarda o usuário no seu app: LocalStorage, AuthService, etc)
+    const nomeAtendente = this.authService.currentUser()?.name 
+
+    // 👉 2. Formata a mensagem com a assinatura em negrito (*) e quebra de linha (\n)
+    const textoFinal = `*${nomeAtendente}*\n${textoOriginal}`;
+
+    // 3. Atualização Otimista (Mostra na tela na hora, já com a assinatura)
     const tempId = Date.now().toString();
     this.mensagens.update(msgs => [...msgs, {
       id: tempId,
       remetente: 'atendente',
-      texto: texto,
+      texto: textoFinal, // Usa o texto formatado aqui
       data: new Date(),
       mediaType: 'text'
     }]);
@@ -195,8 +208,8 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
     this.novaMensagem.set('');
     this.scrollParaBaixo();
 
-    // 2. Avisa o backend para disparar no WhatsApp real
-    this.chatService.sendMessage(sessionId, texto).subscribe({
+    // 4. Avisa o backend para disparar no WhatsApp real
+    this.chatService.sendMessage(sessionId, textoFinal).subscribe({ // Usa o texto formatado aqui também
       next: (msgReal) => {
         // Se a IA estava ligada, o fato do humano mandar mensagem desliga ela automaticamente
         if (this.atendimento().isBotActive) {
@@ -221,6 +234,7 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
     // 👉 Avisa a barra lateral que o Humano assumiu!
     this.chatService.onBotStatusChanged.next({ sessionId, isBotActive: false });
   }
+
   devolverParaIA() {
     const sessionId = this.atendimento()?.id;
     if (!sessionId) return;
@@ -230,6 +244,41 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
 
     // 👉 Avisa a barra lateral que a IA voltou!
     this.chatService.onBotStatusChanged.next({ sessionId, isBotActive: true });
+  }
+
+  finalizarAtendimento() {
+    const sessionId = this.atendimento()?.id;
+    if (!sessionId) return;
+
+    // Abre o seu modal customizado da Havoc
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      panelClass: 'havoc-dialog-container',
+      disableClose: true,
+      data: {
+        title: 'Finalizar Atendimento',
+        message: `Deseja realmente finalizar este atendimento?<br><strong>A IA assumirá a próxima mensagem do cliente.</strong>`,
+        confirmText: 'Sim, Finalizar',
+        isDanger: false // Como não é uma exclusão destrutiva (apenas fechar chat), deixei false. Mude para true se quiser o botão vermelho!
+      }
+    });
+
+    // Escuta a resposta do modal
+    dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) {
+        // Se o atendente clicou em "Sim, Finalizar", chama a API do backend
+        this.chatService.finalizarAtendimento(sessionId).subscribe({
+          next: () => {
+           this.devolverParaIA()
+            // this.router.navigate(['/whatsapp']); 
+          },
+          error: (err) => {
+            console.error('Erro ao finalizar:', err);
+            alert('Ocorreu um erro ao finalizar o atendimento.');
+          }
+        });
+      }
+    });
   }
 
   // ─── MÉTODOS DE ÁUDIO / MÍDIA (MANTIDOS) ───────────────

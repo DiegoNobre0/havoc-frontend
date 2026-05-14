@@ -42,7 +42,9 @@ import {
   Truck,
   UserPlus,
   CheckCircle,
-  LogOut
+  LogOut,
+  HelpCircle,
+  Check
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
@@ -77,7 +79,8 @@ export const appConfig: ApplicationConfig = {
         Users, MessageSquare, Menu, Search, Bell, ShoppingBag, AlertTriangle, RefreshCw,
         Settings, TrendingUp, Clock, DollarSign, Calendar, MoreVertical, FileText, Download,
         Plus, PackagePlus, Pencil, Eye, Trash2, EyeOff, X, ImagePlus, Save, ChevronUp, Tag,
-        Gift, MessageCircle, User, Bot, Hand, Paperclip, Mic, Send, Truck, UserPlus, CheckCircle ,LogOut
+        Gift, MessageCircle, User, Bot, Hand, Paperclip, Mic, Send, Truck, UserPlus, CheckCircle ,LogOut,
+        HelpCircle, Check
       })
     )
   ]

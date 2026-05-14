@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SocketService } from '../../services/socket.service';
 import { LucideAngularModule } from 'lucide-angular';
+import { AudioService } from '../../services/audio.service';
 
 export interface AppNotification {
   id: string;
@@ -26,6 +27,7 @@ export class Header implements OnInit {
   authService = inject(AuthService);
   socketService = inject(SocketService);
   router = inject(Router);
+    private audioService = inject(AudioService);
   
   toggleMenu = output<void>();
 
@@ -45,6 +47,7 @@ export class Header implements OnInit {
     this.socketService.onChatUpdated.subscribe((dados: any) => {
       // Só notifica se a mensagem for do cliente
       if (dados.role === 'USER') {
+         this.audioService.playNovaMensagem();
         this.adicionarNotificacao({
           type: 'chat',
           title: `Nova mensagem de ${dados.sessionKey}`,

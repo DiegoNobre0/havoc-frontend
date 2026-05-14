@@ -48,9 +48,9 @@ export class Chat implements OnInit {
  ngOnInit() {
     this.carregarConversas();
 
+  
     // ESCUTA O SOCKET EM TEMPO REAL
     this.socketService.onChatUpdated.subscribe((dados: any) => {   
-
       console.log('📡 Socket Recebido:', dados);
 
       if (dados.role === 'USER') {
@@ -61,19 +61,33 @@ export class Chat implements OnInit {
         const index = chatsAtuais.findIndex(c => c.sessionKey === dados.sessionKey);
         
         if (index > -1) {
-          // Se o chat já existe na lista, atualiza a mensagem, soma +1 nas não lidas e move pro TOPO
+          // Se o chat JÁ EXISTE: Apenas atualiza o card na memória (sem chamar a API!)
           const chatAtualizado = { 
             ...chatsAtuais[index], 
-            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),           
+            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),          
             naoLidas: chatsAtuais[index].id !== this.idSelecionado() ? chatsAtuais[index].naoLidas + 1 : 0,
             hora: new Date()
           };
-          chatsAtuais.splice(index, 1); // Remove da posição antiga
-          return [chatAtualizado, ...chatsAtuais]; // Coloca no topo (índice 0)
+          chatsAtuais.splice(index, 1);
+          return [chatAtualizado, ...chatsAtuais];
+          
         } else {
-          // Se for um cliente novo que não estava na lista, recarrega a API
-          this.carregarConversas(); 
-          return chatsAtuais;
+          
+          const novoChat = {
+            id: dados.id, // 🔥 A MÁGICA ESTÁ AQUI: Nada de ID temporário!
+            sessionKey: dados.sessionKey,
+            cliente: { nome: dados.sessionKey, avatar: null },
+            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),
+            hora: new Date(),
+            naoLidas: 1,
+            isBotActive: true,
+            statusReal: 'NOVO_ATENDIMENTO', 
+            tab: 'PENDENTES'
+          };
+         
+          const listaAtualizada = [novoChat, ...chatsAtuais];
+      
+          return listaAtualizada;
         }
       });
     });
@@ -116,6 +130,7 @@ export class Chat implements OnInit {
         });
 
         this.conversas.set(formatado);
+        console.log('Conversas carregadas:', formatado);
       },
       error: (err) => console.error('Erro ao buscar conversas', err)
     });
@@ -126,6 +141,12 @@ export class Chat implements OnInit {
   }
 
   selecionarAtendimento(chat: any) {
+    // 👇 Impede de clicar e dar o Erro 404 enquanto o banco está processando
+    if (String(chat.id).startsWith('temp_')) {
+      console.warn('Aguarde o banco salvar a sessão...');
+      return; 
+    }
+
     this.idSelecionado.set(chat.id);
     this.router.navigate(['/whatsapp', chat.id]);
   }

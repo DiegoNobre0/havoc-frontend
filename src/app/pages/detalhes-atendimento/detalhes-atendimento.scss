@@ -91,7 +91,7 @@ $havoc-muted: #94A3B8;
     }
 
     .header-actions {
-
+        display: flex;
         .btn-ia-toggle,
         .btn-human-toggle {
             display: flex;

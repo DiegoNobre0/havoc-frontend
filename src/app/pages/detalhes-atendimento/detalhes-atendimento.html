@@ -13,7 +13,7 @@
           <span class="status-indicator status--ai">
             <lucide-icon name="bot" [size]="12"></lucide-icon> IA Respondendo
           </span>
-          } @else if (!atendimento()?.isBotActive && atendimento()?.status === 'OPEN') {
+          } @else if (!atendimento()?.isBotActive) {
           <span class="status-indicator status--human">
             <lucide-icon name="user" [size]="12"></lucide-icon> Você no controle
           </span>
@@ -31,7 +31,12 @@
       <button class="btn-human-toggle" title="Assumir Atendimento" (click)="assumirAtendimento()">
         <lucide-icon name="hand" [size]="16"></lucide-icon> Assumir
       </button>
+
       } @else {
+        
+      <button class="btn-human-toggle" title="Finalizar Atendimento" (click)="finalizarAtendimento()">
+        <lucide-icon name="check" [size]="16"></lucide-icon> FINALIZAR
+      </button>
       <button class="btn-ia-toggle" title="Devolver para IA" (click)="devolverParaIA()">
         <lucide-icon name="bot" [size]="16"></lucide-icon> Devolver p/ IA
       </button>

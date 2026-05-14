@@ -45,5 +45,13 @@ export class ChatService {
     return this.http.post<any>(`${this.apiUrl}/sessions/${sessionId}/media`, formData);
   }
 
+  finalizarAtendimento(sessionId: string): Observable<any> {
+   
+    return this.http.patch<any>(`${this.apiUrl}/sessions/${sessionId}/tag`, { 
+      status: 'FINALIZADO',
+     
+    });
+  }
+
   
 }

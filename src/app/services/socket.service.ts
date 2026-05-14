@@ -16,17 +16,19 @@ export class SocketService {
 
   constructor() {
     // Conecta ao backend
-    this.socket = io(environment.apiUrl.replace('/api', ''), {
-      transports: ['websocket']
+    const socketUrl = environment.apiUrl
+      .replace('/api', '')
+      .replace(/^https?:\/\//, ''); // Remove http:// ou https://
+
+    this.socket = io(socketUrl, {
+      transports: ['websocket'],
+      secure: true // Força o uso de WSS já que seu domínio tem SSL
     });
 
     this.socket.on('connect', () => {
       console.log('🟢 Conectado ao Socket do Havoc!');
-      
-      // 👉 ALINHADO COM SEU BACKEND: Pede para entrar na sala geral
       this.socket.emit('join_chat_list');
     });
-
     this.socket.on('new_message', (data) => {
       this.onNewMessage.next(data);
     });
