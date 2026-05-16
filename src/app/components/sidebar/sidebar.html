@@ -8,7 +8,7 @@
         }
     </div>
 
-    <div class="menu-section" >
+    <div class="menu-section">
         @if (!isCollapsed()) { <span class="section-title">Visão Geral</span> }
         <nav class="nav-group">
             <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
@@ -22,16 +22,13 @@
         @if (!isCollapsed()) { <span class="section-title">Operação</span> }
         <nav class="nav-group">
 
-            <!-- <a routerLink="/pdv" routerLinkActive="active" class="menu-item">
-        <lucide-icon name="shopping-cart" class="sidebar-icon"></lucide-icon>
-        @if (!isCollapsed()) { <span class="label">Frente de Caixa (PDV)</span> }
-      </a>
 
-      <a routerLink="/orders" routerLinkActive="active" class="menu-item">
-        <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
-        @if (!isCollapsed()) { <span class="label">Fila de Pedidos</span> }
-      </a>
-       -->
+
+            <a routerLink="/orders" routerLinkActive="active" class="menu-item">
+                <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
+                @if (!isCollapsed()) { <span class="label">Fila de Pedidos</span> }
+            </a>
+
             <div class="menu-group">
                 <a class="menu-item cursor-pointer" [class.active]="isCatalogRoute()" (click)="toggleCatalog()">
                     <lucide-icon name="package" class="sidebar-icon"></lucide-icon>
@@ -59,10 +56,6 @@
                 }
             </div>
 
-            <!-- <a routerLink="/crm" routerLinkActive="active" class="menu-item">
-        <lucide-icon name="users" class="sidebar-icon"></lucide-icon>
-        @if (!isCollapsed()) { <span class="label">Clientes & CRM</span> }
-      </a> -->
 
             <a routerLink="/whatsapp" routerLinkActive="active" class="menu-item">
                 <lucide-icon name="message-square" class="sidebar-icon"></lucide-icon>

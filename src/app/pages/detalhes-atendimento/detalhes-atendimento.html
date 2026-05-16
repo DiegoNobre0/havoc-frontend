@@ -6,7 +6,10 @@
       <div class="avatar-fallback">{{ (atendimento()?.clienteNome || '?').charAt(0).toUpperCase() }}</div>
 
       <div class="client-details">
-        <span class="client-name">{{ atendimento()?.clienteNome }}</span>
+        <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+          <span class="client-name">{{ atendimento()?.clienteNome }}</span>
+          <span style="font-size: 0.85rem; color: #9CA3AF;">{{ atendimento()?.clienteTelefone }}</span>
+        </div>
 
         <div class="client-status">
           @if (atendimento()?.isBotActive) {
@@ -33,7 +36,7 @@
       </button>
 
       } @else {
-        
+
       <button class="btn-human-toggle" title="Finalizar Atendimento" (click)="finalizarAtendimento()">
         <lucide-icon name="check" [size]="16"></lucide-icon> FINALIZAR
       </button>

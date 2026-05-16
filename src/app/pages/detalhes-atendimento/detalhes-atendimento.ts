@@ -89,7 +89,8 @@ export class DetalhesAtendimento implements OnInit, OnDestroy {
 
       this.atendimento.set({
         id: session.id,
-        clienteNome: session.sessionKey,
+        clienteNome: session.customerName || 'Cliente Avulso',
+        clienteTelefone: session.sessionKey,
         status: session.status,
         isBotActive: session.isActive
       });

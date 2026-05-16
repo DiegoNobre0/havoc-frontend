@@ -23,7 +23,7 @@ export class Chat implements OnInit {
   private socketService = inject(SocketService);
   private audioService = inject(AudioService);
 
- 
+
   // ─── ESTADOS (SIGNALS) ─────────────────────────────────
   termoBusca = signal('');
   abaAtual = signal<'PENDENTES' | 'FINALIZADOS'>('PENDENTES');
@@ -35,8 +35,8 @@ export class Chat implements OnInit {
   conversasFiltradas = computed(() => {
     const busca = this.termoBusca().toLowerCase();
     const aba = this.abaAtual();
-    
-    return this.conversas().filter(chat => 
+
+    return this.conversas().filter(chat =>
       chat.tab === aba && // 👉 Filtra pela aba lógica
       (chat.cliente?.nome || chat.sessionKey).toLowerCase().includes(busca)
     );
@@ -45,46 +45,56 @@ export class Chat implements OnInit {
   qtdPendentes = computed(() => this.conversas().filter(c => c.tab === 'PENDENTES').length);
   qtdFinalizados = computed(() => this.conversas().filter(c => c.tab === 'FINALIZADOS').length);
 
- ngOnInit() {
+  ngOnInit() {
     this.carregarConversas();
 
-  
     // ESCUTA O SOCKET EM TEMPO REAL
     this.socketService.onChatUpdated.subscribe((dados: any) => {
       if (dados.role === 'USER') {
         this.audioService.playNovaMensagem();
       }
-      
+
       this.conversas.update(chatsAtuais => {
         const index = chatsAtuais.findIndex(c => c.sessionKey === dados.sessionKey);
-        
+        console.log('Atualização de chat via Socket:', dados, 'Índice encontrado:', index);
         if (index > -1) {
           // Se o chat JÁ EXISTE: Apenas atualiza o card na memória (sem chamar a API!)
-          const chatAtualizado = { 
-            ...chatsAtuais[index], 
-            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),          
+          const chatAtualizado = {
+            ...chatsAtuais[index],
+            ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),
             naoLidas: chatsAtuais[index].id !== this.idSelecionado() ? chatsAtuais[index].naoLidas + 1 : 0,
             hora: new Date()
           };
           chatsAtuais.splice(index, 1);
           return [chatAtualizado, ...chatsAtuais];
-          
+
         } else {
-          
+          // 👉 NOVO CHAT VIA SOCKET: Passamos o nome extraído ou o telefone
+          const nomeExibicao = dados.customerName || dados.sessionKey;
+
           const novoChat = {
-            id: dados.id, // 🔥 A MÁGICA ESTÁ AQUI: Nada de ID temporário!
-            sessionKey: dados.sessionKey,
-            cliente: { nome: dados.sessionKey, avatar: null },
+            id: dados.id,
+            sessionKey: dados.sessionKey,            
+            cliente: {
+              nome: dados.customerName || 'Cliente Avulso',
+              telefone: dados.sessionKey,
+              avatar: null
+            },
             ultimaMensagem: this.formatarPreviewMensagem(dados.lastMessage),
             hora: new Date(),
             naoLidas: 1,
             isBotActive: true,
-            statusReal: 'NOVO_ATENDIMENTO', 
+            statusReal: 'NOVO_ATENDIMENTO',
             tab: 'PENDENTES'
           };
-         
+
+          if (!dados.id) {
+            console.warn('⚠️ Socket chegou sem ID. Acionando Auto-Refresh...');
+            setTimeout(() => this.carregarConversas(), 2000);
+          }
+
           const listaAtualizada = [novoChat, ...chatsAtuais];
-      
+
           return listaAtualizada;
         }
       });
@@ -94,11 +104,11 @@ export class Chat implements OnInit {
       this.idSelecionado.set(params.get('id'));
     });
 
-    this.chatService.onBotStatusChanged.subscribe((status: {sessionId: string, isBotActive: boolean}) => {
-      this.conversas.update((chatsAtuais: any[]) => 
-        chatsAtuais.map((chat: any) => 
-          chat.id === status.sessionId 
-            ? { ...chat, isBotActive: status.isBotActive } 
+    this.chatService.onBotStatusChanged.subscribe((status: { sessionId: string, isBotActive: boolean }) => {
+      this.conversas.update((chatsAtuais: any[]) =>
+        chatsAtuais.map((chat: any) =>
+          chat.id === status.sessionId
+            ? { ...chat, isBotActive: status.isBotActive }
             : chat
         )
       );
@@ -109,25 +119,29 @@ export class Chat implements OnInit {
     this.chatService.getSessions().subscribe({
       next: (res: any) => {
         if (!res.data) return;
+        console.log('Sessões carregadas da API:', res.data);
 
         const formatado = res.data.map((session: any) => {
-          // 👉 Define a qual aba o atendimento pertence
           const isResolvido = session.status === 'FINALIZADO' || session.status === 'CANCELADO';
-
           return {
             id: session.id,
             sessionKey: session.sessionKey,
-            cliente: { nome: session.sessionKey, avatar: null },
-            ultimaMensagem: this.formatarPreviewMensagem(session.messages?.[0]?.content || 'Nova conversa'),   
+            // 👉 AGORA GUARDAMOS NOME E TELEFONE
+            cliente: {
+              nome: session.customerName || 'Cliente Avulso',
+              telefone: session.sessionKey,
+              avatar: null
+            },
+            ultimaMensagem: this.formatarPreviewMensagem(session.messages?.[0]?.content || 'Nova conversa'),
             hora: session.messages?.[0]?.createdAt || session.updatedAt,
-            naoLidas: 0, 
+            naoLidas: 0,
             isBotActive: session.isActive,
-            statusReal: session.status, // 👈 Guarda o status do Prisma
-            tab: isResolvido ? 'FINALIZADOS' : 'PENDENTES' // 👈 Aba do layout
+            statusReal: session.status,
+            tab: isResolvido ? 'FINALIZADOS' : 'PENDENTES'
           };
         });
 
-        this.conversas.set(formatado);        
+        this.conversas.set(formatado);
       },
       error: (err) => console.error('Erro ao buscar conversas', err)
     });
@@ -141,7 +155,7 @@ export class Chat implements OnInit {
     // 👇 Impede de clicar e dar o Erro 404 enquanto o banco está processando
     if (!chat.id || String(chat.id).startsWith('temp_')) {
       console.warn('Sessão ainda não tem ID real. Aguardando...');
-      return; 
+      return;
     }
 
     this.idSelecionado.set(chat.id);
@@ -167,7 +181,7 @@ export class Chat implements OnInit {
     if (texto.includes('[AUDIO:')) return '🎵 Áudio';
     if (texto.includes('[IMG:')) return '📷 Imagem';
     if (texto.includes('[DOC:')) return '📄 Documento';
-    
+
     // Se for mensagem de texto com tags ocultas (ex: [FINALIZAR]), limpa as tags
     let limpo = texto.replace(/\[.*?\]/g, '').trim();
     return limpo.length > 0 ? limpo : '🤖 Ação Interativa';

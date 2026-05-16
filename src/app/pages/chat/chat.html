@@ -1,5 +1,5 @@
 <div class="layout-chat">
-  
+
   <aside class="chat-sidebar">
     <div class="sidebar-header">
       <div class="header-top">
@@ -11,10 +11,8 @@
 
       <div class="search-container">
         <lucide-icon name="search" class="search-icon" [size]="16"></lucide-icon>
-        <input type="text" class="nexora-input w-full pl-4" 
-               placeholder="Pesquisar cliente..." 
-               [ngModel]="termoBusca()" 
-               (ngModelChange)="termoBusca.set($event)">
+        <input type="text" class="nexora-input w-full pl-4" placeholder="Pesquisar cliente..." [ngModel]="termoBusca()"
+          (ngModelChange)="termoBusca.set($event)">
       </div>
     </div>
 
@@ -22,7 +20,7 @@
       <button class="tab-btn" [class.active]="abaAtual() === 'PENDENTES'" (click)="trocarAba('PENDENTES')">
         Abertos
         @if (qtdPendentes() > 0) {
-          <span class="badge">{{ qtdPendentes() }}</span>
+        <span class="badge">{{ qtdPendentes() }}</span>
         }
       </button>
       <button class="tab-btn" [class.active]="abaAtual() === 'FINALIZADOS'" (click)="trocarAba('FINALIZADOS')">
@@ -32,59 +30,60 @@
 
     <div class="chat-list">
       @for (chat of conversasFiltradas(); track chat.id) {
-        <div class="chat-item" 
-             [class.active]="idSelecionado() === chat.id" 
-             (click)="selecionarAtendimento(chat)">
-          
-          <div class="avatar-wrap">
-            <div class="avatar-fallback">{{ (chat.cliente.nome || '?').charAt(0).toUpperCase() }}</div>
-            <!-- <div class="channel-icon">
+      <div class="chat-item" [class.active]="idSelecionado() === chat.id" (click)="selecionarAtendimento(chat)">
+
+        <div class="avatar-wrap">
+          <div class="avatar-fallback">{{ (chat.cliente.nome || '?').charAt(0).toUpperCase() }}</div>
+          <!-- <div class="channel-icon">
               <lucide-icon name="message-circle" [size]="10"></lucide-icon>
             </div> -->
+        </div>
+
+        <div class="chat-info">
+          <div class="row-top">
+            <div style="display: flex; flex-direction: column; line-height: 1.2;">
+              <span class="chat-name">{{ chat.cliente.nome }}</span>
+              <span style="font-size: 0.75rem; color: #9CA3AF;">{{ chat.cliente.telefone }}</span>
+            </div>
+            <span class="chat-time" [class.unread-time]="chat.naoLidas > 0">{{ chat.hora | date:'HH:mm' }}</span>
           </div>
 
-          <div class="chat-info">
-            <div class="row-top">
-              <span class="chat-name">{{ chat.cliente.nome || 'Desconhecido' }}</span>
-              <span class="chat-time" [class.unread-time]="chat.naoLidas > 0">14:30</span>
-            </div>
+          <div class="row-bottom">
+            <p class="chat-message" [class.unread-msg]="chat.naoLidas > 0">
+              {{ chat.ultimaMensagem }}
+            </p>
+            @if (chat.naoLidas > 0) {
+            <div class="unread-badge">{{ chat.naoLidas }}</div>
+            }
+          </div>
 
-            <div class="row-bottom">
-              <p class="chat-message" [class.unread-msg]="chat.naoLidas > 0">
-                {{ chat.ultimaMensagem }}
-              </p>
-              @if (chat.naoLidas > 0) {
-                <div class="unread-badge">{{ chat.naoLidas }}</div>
-              }
-            </div>
+          <div class="tags-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            @if (chat.isBotActive) {
+            <span class="status-tag tag--ai">
+              <lucide-icon name="bot" [size]="10"></lucide-icon> IA
+            </span>
+            } @else {
+            <span class="status-tag tag--human">
+              <lucide-icon name="user" [size]="10"></lucide-icon> Humano
+            </span>
+            }
 
-            <div class="tags-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              @if (chat.isBotActive) {
-                <span class="status-tag tag--ai">
-                  <lucide-icon name="bot" [size]="10"></lucide-icon> IA
-                </span>
-              } @else {
-                <span class="status-tag tag--human">
-                  <lucide-icon name="user" [size]="10"></lucide-icon> Humano
-                </span>
-              }
-
-              <span class="status-tag" [ngClass]="{
+            <span class="status-tag" [ngClass]="{
                 'tag--novo': chat.statusReal === 'NOVO_ATENDIMENTO',
                 'tag--andamento': chat.statusReal === 'EM_ANDAMENTO' || chat.statusReal === 'ATENDIMENTO_HUMANO',
                 'tag--pagamento': chat.statusReal === 'AGUARDANDO_PAGAMENTO',
                 'tag--finalizado': chat.statusReal === 'FINALIZADO',
                 'tag--cancelado': chat.statusReal === 'CANCELADO'
               }">
-                {{ formatarStatus(chat.statusReal) }}
-              </span>
-            </div>
+              {{ formatarStatus(chat.statusReal) }}
+            </span>
           </div>
         </div>
+      </div>
       } @empty {
-        <div class="empty-state">
-          Nenhuma conversa encontrada.
-        </div>
+      <div class="empty-state">
+        Nenhuma conversa encontrada.
+      </div>
       }
     </div>
   </aside>

@@ -1,1 +1,207 @@
-<p>orders works!</p>
+<div class="kanban-page">
+
+    <div class="page-header">
+        <div class="page-header__info">
+            <h1 class="page-header__title">Fila de Pedidos</h1>
+            <p class="page-header__subtitle">
+                {{ totalActive() }} pedido(s) em andamento · Atualiza automaticamente a cada 30s
+            </p>
+        </div>
+        <div class="kanban-header-actions">
+            <button (click)="loadOrders()" class="btn-outline">
+                <lucide-icon name="refresh-cw" class="btn-icon"></lucide-icon>
+                Atualizar
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading()) {
+    <div class="kanban-skeleton">
+        @for (i of [1,2,3,4]; track i) {
+        <div class="kanban-col-skeleton">
+            <div class="skeleton skeleton--col-header"></div>
+            @for (j of [1,2]; track j) {
+            <div class="skeleton skeleton--card"></div>
+            }
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="kanban-board">
+        @for (col of columns(); track col.status) {
+        <div class="kanban-col" [attr.data-status]="col.status">
+
+            <div class="kanban-col__header kanban-col__header--{{ col.color }}">
+                <div class="kanban-col__header-left">
+                    <lucide-icon [name]="col.icon" class="kanban-col__icon"></lucide-icon>
+                    <span class="kanban-col__label">{{ col.label }}</span>
+                </div>
+                <span class="kanban-col__count">{{ col.orders.length }}</span>
+            </div>
+
+            <div class="kanban-col__body">
+                @for (order of col.orders; track order.id) {
+                <div class="order-card" (click)="openDetail(order)">
+
+                    <div class="order-card__top">
+                        <span class="order-card__id">{{ order.code }}</span>
+                        <span class="order-card__time">{{ formatTime(order.createdAt) }}</span>
+                    </div>
+
+                    <p class="order-card__client">
+                        {{ order.customerName || 'Cliente Avulso' }}
+                    </p>
+
+                    <div class="order-card__items">
+                        @for (item of order.items.slice(0, 2); track item.id) {
+                        <span class="order-card__item">
+                            {{ item.quantity }}x {{ item.product?.name || item.kit?.name }}
+                        </span>
+                        }
+                        @if (order.items && order.items.length > 2) {
+                        <span class="order-card__item order-card__item--more">
+                            +{{ order.items.length - 2 }} item(s)
+                        </span>
+                        }
+                    </div>
+
+                    <div class="order-card__footer">
+                        <span class="order-card__total">{{ formatCurrency(order.total) }}</span>
+                        <div class="order-card__actions" (click)="$event.stopPropagation()">
+                            <button (click)="openCancel(order)" class="order-card__btn order-card__btn--cancel"
+                                title="Cancelar">
+                                <lucide-icon name="x" class="order-card__btn-icon"></lucide-icon>
+                            </button>
+                            @if (getNextActionLabel(order.status)) {
+                            <button (click)="advanceOrder(order)" class="order-card__btn order-card__btn--advance"
+                                [title]="getNextActionLabel(order.status)">
+                                <!-- <lucide-icon name="arrow-right" class="order-card__btn-icon"></lucide-icon> -->
+                                {{ getNextActionLabel(order.status) }}
+                            </button>
+                            }
+                        </div>
+                    </div>
+
+                </div>
+                } @empty {
+                <div class="kanban-col__empty">
+                    <lucide-icon name="inbox" class="kanban-col__empty-icon"></lucide-icon>
+                    <p>Nenhum pedido</p>
+                </div>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+    @if (isDetailOpen() && selectedOrder()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+        <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <div class="modal-header__info">
+                    <h2 class="modal-header__title">Pedido {{ selectedOrder()!.code }}</h2>
+                </div>
+                <button (click)="closeDetail()" class="modal-header__close">
+                    <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+                </button>
+            </div>
+
+            <div class="order-detail">
+                <div class="order-detail__section">
+                    <p class="order-detail__section-label">Cliente</p>
+                    <p class="order-detail__value">{{ selectedOrder()!.customerName }}</p>
+                    <p class="order-detail__sub">{{ selectedOrder()!.customerPhone }}</p>
+                </div>
+
+                @if (selectedOrder()!.deliveryAddress) {
+                <div class="order-detail__section">
+                    <p class="order-detail__section-label">Endereço de Entrega</p>
+                    <p class="order-detail__value" style="font-weight: 400; line-height: 1.4;">
+                        {{ selectedOrder()!.deliveryAddress }}
+                    </p>
+                </div>
+                }
+
+                <div class="order-detail__section">
+                    <p class="order-detail__section-label">Itens do Pedido</p>
+                    <div class="order-detail__items">
+                        @for (item of selectedOrder()!.items; track item.id) {
+                        <div class="detail-item">
+                            <span class="detail-item__qty">{{ item.quantity }}x</span>
+                            <span class="detail-item__name">{{ item.product?.name || item.kit?.name }}</span>
+                            <span class="detail-item__total">{{ formatCurrency(item.totalPrice) }}</span>
+                        </div>
+                        }
+                    </div>
+
+                    <div class="order-detail__totals">
+                        <div class="order-detail__total-row">
+                            <span>Subtotal</span>
+                            <span>{{ formatCurrency(selectedOrder()!.subtotal) }}</span>
+                        </div>
+                        @if (selectedOrder()!.shippingCost > 0) {
+                        <div class="order-detail__total-row">
+                            <span>Frete</span>
+                            <span>{{ formatCurrency(selectedOrder()!.shippingCost) }}</span>
+                        </div>
+                        }
+                        @if (selectedOrder()!.discount > 0) {
+                        <div class="order-detail__total-row order-detail__total-row--discount">
+                            <span>Desconto</span>
+                            <span>− {{ formatCurrency(selectedOrder()!.discount) }}</span>
+                        </div>
+                        }
+                        <div class="order-detail__total-row order-detail__total-row--final">
+                            <span>Total</span>
+                            <span>{{ formatCurrency(selectedOrder()!.total) }}</span>
+                        </div>
+                    </div>
+
+                    @if (selectedOrder()!.notes) {
+                    <div class="order-detail__section">
+                        <p class="order-detail__section-label">Observações</p>
+                        <p class="order-detail__note">{{ selectedOrder()!.notes }}</p>
+                    </div>
+                    }
+
+                    @if (getNextActionLabel(selectedOrder()!.status)) {
+                    <button (click)="advanceOrder(selectedOrder()!); closeDetail()"
+                        class="btn-primary btn-primary--full">
+                        <lucide-icon name="arrow-right" class="btn-icon"></lucide-icon>
+                        {{ getNextActionLabel(selectedOrder()!.status) }} Pedido
+                    </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        @if (isCancelOpen()) {
+        <div class="modal-overlay" (click)="closeCancel()">
+            <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h2 class="modal-header__title">Cancelar Pedido</h2>
+                    <button (click)="closeCancel()" class="modal-header__close">
+                        <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+                    </button>
+                </div>
+                <div class="modal-form">
+                    <div class="form-field">
+                        <label class="form-label">Motivo do cancelamento</label>
+                        <textarea class="cancel-textarea" placeholder="Informe o motivo..." [value]="cancelReason()"
+                            (input)="cancelReason.set($any($event.target).value)"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button (click)="closeCancel()" class="btn-cancel">Voltar</button>
+                        <button (click)="confirmCancel()" [disabled]="!cancelReason()"
+                            class="btn-danger">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+    </div>
+    }

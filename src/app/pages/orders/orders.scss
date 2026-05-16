@@ -1,0 +1,578 @@
+// Cores da Identidade Havoc Suplementos
+$havoc-yellow: #EAB308; // Amarelo Dourado / Warning
+$havoc-yellow-dark: #CA8A04;
+$kanban-surface: #111827; // Fundo slate dark profundo
+$kanban-card: #1F2937; // Fundo dos cards
+$kanban-border: rgba(255, 255, 255, 0.1);
+$kanban-text-muted: #9CA3AF;
+
+.kanban-page {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: calc(100vh - 4rem);
+
+    @media (max-width: 640px) {
+        padding: 1rem;
+    }
+}
+
+// ─── Header ───────────────────────────────────────────────────
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    &__subtitle {
+        font-size: 0.85rem;
+        color: $kanban-text-muted;
+        margin-top: 0.25rem;
+    }
+}
+
+.kanban-header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid $kanban-border;
+    border-radius: 8px;
+    color: #D1D5DB;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.05);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-color: $havoc-yellow;
+    }
+}
+
+// ─── Board & Scrollbar ────────────────────────────────────────
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(260px, 1fr)); // 4 Status ativos da nossa regra
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 1rem;
+    flex: 1;
+
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(234, 179, 8, 0.3);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: $havoc-yellow;
+    }
+
+    @media (max-width: 1280px) {
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+    }
+
+    @media (max-width: 768px) {
+        grid-template-columns: repeat(2, minmax(260px, 1fr));
+    }
+}
+
+// ─── Coluna ───────────────────────────────────────────────────
+.kanban-col {
+    display: flex;
+    flex-direction: column;
+    background: $kanban-surface;
+    border: 1px solid $kanban-border;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 100%;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 2px solid transparent;
+        background: rgba(0, 0, 0, 0.3);
+
+        &--warning {
+            border-top: 3px solid #F59E0B;
+        }
+
+        &--info {
+            border-top: 3px solid #38BDF8;
+        }
+
+        &--havoc {
+            border-top: 3px solid $havoc-yellow;
+        }
+
+        // Cor da marca
+        &--blue {
+            border-top: 3px solid #60A5FA;
+        }
+    }
+
+    &__header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__icon {
+        width: 1.1rem;
+        height: 1.1rem;
+        color: #D1D5DB;
+    }
+
+    &__label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #F3F4F6;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    &__count {
+        min-width: 1.5rem;
+        height: 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.375rem;
+    }
+
+    &__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+    }
+
+    &__empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 3rem 1rem;
+        color: #6B7280;
+        font-size: 0.85rem;
+        text-align: center;
+        flex: 1;
+
+        &-icon {
+            width: 2rem;
+            height: 2rem;
+            opacity: 0.5;
+        }
+    }
+}
+
+// ─── Card de pedido ───────────────────────────────────────────
+.order-card {
+    background: $kanban-card;
+    border: 1px solid $kanban-border;
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &:hover {
+        border-color: rgba(234, 179, 8, 0.5); // Borda Amarela no hover
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    &__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    &__id {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: $havoc-yellow;
+        background: rgba(234, 179, 8, 0.1);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+    }
+
+    &__time {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        font-weight: 500;
+    }
+
+    &__client {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 0.25rem;
+    }
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        margin: 0.25rem 0;
+    }
+
+    &__item {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__item--more {
+        color: #6B7280;
+        font-style: italic;
+    }
+
+    &__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    &__total {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: white;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.375rem;
+        align-items: center;
+    }
+
+    &__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+
+        &-icon {
+            width: 0.8rem;
+            height: 1.5rem;
+        }
+
+        &--cancel {
+            color: #9CA3AF;
+            background: transparent;
+
+            &:hover {
+                color: #EF4444;
+                background: rgba(239, 68, 68, 0.1);
+            }
+        }
+
+        &--advance {
+            color: #000;
+            background: $havoc-yellow; // Botão de avançar Havoc
+
+            &:hover {
+                background: $havoc-yellow-dark;
+                color: white;
+            }
+        }
+    }
+}
+
+// ─── Modais (Simplificado e Alinhado) ─────────────────────────
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 1rem;
+}
+
+.modal-card {
+    background: #111827;
+    border: 1px solid $havoc-yellow;
+    border-radius: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(234, 179, 8, 0.1);
+
+    &--sm {
+        max-width: 400px;
+    }
+
+    &--lg {
+        max-width: 650px;
+        max-height: 90vh;
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+
+    &__title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: $havoc-yellow;
+        margin: 0;
+    }
+
+    &__close {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+
+        &:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+// ─── Detalhes e Botão Full ────────────────────────────────────
+.order-detail {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+
+    &__section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    &__section-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #9CA3AF;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 0.5rem;
+    }
+
+    &__value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    &__sub {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+
+    &__totals {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: rgba(234, 179, 8, 0.05);
+        border: 1px solid rgba(234, 179, 8, 0.2);
+        border-radius: 8px;
+    }
+
+    &__total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #D1D5DB;
+
+        &--discount {
+            color: #34D399;
+        }
+
+        &--final {
+            color: $havoc-yellow;
+            font-weight: 800;
+            font-size: 1.25rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            margin-top: 0.25rem;
+        }
+    }
+}
+
+.detail-item {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+
+    &__qty {
+        color: $havoc-yellow;
+        font-weight: 700;
+        background: rgba(234, 179, 8, 0.1);
+        padding: 0.2rem;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    &__name {
+        color: white;
+        font-weight: 500;
+    }
+
+    &__total {
+        color: white;
+        font-weight: 700;
+        text-align: right;
+    }
+}
+
+.btn-primary--full {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    background: $havoc-yellow;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+
+    &:hover {
+        background: $havoc-yellow-dark;
+        color: white;
+        transform: translateY(-2px);
+    }
+}
+
+/* Modal de Cancelamento */
+.modal-form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cancel-textarea {
+    height: 6rem;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+
+    button {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: white;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #FCA5A5;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+}
