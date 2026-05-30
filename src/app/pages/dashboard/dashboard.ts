@@ -145,7 +145,7 @@ export class Dashboard implements OnInit {
     let startDate: string | undefined;
     let endDate: string | undefined;
 
-    if (this.isCurrentWeek) {
+  if (this.isCurrentWeek) {
       const pastWeek = new Date();
       pastWeek.setDate(pastWeek.getDate() - 7);
       startDate = pastWeek.toISOString();
@@ -157,14 +157,14 @@ export class Dashboard implements OnInit {
       endDate = new Date(year, month + 1, 0).toISOString();
     }
 
-    this.dashboardService.getSalesReport(startDate, endDate).subscribe({
+this.dashboardService.getSalesReport(startDate, endDate).subscribe({
       next: (data) => {
+        // 👉 CORREÇÃO: O backend manda YYYY-MM-DD. O frontend inverte para Dia/Mês
         const categorias = data.map(d => {
           const [ano, mes, dia] = d.date.split('-');
           return `${dia}/${mes}`;
         });
         
-        // Garante que o ApexCharts receba números exatos para evitar crash
         const faturamentoData = data.map(d => Number(d.revenue));
 
         this.chartOptions = {
@@ -203,7 +203,7 @@ export class Dashboard implements OnInit {
   // EXPORTAÇÃO CSV
   // ==========================================
 
-  exportRealReport(period: string) {
+exportRealReport(period: string) {
     const dataCorte = new Date();
     if (period === 'hoje') {
       dataCorte.setHours(0, 0, 0, 0);
@@ -213,36 +213,41 @@ export class Dashboard implements OnInit {
       dataCorte.setDate(dataCorte.getDate() - 30);
     }
 
-    // Busca os pedidos mais recentes (limite alto para exportação)
-    this.dashboardService.getRecentOrders(1, 1000).subscribe(res => {
+    // Buscamos um volume alto para garantir a exportação rica
+    this.dashboardService.getRecentOrders(1, 2000).subscribe(res => {
       
-      const filteredData = res.data.filter(order => {
+      const filteredData = res.data.filter((order: any) => {
         const orderDate = new Date(order.createdAt);
         return orderDate >= dataCorte;
       });
 
       if (filteredData.length === 0) {
-        alert(`Nenhuma venda encontrada para o período: ${period}`);
+        alert(`Nenhuma venda encontrada para o período selecionado.`);
         return;
       }
 
-      const headers = ['Data', 'Código', 'Cliente', 'Qtd Itens', 'Status', 'Valor Total'];
+      // 👉 NOVAS COLUNAS FINANCEIRAS E DE LOGÍSTICA
+      const headers = ['Data', 'Código', 'Cliente', 'Status', 'Qtd Itens', 'Subtotal', 'Frete', 'Total', 'Endereço'];
       
-      const rows = filteredData.map(order => [
+      const rows = filteredData.map((order: any) => [
         new Date(order.createdAt).toLocaleDateString('pt-BR'),
         order.code,
-        order.customer,
-        order.itemsCount,
+        `"${order.customer}"`, // Aspas previnem quebra de CSV se o nome tiver vírgula
         order.status,
-        Number(order.total).toFixed(2).replace('.', ',') // Garante o padrão decimal do Brasil no Excel
+        order.itemsCount,
+        Number(order.subtotal).toFixed(2).replace('.', ','),
+        Number(order.shippingCost).toFixed(2).replace('.', ','),
+        Number(order.total).toFixed(2).replace('.', ','),
+        `"${order.endereco}"` // Aspas previnem quebra se o endereço tiver vírgula
       ]);
 
+      // Monta o arquivo
       const csvContent = "\uFEFF" + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Relatorio_Havoc_${period}.csv`;
+      link.download = `Relatorio_Financeiro_Havoc_${period}_${new Date().getTime()}.csv`;
       
       document.body.appendChild(link);
       link.click();

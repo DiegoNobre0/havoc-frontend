@@ -4,11 +4,8 @@ import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { OrderService } from '../../services/order.service';
 
-
-// Tipos baseados no seu Prisma Schema
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
 
-// No arquivo order.service.ts
 export interface Order {
   id: string;
   code: string;
@@ -18,11 +15,10 @@ export interface Order {
   discount: number;
   total: number;
   notes?: string;
-  createdAt: string; 
+  createdAt: string;
   customerName: string;
   customerPhone: string;
   deliveryAddress?: string;
-  
   items: Array<{
     id: string;
     quantity: number;
@@ -48,7 +44,6 @@ interface KanbanColumn {
   templateUrl: './orders.html',
   styleUrls: ['./orders.scss'],
 })
-
 export class Orders implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
 
@@ -60,12 +55,11 @@ export class Orders implements OnInit, OnDestroy {
   cancelReason = signal('');
   refreshTimer?: ReturnType<typeof setInterval>;
 
-  // 👉 STATUS ALINHADOS COM SEU PRISMA
   columns = signal<KanbanColumn[]>([
-    { status: 'PENDING', label: 'Aguardando', icon: 'clock', color: 'warning', orders: [] },
-    { status: 'CONFIRMED', label: 'Confirmado', icon: 'check-circle', color: 'info', orders: [] },
-    { status: 'PROCESSING', label: 'Em Preparo', icon: 'package', color: 'havoc', orders: [] },
-    { status: 'SHIPPED', label: 'Enviado', icon: 'truck', color: 'blue', orders: [] }
+    { status: 'PENDING',    label: 'Aguardando', icon: 'clock',        color: 'warning', orders: [] },
+    { status: 'CONFIRMED',  label: 'Confirmado', icon: 'check-circle', color: 'info',    orders: [] },
+    { status: 'PROCESSING', label: 'Em Preparo', icon: 'package',      color: 'havoc',   orders: [] },
+    { status: 'SHIPPED',    label: 'Enviado',    icon: 'truck',        color: 'blue',    orders: [] },
   ]);
 
   totalActive = computed(() =>
@@ -82,19 +76,18 @@ export class Orders implements OnInit, OnDestroy {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
-  // ─── Integração com API (Sem Mocks) ─────────────────────
+  // ─── API (só na carga inicial e refresh silencioso) ──────
   loadOrders() {
     this.isLoading.set(true);
-
-    // Busca todos os pedidos ativos (limitando a 100 para o Kanban)
     this.orderService.listOrders(1, 100).subscribe({
       next: (res: any) => {
-        const orders = res.data;
+        const orders: Order[] = res.data;
         this.columns.update(cols =>
           cols.map(col => ({
             ...col,
-            orders: orders.filter((o: Order) => o.status === col.status)
-              .sort((a: Order, b: Order) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+            orders: orders
+              .filter(o => o.status === col.status)
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
           }))
         );
         this.isLoading.set(false);
@@ -106,32 +99,103 @@ export class Orders implements OnInit, OnDestroy {
     });
   }
 
+  // ─── Atualiza o signal localmente sem reload ─────────────
+  private moveOrderToStatus(orderId: string, newStatus: OrderStatus) {
+    this.columns.update(cols => {
+      // Encontra o pedido em qualquer coluna
+      let movedOrder: Order | undefined;
+      const withoutOrder = cols.map(col => ({
+        ...col,
+        orders: col.orders.filter(o => {
+          if (o.id === orderId) { movedOrder = o; return false; }
+          return true;
+        }),
+      }));
+
+      if (!movedOrder) return cols;
+
+      const updatedOrder: Order = { ...movedOrder, status: newStatus };
+
+      return withoutOrder.map(col => {
+        if (col.status !== newStatus) return col;
+        return {
+          ...col,
+          orders: [...col.orders, updatedOrder].sort(
+            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          ),
+        };
+      });
+    });
+  }
+
+  private removeOrder(orderId: string) {
+    this.columns.update(cols =>
+      cols.map(col => ({
+        ...col,
+        orders: col.orders.filter(o => o.id !== orderId),
+      }))
+    );
+  }
+
   // ─── Ações ──────────────────────────────────────────────
   advanceOrder(order: Order) {
-    // 👉 FLUXO EXATO DO SEU PRISMA
     const flow: Record<string, OrderStatus> = {
-      PENDING: 'CONFIRMED',
-      CONFIRMED: 'PROCESSING',
+      PENDING:    'CONFIRMED',
+      CONFIRMED:  'PROCESSING',
       PROCESSING: 'SHIPPED',
-      SHIPPED: 'DELIVERED',
+      SHIPPED:    'DELIVERED',
     };
 
     const nextStatus = flow[order.status];
     if (!nextStatus) return;
 
+    // ✅ Atualiza o kanban na hora, sem reload
+    this.moveOrderToStatus(order.id, nextStatus);
+
+    // Persiste na API em background; reverte se falhar
     this.orderService.updateStatus(order.id, nextStatus, `Avançado para ${nextStatus} via Kanban`).subscribe({
-      next: () => this.loadOrders(),
-      error: (err) => console.error('Erro ao atualizar status', err)
+      error: (err) => {
+        console.error('Erro ao atualizar status', err);
+        this.moveOrderToStatus(order.id, order.status); // reverte
+      },
     });
   }
 
+  confirmCancel() {
+    const order = this.selectedOrder();
+    if (!order || !this.cancelReason()) return;
+
+    // ✅ Remove do kanban na hora, sem reload
+    this.removeOrder(order.id);
+    this.closeCancel();
+
+    // Persiste na API em background; reverte se falhar
+    this.orderService.updateStatus(order.id, 'CANCELLED', `Motivo: ${this.cancelReason()}`).subscribe({
+      error: (err) => {
+        console.error('Erro ao cancelar pedido', err);
+        // Reinsere o pedido na coluna original caso a API falhe
+        this.columns.update(cols =>
+          cols.map(col => {
+            if (col.status !== order.status) return col;
+            return {
+              ...col,
+              orders: [...col.orders, order].sort(
+                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              ),
+            };
+          })
+        );
+      },
+    });
+  }
+
+  // ─── Modal de Detalhe ────────────────────────────────────
   openDetail(order: Order) {
-    // Busca os detalhes completos na API ao abrir o modal
     this.orderService.getOrderById(order.id).subscribe({
       next: (fullOrder) => {
         this.selectedOrder.set(fullOrder);
         this.isDetailOpen.set(true);
-      }
+      },
     });
   }
 
@@ -140,6 +204,7 @@ export class Orders implements OnInit, OnDestroy {
     this.selectedOrder.set(null);
   }
 
+  // ─── Modal de Cancelamento ───────────────────────────────
   openCancel(order: Order) {
     this.selectedOrder.set(order);
     this.isCancelOpen.set(true);
@@ -150,38 +215,26 @@ export class Orders implements OnInit, OnDestroy {
     this.cancelReason.set('');
   }
 
-  confirmCancel() {
-    const order = this.selectedOrder();
-    if (!order || !this.cancelReason()) return;
-
-    this.orderService.updateStatus(order.id, 'CANCELLED', `Motivo: ${this.cancelReason()}`).subscribe({
-      next: () => {
-        this.closeCancel();
-        this.loadOrders();
-      }
-    });
-  }
-
   // ─── Helpers ────────────────────────────────────────────
   getNextActionLabel(status: OrderStatus): string {
     const labels: Partial<Record<OrderStatus, string>> = {
-      PENDING: 'Confirmar',
-      CONFIRMED: 'Preparar',
+      PENDING:    'Confirmar',
+      CONFIRMED:  'Preparar',
       PROCESSING: 'Despachar',
-      SHIPPED: 'Marcar Entregue',
+      SHIPPED:    'Marcar Entregue',
     };
     return labels[status] ?? '';
   }
 
   formatTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('pt-BR', {
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit',
     });
   }
 
   formatCurrency(value: number | string): string {
     return new Intl.NumberFormat('pt-BR', {
-      style: 'currency', currency: 'BRL'
+      style: 'currency', currency: 'BRL',
     }).format(Number(value));
   }
 }

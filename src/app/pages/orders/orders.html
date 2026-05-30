@@ -68,14 +68,13 @@
                     <div class="order-card__footer">
                         <span class="order-card__total">{{ formatCurrency(order.total) }}</span>
                         <div class="order-card__actions" (click)="$event.stopPropagation()">
-                            <button (click)="openCancel(order)" class="order-card__btn order-card__btn--cancel"
-                                title="Cancelar">
+                            <button (click)="openCancel(order); $event.stopPropagation()"
+                                class="order-card__btn order-card__btn--cancel" title="Cancelar">
                                 <lucide-icon name="x" class="order-card__btn-icon"></lucide-icon>
                             </button>
                             @if (getNextActionLabel(order.status)) {
                             <button (click)="advanceOrder(order)" class="order-card__btn order-card__btn--advance"
                                 [title]="getNextActionLabel(order.status)">
-                                <!-- <lucide-icon name="arrow-right" class="order-card__btn-icon"></lucide-icon> -->
                                 {{ getNextActionLabel(order.status) }}
                             </button>
                             }
@@ -95,6 +94,7 @@
     </div>
     }
 
+    <!-- ✅ Modal de Detalhe (independente do modal de cancelamento) -->
     @if (isDetailOpen() && selectedOrder()) {
     <div class="modal-overlay" (click)="closeDetail()">
         <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
@@ -176,32 +176,33 @@
                 </div>
             </div>
         </div>
+    </div>
+    }
 
-
-        @if (isCancelOpen()) {
-        <div class="modal-overlay" (click)="closeCancel()">
-            <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
-                <div class="modal-header">
-                    <h2 class="modal-header__title">Cancelar Pedido</h2>
-                    <button (click)="closeCancel()" class="modal-header__close">
-                        <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
-                    </button>
+    <!-- ✅ Modal de Cancelamento FORA do modal de detalhe -->
+    @if (isCancelOpen() && selectedOrder()) {
+    <div class="modal-overlay" (click)="closeCancel()">
+        <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-header__title">Cancelar Pedido</h2>
+                <button (click)="closeCancel()" class="modal-header__close">
+                    <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+                </button>
+            </div>
+            <div class="modal-form">
+                <div class="form-field">
+                    <label class="form-label">Motivo do cancelamento</label>
+                    <textarea class="cancel-textarea" placeholder="Informe o motivo..." [value]="cancelReason()"
+                        (input)="cancelReason.set($any($event.target).value)"></textarea>
                 </div>
-                <div class="modal-form">
-                    <div class="form-field">
-                        <label class="form-label">Motivo do cancelamento</label>
-                        <textarea class="cancel-textarea" placeholder="Informe o motivo..." [value]="cancelReason()"
-                            (input)="cancelReason.set($any($event.target).value)"></textarea>
-                    </div>
-                    <div class="modal-actions">
-                        <button (click)="closeCancel()" class="btn-cancel">Voltar</button>
-                        <button (click)="confirmCancel()" [disabled]="!cancelReason()"
-                            class="btn-danger">Confirmar</button>
-                    </div>
+                <div class="modal-actions">
+                    <button (click)="closeCancel()" class="btn-cancel">Voltar</button>
+                    <button (click)="confirmCancel()" [disabled]="!cancelReason()"
+                        class="btn-danger">Confirmar</button>
                 </div>
             </div>
         </div>
-        }
-
     </div>
     }
+
+</div>
