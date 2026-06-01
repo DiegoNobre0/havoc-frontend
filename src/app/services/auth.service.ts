@@ -26,7 +26,9 @@ export class AuthService {
   // Signals (A Memória Rápida)
   currentUser = signal<User | null>(null);
   accessToken = signal<string | null>(null);
+  isInitializing = signal<boolean>(true);
 
+  
   login(credentials: { email: string; password: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap(response => {
@@ -40,50 +42,48 @@ export class AuthService {
     );
   }
 
-  // --- A MÁGICA DO F5 ACONTECE AQUI ---
-  autoLogin(): Observable<any> {
-    const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+autoLogin(): Observable<any> {
+  const refreshToken = localStorage.getItem(this.REFRESH_KEY);
 
-    // Se não tem token salvo, o usuário é um visitante normal. Fim.
-    if (!refreshToken) {
+  if (!refreshToken) {
+    this.isInitializing.set(false);
+    return of(null);
+  }
+
+  return this.http.post<any>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
+    tap(response => {
+      localStorage.setItem(this.REFRESH_KEY, response.refreshToken);
+      this.accessToken.set(response.accessToken); // <-- seta ANTES do switchMap
+    }),
+    switchMap(() => this.http.get<any>(`${this.apiUrl}/users/me`)),
+    tap(profileResponse => {
+      this.currentUser.set(profileResponse.user);
+      this.isInitializing.set(false); // <-- libera o guard
+    }),
+    catchError(() => {
+      this.logout();
+      this.isInitializing.set(false);
       return of(null);
-    }
+    })
+  );
+}
 
-    // Se tem token, vamos no backend pedir uma sessão nova silenciosamente
-    return this.http.post<any>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
-      tap(response => {
-        // Atualiza a gaveta com o novo Refresh Token rotativo
-        localStorage.setItem(this.REFRESH_KEY, response.refreshToken);
-        this.accessToken.set(response.accessToken);
-      }),
-      // Como o /refresh não devolve o Nome/Email, fazemos um "pulo" pra rota /users/me
-      // O nosso authInterceptor que criamos antes já vai espetar o token novo aqui!
-      switchMap(() => this.http.get<any>(`${this.apiUrl}/users/me`)),
-      tap(profileResponse => {
-        this.currentUser.set(profileResponse.user); // Tela restaurada com sucesso!
-      }),
-      catchError(() => {
-        // Se o token expirou (passou de 7 dias) ou o backend recusou, limpamos a casa.
-        this.logout();
-        return of(null);
-      })
-    );
+
+logout() {
+  const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+  
+  if (refreshToken) {
+    // Ignora erros do logout no backend — não deve causar side effects
+    this.http.post(`${this.apiUrl}/auth/logout`, { refreshToken })
+      .pipe(catchError(() => of(null)))  // <-- aqui
+      .subscribe();
   }
 
-  logout() {
-    const refreshToken = localStorage.getItem(this.REFRESH_KEY);
-    
-    // Tenta avisar o backend para destruir a sessão no Redis
-    if (refreshToken) {
-      this.http.post(`${this.apiUrl}/auth/logout`, { refreshToken }).subscribe();
-    }
-
-    // Limpa a casa no frontend
-    localStorage.removeItem(this.REFRESH_KEY);
-    this.accessToken.set(null);
-    this.currentUser.set(null);
-    this.router.navigate(['/login']);
-  }
+  localStorage.removeItem(this.REFRESH_KEY);
+  this.accessToken.set(null);
+  this.currentUser.set(null);
+  this.router.navigate(['/login']);
+}
 
   // Renova o token de acesso usando o Refresh Token
   refreshToken() {

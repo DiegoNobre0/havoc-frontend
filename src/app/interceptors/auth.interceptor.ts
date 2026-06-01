@@ -24,10 +24,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // 2. A MÁGICA NOVA: Dispara a requisição e "fica de olho" na resposta
   return next(authReq).pipe(
     catchError((error) => {
-      
+
       // O token de 15 minutos venceu e o backend deu 401?
       if (error instanceof HttpErrorResponse && error.status === 401) {
-        
+
         // Proteção: Se a própria rota de renovar token der 401, significa que o token
         // de 7 dias também venceu (ou o admin deletou no Redis). Aí sim deslogamos.
         if (req.url.includes('/refresh')) {
@@ -46,15 +46,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               isRefreshing = false;
               // Avisa a fila de espera que o token novo chegou
               refreshTokenSubject.next(response.accessToken);
-              
+
               // REFAZ a requisição original que tinha falhado, mas agora com o token novinho!
               return next(req.clone({
                 setHeaders: { Authorization: `Bearer ${response.accessToken}` }
               }));
             }),
             catchError((err) => {
-              // Deu algum erro bizarro na hora de renovar? Desloga por segurança.
               isRefreshing = false;
+              refreshTokenSubject.next(null); // limpa a fila
               authService.logout();
               return throwError(() => err);
             })
@@ -73,7 +73,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           );
         }
       }
-      
+
       // Se for Erro 400 (Bad Request), 500 (Erro interno), repassa o erro normalmente
       return throwError(() => error);
     })
