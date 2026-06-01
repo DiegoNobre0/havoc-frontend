@@ -56,7 +56,7 @@ export class Chat implements OnInit {
 
       this.conversas.update(chatsAtuais => {
         const index = chatsAtuais.findIndex(c => c.sessionKey === dados.sessionKey);
-        console.log('Atualização de chat via Socket:', dados, 'Índice encontrado:', index);
+       
         if (index > -1) {
           // Se o chat JÁ EXISTE: Apenas atualiza o card na memória (sem chamar a API!)
           const chatAtualizado = {
@@ -118,8 +118,7 @@ export class Chat implements OnInit {
   carregarConversas() {
     this.chatService.getSessions().subscribe({
       next: (res: any) => {
-        if (!res.data) return;
-        console.log('Sessões carregadas da API:', res.data);
+        if (!res.data) return;        
 
         const formatado = res.data.map((session: any) => {
           const isResolvido = session.status === 'FINALIZADO' || session.status === 'CANCELADO';
