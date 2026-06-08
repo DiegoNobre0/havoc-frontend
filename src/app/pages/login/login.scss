@@ -11,6 +11,42 @@ $text-primary: #F2F2F2;
 $text-secondary: #8C8C8C;
 $border: #333333;
 
+.input-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .havoc-input {
+    width: 100%;
+    padding-right: 44px; // Dá um respiro para o texto não encavalar no ícone
+  }
+
+  .btn-toggle-password {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #8C8C8C; // Pode trocar pela sua var.$havoc-text-muted
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s ease;
+    outline: none;
+
+    &:hover, &:focus {
+      color: #F2B90F; // Fica com o Amarelo Havoc ao passar o mouse
+    }
+
+    lucide-icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
 // ==========================================
 // 1. WRAPPER PRINCIPAL
 // ==========================================

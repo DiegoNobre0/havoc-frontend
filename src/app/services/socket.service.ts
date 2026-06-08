@@ -15,15 +15,13 @@ export class SocketService {
   public onHandoffRequested = new Subject<any>();
 
   constructor() {
-    console.log('🔍 URL do environment:', environment.apiUrl);
 
     // Passamos a URL exata do environment, sem nenhum .replace() !
     this.socket = io(environment.apiUrl, {
       transports: ['websocket']
     });
 
-    this.socket.on('connect', () => {
-      console.log('🟢 Conectado ao Socket do Havoc!');
+    this.socket.on('connect', () => {    
       this.socket.emit('join_chat_list');
     });
 
@@ -39,8 +37,7 @@ export class SocketService {
     this.socket.on('handoff_requested', (data) => this.onHandoffRequested.next(data));
   }
 
-  joinChat(sessionKey: string) {
-    // 👉 ALINHADO COM SEU BACKEND: Pede para escutar um chat específico
+  joinChat(sessionKey: string) {    
     this.socket.emit('join_chat', sessionKey);
   }
 

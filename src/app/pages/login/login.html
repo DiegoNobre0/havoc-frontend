@@ -32,13 +32,23 @@
           <label>E-mail</label>
           <input type="email" formControlName="email" placeholder="admin@havoc.com.br" class="havoc-input">
         </div>
-
-        <div class="form-group">
+<div class="form-group">
           <div class="label-wrapper">
             <label>Senha</label>
             <a href="#" class="forgot-link">Esqueceu a senha?</a>
           </div>
-          <input type="password" formControlName="password" placeholder="••••••••" class="havoc-input">
+          
+          <div class="input-icon-wrapper">
+            <input 
+              [type]="showPassword() ? 'text' : 'password'" 
+              formControlName="password" 
+              placeholder="••••••••" 
+              class="havoc-input"
+            >
+            <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+              <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'"></lucide-icon>
+            </button>
+          </div>
         </div>
 
         <!-- <div class="form-options">

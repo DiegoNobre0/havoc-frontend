@@ -23,6 +23,7 @@ export class Login {
   private fb = inject(NonNullableFormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  
 
   // 3. Deixa o ícone disponível para o HTML ler
   readonly RefreshCwIcon = RefreshCw;
@@ -30,6 +31,7 @@ export class Login {
   // Signals
   isLoading = signal(false);
   errorMessage = signal('');
+  showPassword = signal(false);
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -55,5 +57,9 @@ export class Login {
         this.errorMessage.set(err.error?.message || 'Erro ao realizar login.');
       }
     });
+  }
+
+  togglePassword() {
+    this.showPassword.set(!this.showPassword());
   }
 }
