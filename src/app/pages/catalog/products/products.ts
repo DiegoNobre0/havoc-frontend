@@ -142,7 +142,7 @@ export class Products implements OnInit, OnDestroy {
       limit: 10,
       search: this.searchTerm()
     };
-
+   
     if (this.selectedCategory()) filters.categoryId = this.selectedCategory();
     if (this.selectedStatus()) filters.isActive = this.selectedStatus() === 'true';
 

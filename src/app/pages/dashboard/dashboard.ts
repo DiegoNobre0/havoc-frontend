@@ -165,7 +165,7 @@ this.dashboardService.getSalesReport(startDate, endDate).subscribe({
           return `${dia}/${mes}`;
         });
         
-        const faturamentoData = data.map(d => Number(d.revenue));
+        const faturamentoData = data.map(d => Number(Number(d.revenue).toFixed(2)));
 
         this.chartOptions = {
           ...this.chartOptions,
@@ -259,7 +259,7 @@ exportRealReport(period: string) {
   // CONFIGURAÇÕES VISUAIS DOS GRÁFICOS
   // ==========================================
 
-  private getAreaConfig(): Partial<ChartOptions> {
+ private getAreaConfig(): Partial<ChartOptions> {
     return {
       series: [],
       chart: { height: 320, type: "area", toolbar: { show: false }, fontFamily: 'Inter, sans-serif', background: 'transparent' },
@@ -267,10 +267,21 @@ exportRealReport(period: string) {
       dataLabels: { enabled: false },
       stroke: { curve: "smooth", width: 3 },
       xaxis: { categories: [], labels: { style: { colors: "#8C8C8C" } }, axisBorder: { show: false }, axisTicks: { show: false } },
-      yaxis: { labels: { style: { colors: "#8C8C8C" }, formatter: (val) => "R$ " + Number(val).toLocaleString('pt-BR') } },
+      yaxis: { 
+        labels: { 
+          style: { colors: "#8C8C8C" }, 
+          formatter: (val) => "R$ " + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+        } 
+      },
       grid: { borderColor: "#333333", strokeDashArray: 4 },
       theme: { mode: "dark" },
-      tooltip: { theme: "dark", x: { show: false }, y: { formatter: (val) => "R$ " + Number(val).toLocaleString('pt-BR') } }
+      tooltip: { 
+        theme: "dark", 
+        x: { show: false }, 
+        y: { 
+          formatter: (val) => "R$ " + Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) 
+        } 
+      }
     };
   }
 }
