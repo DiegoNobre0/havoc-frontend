@@ -53,9 +53,10 @@ export class Products implements OnInit, OnDestroy {
   totalItems = signal<number>(0);
   lowStockCount = signal<number>(0);
 
-  // ─── ESTADOS GERAIS DE MODAIS ───────────────────────────────
+// ─── ESTADOS GERAIS DE MODAIS ───────────────────────────────
   isSaving = signal<boolean>(false);
   isDeleting = signal<boolean>(false);
+  isImportingPdf = signal<boolean>(false); // NOVO SINAL
 
   // ─── MODAL: MOVIMENTAR ESTOQUE ──────────────────────────────
   isStockModalOpen = signal<boolean>(false);
@@ -385,5 +386,41 @@ onFileSelected(event: any) {
       verticalPosition: 'top',
       panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success']
     });
+  }
+
+  // ─── UPLOAD DE PDF (CLIPP) ──────────────────────────────────
+  onPdfSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validação de segurança no Front
+    if (file.type !== 'application/pdf') {
+      this.showToast('Formato inválido! Por favor, selecione um arquivo PDF.', true);
+      event.target.value = ''; // Limpa o input
+      return;
+    }
+
+    this.isImportingPdf.set(true);
+
+    this.catalogService.importPdf(file).subscribe({
+      next: (res: any) => {
+        this.isImportingPdf.set(false);
+        const { criados, atualizados, erros } = res.resumo;
+        
+        this.showToast(`Sucesso! ${criados} produtos criados, ${atualizados} atualizados. (Erros: ${erros})`);
+        
+        // Limpa a busca e recarrega a tabela para mostrar os produtos novos
+        this.searchTerm.set('');
+        this.currentPage.set(1);
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error(err);
+        this.isImportingPdf.set(false);
+        this.showToast(err.error?.message || 'Erro ao processar o PDF. Tente novamente.', true);
+      }
+    });
+
+    event.target.value = ''; // Limpa o input para permitir subir o mesmo arquivo de novo se precisar
   }
 }

@@ -149,6 +149,44 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+
+// Container dos botões no Header
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// Botão Secundário Transparente
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #E2E8F0;
+  border: 1px solid #334155;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $havoc-yellow;
+    color: $havoc-yellow;
+    background: rgba(242, 185, 15, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 // ─── Botões ───────────────────────────────────────────────────
 .btn-primary {
   display: inline-flex;
@@ -403,6 +441,7 @@ input[type="number"] {
   }
 
   &__unit {
+    margin-left: 4px;
     font-size: 0.75rem;
     color: #64748B;
   }

@@ -52,6 +52,14 @@ export class CatalogService {
         return this.http.put<any>(`${this.apiUrl}/products/${id}`, data);
     }
 
+    importPdf(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // O Fastify multipart requer que seja enviado como FormData
+    return this.http.post(`${this.apiUrl}/products/import-pdf`, formData);
+  }
+
     deleteProduct(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
     }

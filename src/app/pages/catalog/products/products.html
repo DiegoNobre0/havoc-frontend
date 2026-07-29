@@ -5,10 +5,28 @@
       <h1 class="page-header__title">Catálogo de Produtos</h1>
       <p class="page-header__subtitle">Gerencie estoque, preços e disponibilidade.</p>
     </div>
-    <button (click)="openModal()" class="btn-primary">
-      <lucide-icon name="plus" class="btn-icon"></lucide-icon>
-      Novo Produto
-    </button>
+    
+    <div class="page-header__actions">
+      <!-- Input de Arquivo Oculto -->
+      <input type="file" #pdfInput accept="application/pdf" style="display: none" (change)="onPdfSelected($event)">
+      
+      <!-- Botão de Importar -->
+      <button (click)="pdfInput.click()" class="btn-secondary" [disabled]="isImportingPdf()">
+        @if (isImportingPdf()) {
+          <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+          Processando...
+        } @else {
+          <lucide-icon name="file-up" class="btn-icon"></lucide-icon>
+          Importar PDF
+        }
+      </button>
+
+      <!-- Botão Novo Produto -->
+      <button (click)="openModal()" class="btn-primary">
+        <lucide-icon name="plus" class="btn-icon"></lucide-icon>
+        Novo Produto
+      </button>
+    </div>
   </div>
 
   @if (lowStockCount() > 0) {
