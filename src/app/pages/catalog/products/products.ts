@@ -281,7 +281,7 @@ executeDelete(product: any) {
       slug: generatedSlug,
       description: formValues.description,
       price: Number(formValues.price),
-      stock: Number(formValues.stock_qty),
+      stock_qty: Number(formValues.stock_qty), // 👈 MUDAMOS DE 'stock' PARA 'stock_qty' AQUI!
       categoryIds: formValues.category_ids && formValues.category_ids.length > 0 ? formValues.category_ids : undefined
     };
 
