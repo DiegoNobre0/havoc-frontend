@@ -197,6 +197,8 @@ export class Products implements OnInit, OnDestroy {
     this.selectedFile.set(null);
 
     if (product) {
+
+      console.log('Editing product:', product);
       this.isEditing.set(true);
       this.currentId.set(product.id);
       if (product.ncm || product.cfop) this.showFiscal.set(true);
@@ -281,8 +283,15 @@ executeDelete(product: any) {
       slug: generatedSlug,
       description: formValues.description,
       price: Number(formValues.price),
-      stock_qty: Number(formValues.stock_qty), // 👈 MUDAMOS DE 'stock' PARA 'stock_qty' AQUI!
-      categoryIds: formValues.category_ids && formValues.category_ids.length > 0 ? formValues.category_ids : undefined
+      cost_price: Number(formValues.cost_price || 0),
+      price_wholesale: Number(formValues.price_wholesale || 0),
+      stock_qty: Number(formValues.stock_qty || 0),
+      stock_min: Number(formValues.stock_min || 0),
+      unit: formValues.unit,
+      ncm: formValues.ncm,
+      cfop: formValues.cfop,
+      isActive: formValues.isActive,
+      category_ids: formValues.category_ids && formValues.category_ids.length > 0 ? formValues.category_ids : undefined
     };
 
     const request$ = this.isEditing()
