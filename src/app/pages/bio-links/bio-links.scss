@@ -1,0 +1,236 @@
+// ==========================================================================
+// BIO LINKS - THEME: HAVOC SUPLEMENTOS (DARK MODE)
+// ==========================================================================
+
+// Cores Oficiais Havoc
+$havoc-yellow: #F2B90F; 
+$havoc-yellow-hover: #D9A40D;
+
+$havoc-bg-dark: #000000;     // 👈 Alterado para Preto Puro
+$havoc-bg-surface: #0a0a0a;  // Fundo dos elementos levemente destacado
+$havoc-bg-surface-2: #1a1a1a;
+
+// Cores de Texto
+$text-primary: #FFFFFF;
+$text-secondary: #A3A3A3;
+$text-muted: #737373;
+$border-color: #333333;
+
+.bio-container {
+  min-height: 100vh;
+  background-color: $havoc-bg-dark;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+
+  // Trava a largura no desktop para simular tela de celular
+  @media (min-width: 600px) {
+    max-width: 480px;
+    margin: 0 auto;
+    background-color: $havoc-bg-surface;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    min-height: calc(100vh - 4rem);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 24px;
+    border: 1px solid $border-color;
+  }
+}
+
+// ─── CABEÇALHO ───
+.bio-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+
+  .bio-avatar {
+    width: 220px; /* 👈 Muito maior (antes era 100px) */
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Fundo, borda e círculo foram removidos! */
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      /* MÁGICA: Adiciona um brilho suave diretamente no contorno da logo */
+      filter: drop-shadow(0 10px 25px rgba(242, 185, 15, 0.15)); 
+    }
+  }
+  h1 {
+    color: $text-primary;
+    margin-bottom: 0.5rem;
+    font-size: 1.7rem; /* 👈 Nome da loja levemente maior para acompanhar a logo */
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  p {
+    color: $text-secondary;
+    max-width: 300px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+  }
+}
+
+// ─── ÁREA DOS LINKS ───
+.bio-links {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bio-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  
+  .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .btn-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    span {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+  }
+
+  .arrow {
+    opacity: 0.5;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .arrow {
+      transform: translateX(4px);
+      opacity: 1;
+    }
+  }
+
+  // ─── VARIAÇÕES DE BOTÕES HAVOC ───
+  
+  &--primary {
+    background-color: $havoc-yellow;
+    color: #000000; // Contraste forte com amarelo
+    border: 1px solid $havoc-yellow;
+
+    .btn-icon {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+    
+    &:hover { 
+      background-color: $havoc-yellow-hover;
+      border-color: $havoc-yellow-hover;
+      box-shadow: 0 4px 15px rgba(242, 185, 15, 0.25);
+    }
+  }
+
+  &--outline {
+    background-color: $havoc-bg-surface-2;
+    color: $havoc-yellow;
+    border: 1px solid $havoc-yellow;
+
+    .btn-icon {
+      background-color: rgba(242, 185, 15, 0.1);
+      color: $havoc-yellow;
+    }
+
+    &:hover { 
+      background-color: rgba(242, 185, 15, 0.05); 
+      box-shadow: 0 4px 15px rgba(242, 185, 15, 0.1);
+    }
+  }
+
+  &--secondary {
+    background-color: $havoc-bg-surface;
+    color: $text-primary;
+    border: 1px solid $border-color;
+
+    .btn-icon {
+      background-color: $havoc-bg-surface-2;
+      color: $text-secondary;
+    }
+    span { color: $text-muted; }
+
+    &:hover { 
+      border-color: #555555; 
+      background-color: $havoc-bg-surface-2;
+    }
+  }
+}
+
+// ─── RODAPÉ ───
+.bio-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background-color: $havoc-bg-surface;
+    border: 1px solid $border-color;
+    border-radius: 50%;
+    color: $text-secondary;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: $havoc-yellow;
+      border-color: $havoc-yellow;
+      transform: scale(1.05);
+      background-color: rgba(242, 185, 15, 0.05);
+    }
+  }
+}
+
+// ─── ANIMAÇÕES FLUIDAS ───
+.fade-in {
+  opacity: 0;
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

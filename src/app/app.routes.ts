@@ -10,6 +10,11 @@ export const routes: Routes = [
     title: 'Havoc | Login',
     loadComponent: () => import('./pages/login/login').then(m => m.Login) // Ajuste para LoginComponent se necessário
   },
+  {
+    path:'bio-links',
+    title: 'Havoc | Links',
+    loadComponent:() => import('./pages/bio-links/bio-links').then(m => m.BioLinksComponent)
+  },
 
   // ----------------------------------------------------
   // ROTAS PRIVADAS (Com Layout - Sidebar e Header)

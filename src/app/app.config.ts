@@ -47,7 +47,10 @@ import {
   Check,
   Inbox,
   ArrowRight,
-  FileUp
+  FileUp,
+  ExternalLink,
+  Instagram,
+  MapPin
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
@@ -83,7 +86,7 @@ export const appConfig: ApplicationConfig = {
         Settings, TrendingUp, Clock, DollarSign, Calendar, MoreVertical, FileText, Download,
         Plus, PackagePlus, Pencil, Eye, Trash2, EyeOff, X, ImagePlus, Save, ChevronUp, Tag,
         Gift, MessageCircle, User, Bot, Hand, Paperclip, Mic, Send, Truck, UserPlus, CheckCircle ,LogOut,
-        HelpCircle, Check, Inbox, ArrowRight, FileUp
+        HelpCircle, Check, Inbox, ArrowRight, FileUp, ExternalLink, Instagram , MapPin
       })
     )
   ]

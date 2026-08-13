@@ -1,0 +1,61 @@
+<div class="bio-container">
+  
+  <!-- ─── CABEÇALHO ─── -->
+  <header class="bio-header fade-in">
+    <div class="bio-avatar">
+      <!-- Coloque o caminho da logo da Havoc -->
+      <img src="/HavocV1.png" alt="Havoc Suplementos">
+    </div>
+    <h1>Havoc Suplementos</h1>
+    <p>Os melhores suplementos para o seu resultado. Escolha uma opção abaixo 👇</p>
+  </header>
+
+  <!-- ─── BOTÕES DE LINK ─── -->
+  <main class="bio-links fade-in" style="animation-delay: 0.1s;">
+    
+    <!-- 1. WhatsApp Automatizado (IA Carol - A sua "Loja Virtual") -->
+    <a [href]="getBotLink()" target="_blank" class="bio-btn bio-btn--primary">
+      <div class="btn-icon"><lucide-icon name="shopping-bag"></lucide-icon></div>
+      <div class="btn-content">
+        <strong>Ver Catálogo e Comprar</strong>
+        <span>Atendimento inteligente 24h</span>
+      </div>
+      <lucide-icon name="external-link" class="arrow"></lucide-icon>
+    </a>
+
+    <!-- 2. Atendente Humano da Loja -->
+    <a [href]="getHumanLink()" target="_blank" class="bio-btn bio-btn--outline">
+      <div class="btn-icon"><lucide-icon name="user"></lucide-icon></div>
+      <div class="btn-content">
+        <strong>Falar com a Loja</strong>
+        <span>Dúvidas e suporte humano</span>
+      </div>
+      <lucide-icon name="external-link" class="arrow"></lucide-icon>
+    </a>
+
+    <!-- 3. TikTok -->
+    <a href="https://tiktok.com/@havocsuplementosoficial" target="_blank" class="bio-btn bio-btn--secondary">
+      <div class="btn-icon">
+        <!-- SVG Nativo do TikTok (já que o Lucide não possui redes sociais) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+        </svg>
+      </div>
+      <div class="btn-content">
+        <strong>Siga no TikTok</strong>
+        <span>Dicas, treinos e novidades</span>
+      </div>
+      <lucide-icon name="external-link" class="arrow"></lucide-icon>
+    </a>
+
+  </main>
+
+ <!-- ─── RODAPÉ / LOCALIZAÇÃO ─── -->
+  <footer class="bio-footer fade-in" style="animation-delay: 0.2s;">
+    <!-- Link direto com o endereço da loja em Camaçari -->
+    <a href="https://www.google.com/maps/search/?api=1&query=R.+Francisco+Drumond,+10+-+Centro,+Camaçari+-+BA,+42800-063" target="_blank" title="Como Chegar na Loja">
+      <lucide-icon name="map-pin"></lucide-icon>
+    </a>
+  </footer>
+
+</div>
