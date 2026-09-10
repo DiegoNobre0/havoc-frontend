@@ -33,16 +33,18 @@ export class CatalogService {
     // ==========================================
     // PRODUTOS
     // ==========================================
-    getProducts(filters: any): Observable<any> {
-        let params = new HttpParams();
+    getProducts(filters: any = {}): Observable<any> {
+  let params = new HttpParams();
 
-        if (filters.page) params = params.set('page', filters.page);
-        if (filters.limit) params = params.set('limit', filters.limit);
-        if (filters.search) params = params.set('search', filters.search);
-        if (filters.categoryId) params = params.set('categoryId', filters.categoryId);
+  params = params.set('page', filters.page || 1);
+  params = params.set('limit', filters.limit || 2000);
 
-        return this.http.get<any>(`${this.apiUrl}/products`, { params });
-    }
+  if (filters.search) params = params.set('search', filters.search);
+  if (filters.categoryId) params = params.set('categoryId', filters.categoryId);
+  if (filters.isActive !== undefined) params = params.set('isActive', String(filters.isActive));
+
+  return this.http.get<any>(`${this.apiUrl}/products`, { params });
+}
 
     createProduct(data: any): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/products`, data);
@@ -53,12 +55,12 @@ export class CatalogService {
     }
 
     importPdf(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    // O Fastify multipart requer que seja enviado como FormData
-    return this.http.post(`${this.apiUrl}/products/import-pdf`, formData);
-  }
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // O Fastify multipart requer que seja enviado como FormData
+        return this.http.post(`${this.apiUrl}/products/import-pdf`, formData);
+    }
 
     deleteProduct(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
@@ -102,7 +104,7 @@ export class CatalogService {
         return this.http.post<any>(`${this.apiUrl}/kits/${id}/image`, formData);
     }
 
-    pauseKit(id: string, isActive: boolean) {       
+    pauseKit(id: string, isActive: boolean) {
         return this.http.patch(`${this.apiUrl}/kits/${id}/status`, { isActive });
     }
 }

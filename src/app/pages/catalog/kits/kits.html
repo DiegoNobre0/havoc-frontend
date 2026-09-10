@@ -143,109 +143,54 @@
         </div>
 
         <div class="kit-modal-section">
-  <p class="kit-modal-section__label">Composição do Kit</p>
+          <p class="kit-modal-section__label">Composição do Kit</p>
 
-  <!-- BUSCA -->
-  <div class="kit-product-search mb-2">
-    <lucide-icon
-      name="search"
-      class="kit-product-search__icon">
-    </lucide-icon>
+          <mat-select #productSelect (selectionChange)="addProduct($event.value); productSelect.value = null"
+            class="havoc-mat-select w-full" placeholder="+ Adicionar produto ao kit...">
 
-    <input
-      type="text"
-      placeholder="Pesquisar produto por nome..."
-      [value]="productSearch()"
-      (input)="productSearch.set($any($event.target).value)"
-      class="kit-product-search__input"
-    />
-  </div>
+            <!-- 👇 CAMPO DE BUSCA FIXO NO TOPO DO DROPDOWN -->
+            <div class="select-search-container">
+              <input type="text" class="select-search-input" placeholder="Buscar produto por nome..."
+                (input)="updateProductSearch($event)" (keydown)="$event.stopPropagation()"
+                (click)="$event.stopPropagation()">
+            </div>
 
-  <!-- SELECT -->
-  <mat-select
-    #productSelect
-    (selectionChange)="
-      addProduct($event.value);
-      productSelect.value = null;
-      productSearch.set('')
-    "
-    class="havoc-mat-select w-full"
-    placeholder="+ Adicionar produto ao kit..."
-  >
+            <!-- 👇 ITERA SOBRE A LISTA FILTRADA -->
+            @for (product of filteredProducts(); track product.id) {
+            <mat-option [value]="product.id">
+              {{ product.name }} (Estoque: {{ product.stock || 0 }})
+            </mat-option>
+            } @empty {
+            <mat-option disabled class="text-center text-muted">Nenhum produto encontrado</mat-option>
+            }
 
-    @for (product of filteredProducts(); track product.id) {
-      <mat-option [value]="product.id">
-        {{ product.name }} (Estoque: {{ product.stock || 0 }})
-      </mat-option>
-    } @empty {
-      <mat-option disabled>
-        Nenhum produto encontrado
-      </mat-option>
-    }
+          </mat-select>
 
-  </mat-select>
-
-  <div class="kit-items mt-3">
-    @for (item of selectedItems(); track item.product.id) {
-      <div class="kit-item">
-
-        <div class="kit-item__info">
-          <p class="kit-item__name">
-            {{ item.product.name }}
-          </p>
-
-          <p class="kit-item__cost">
-            Preço Base : R$ {{ item.product.price | number:'1.2-2' }}
-          </p>
-        </div>
-
-        <div class="kit-item__controls">
-
-          <div class="nx-qty-control">
-            <button
-              type="button"
-              (click)="updateQty(item.product.id, -1)"
-              class="nx-qty-control__btn">
-              −
-            </button>
-
-            <span class="nx-qty-control__value">
-              {{ item.qty }}
-            </span>
-
-            <button
-              type="button"
-              (click)="updateQty(item.product.id, 1)"
-              class="nx-qty-control__btn">
-              +
-            </button>
+          <div class="kit-items mt-3">
+            @for (item of selectedItems(); track item.product.id) {
+            <div class="kit-item">
+              <div class="kit-item__info">
+                <p class="kit-item__name">{{ item.product.name }}</p>
+                <p class="kit-item__cost">Preço Base : R$ {{ item.product.price | number:'1.2-2' }}</p>
+              </div>
+              <div class="kit-item__controls">
+                <div class="nx-qty-control">
+                  <button type="button" (click)="updateQty(item.product.id, -1)" class="nx-qty-control__btn">−</button>
+                  <span class="nx-qty-control__value">{{ item.qty }}</span>
+                  <button type="button" (click)="updateQty(item.product.id, 1)" class="nx-qty-control__btn">+</button>
+                </div>
+                <button type="button" (click)="removeProduct(item.product.id)" class="action-btn action-btn--danger">
+                  <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+                </button>
+              </div>
+            </div>
+            } @empty {
+            <div class="kit-items__empty">
+              Nenhum produto adicionado.<br>Selecione acima para compor o kit.
+            </div>
+            }
           </div>
-
-          <button
-            type="button"
-            (click)="removeProduct(item.product.id)"
-            class="action-btn action-btn--danger">
-
-            <lucide-icon
-              name="x"
-              class="action-btn__icon">
-            </lucide-icon>
-
-          </button>
-
         </div>
-
-      </div>
-    } @empty {
-
-      <div class="kit-items__empty">
-        Nenhum produto adicionado.<br>
-        Selecione acima para compor o kit.
-      </div>
-
-    }
-  </div>
-</div>
 
         <div class="kit-modal-section">
           <div class="profit-card">
@@ -257,8 +202,7 @@
             <div class="profit-card__divider my-3"></div>
 
             <div class="form-field">
-              <label class="form-label">Desconto Aplicado (Valor em Reais) <span
-                  class="form-label--required">*</span></label>
+              <label class="form-label">Desconto Aplicado (opcional) </label>
               <div class="input-prefix">
                 <span class="input-prefix__symbol">R$</span>
                 <input type="text" inputmode="decimal" formControlName="discountValue"

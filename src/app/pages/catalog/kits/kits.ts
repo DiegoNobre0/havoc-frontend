@@ -15,9 +15,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
   selector: 'app-kits',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     LucideAngularModule,
     MatOptionModule,
     MatSelectModule,
@@ -33,12 +33,33 @@ export class Kits implements OnInit {
   private dialog = inject(MatDialog);
 
   // ─── ESTADOS GERAIS ─────────────────────────────
-  kits = signal<any[]>([]); 
+  kits = signal<any[]>([]);
   isLoading = signal(true);
   availableProducts = signal<any[]>([]);
 
+
+  productSearchTerm = signal('');
+  onlyInStock = signal(true);
+
+  filteredProducts = computed(() => {
+    const term = this.productSearchTerm().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "").trim();
+    const products = this.availableProducts();
+    const stockOnly = this.onlyInStock();
+
+    return products.filter(p => {
+      if (stockOnly && (p.stock ?? 0) <= 0) return false;
+      if (!term) return true;
+
+      const nomeLimpo = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+      return nomeLimpo.includes(term);
+    });
+  });
+
+  toggleStockFilter() {
+    this.onlyInStock.update(v => !v);
+  }
   // ─── CONTROLES DO MODAL ─────────────────────────
-  isModalOpen = signal(false); 
+  isModalOpen = signal(false);
   isEditing = signal(false);
   currentKitId = signal<string | null>(null);
   isSaving = signal(false);
@@ -51,11 +72,11 @@ export class Kits implements OnInit {
   kitForm = this.fb.nonNullable.group({
     name: ['', Validators.required],
     description: [''],
-    discountValue: [0, [Validators.required, Validators.min(0)]], 
+    discountValue: [0, [Validators.min(0)]],
   });
 
   // ─── CÁLCULOS ─────────────────────────────────
- rawSubtotal = computed(() => {
+  rawSubtotal = computed(() => {
     return this.selectedItems().reduce((sum, item) => sum + (Number(item.product.price) * item.qty), 0);
   });
 
@@ -64,11 +85,11 @@ export class Kits implements OnInit {
 
   finalPrice = computed(() => {
     const subtotal = this.rawSubtotal();
-    
+
     // 👇 Agora o computed escuta o Signal! Ao digitar, a tela atualiza na hora.
     // Usamos Number() só por segurança extra, mas o ngx-currency já entrega como number.
-    const discount = Number(this.discountSignal()) || 0; 
-    
+    const discount = Number(this.discountSignal()) || 0;
+
     const final = subtotal - discount;
     return final > 0 ? final : 0;
   });
@@ -82,8 +103,8 @@ export class Kits implements OnInit {
     this.isLoading.set(true);
     this.catalogService.getKits().subscribe({
       next: (res: any) => {
-        this.kits.set(res.data || res); 
-        
+        this.kits.set(res.data || res);
+
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -95,16 +116,28 @@ export class Kits implements OnInit {
   }
 
   loadProducts() {
-    this.catalogService.getProducts({ limit: 100 }).subscribe((res: any) => {
-      this.availableProducts.set(res.data || res);
+    this.catalogService.getProducts({ limit: 2000, page: 1 }).subscribe({
+      next: (res: any) => {
+        this.availableProducts.set(res.data || res);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar produtos:', err);
+        this.showToast('Erro ao carregar produtos disponíveis.', true);
+      }
     });
+  }
+
+
+  updateProductSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.productSearchTerm.set(input.value);
   }
 
   getKitCategories(kit: any): any[] {
     if (!kit.items) return [];
-    
+
     const categoriesMap = new Map();
-    
+
     kit.items.forEach((item: any) => {
       if (item.product?.categories) {
         item.product.categories.forEach((cat: any) => {
@@ -112,7 +145,7 @@ export class Kits implements OnInit {
         });
       }
     });
-    
+
     return Array.from(categoriesMap.values());
   }
 
@@ -132,7 +165,7 @@ export class Kits implements OnInit {
     });
   }
 
-// ─── ABRIR MODAL (Novo ou Edição) ──────────────────────────
+  // ─── ABRIR MODAL (Novo ou Edição) ──────────────────────────
   openModal(kit?: any) {
     // 1. Sempre limpamos o formulário e os itens antigos primeiro
     this.resetFormState();
@@ -141,7 +174,7 @@ export class Kits implements OnInit {
       // 2. MODO EDIÇÃO: Preenchemos os dados com o Kit recebido
       this.isEditing.set(true);
       this.currentKitId.set(kit.id);
-      
+
       // Carrega a imagem se existir
       this.imagePreview.set(kit.imageUrl || null);
 
@@ -160,13 +193,13 @@ export class Kits implements OnInit {
         }));
         this.selectedItems.set(mappedItems);
       }
-      
+
     } else {
       // 3. MODO CRIAÇÃO: Apenas garantimos que os estados de edição estão falsos
       this.isEditing.set(false);
       this.currentKitId.set(null);
     }
-    
+
     // 4. Por fim, exibimos o modal na tela
     this.isModalOpen.set(true);
   }
@@ -181,6 +214,7 @@ export class Kits implements OnInit {
     this.selectedItems.set([]);
     this.selectedFile.set(null);
     this.imagePreview.set(null);
+    this.productSearchTerm.set('');
   }
 
   // ─── DELETAR KIT (Com Dialog Customizado) ────────────
@@ -215,9 +249,9 @@ export class Kits implements OnInit {
   }
 
   // ─── IMAGEM PRINCIPAL ────────────────────────────────────
- onFileSelected(event: any) {
+  onFileSelected(event: any) {
     const file = event.target.files[0];
-    
+
     if (file) {
       // 1. Trava de Formato (Bloqueia WEBP, GIF, SVG, etc)
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -249,7 +283,7 @@ export class Kits implements OnInit {
   }
 
   // ─── COMPOSIÇÃO DO COMBO ─────────────────────────────────
-  addProduct(productId: string) {    
+  addProduct(productId: string) {
     if (!productId) return;
 
     const product = this.availableProducts().find(p => p.id === productId);
@@ -292,7 +326,7 @@ export class Kits implements OnInit {
       name: formValues.name,
       slug: generatedSlug,
       description: formValues.description || undefined,
-      discountType: 'FIXED', 
+      discountType: 'FIXED',
       discountValue: Number(formValues.discountValue),
       productItems: this.selectedItems().map(item => ({
         productId: item.product.id,
@@ -308,7 +342,7 @@ export class Kits implements OnInit {
       next: (savedKit) => {
         if (this.selectedFile()) {
           const kitId = this.isEditing() ? this.currentKitId()! : savedKit.id;
-          
+
           this.catalogService.uploadKitImage(kitId, this.selectedFile()!).subscribe({
             next: () => this.finalizeSave(),
             error: () => {
@@ -338,34 +372,12 @@ export class Kits implements OnInit {
   // ─── ALERTAS (MatSnackBar) ──────────────────────────────────
   showToast(message: string, isError: boolean = false) {
     this.snackBar.open(message, 'X', {
-      duration: 3000, 
-      horizontalPosition: 'right', 
-      verticalPosition: 'top', 
-      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success'] 
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success']
     });
   }
 
-  // ─── BUSCA DE PRODUTOS ─────────────────────────────
-productSearch = signal('');
 
-filteredProducts = computed(() => {
-  const search = this.productSearch()
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-
-  if (!search) {
-    return this.availableProducts();
-  }
-
-  return this.availableProducts().filter(product => {
-    const name = (product.name || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-
-    return name.includes(search);
-  });
-});
 }
