@@ -344,4 +344,28 @@ export class Kits implements OnInit {
       panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success'] 
     });
   }
+
+  // ─── BUSCA DE PRODUTOS ─────────────────────────────
+productSearch = signal('');
+
+filteredProducts = computed(() => {
+  const search = this.productSearch()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  if (!search) {
+    return this.availableProducts();
+  }
+
+  return this.availableProducts().filter(product => {
+    const name = (product.name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    return name.includes(search);
+  });
+});
 }
