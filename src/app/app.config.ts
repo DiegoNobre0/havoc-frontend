@@ -1,4 +1,6 @@
-import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, LOCALE_ID, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -50,10 +52,24 @@ import {
   FileUp,
   ExternalLink,
   Instagram,
-  MapPin
+  MapPin,
+  CreditCard,
+  QrCode,
+  Minus,
+  ShieldCheck,
+  Sparkles,
+  Phone,
+  Building,
+  Copy,
+  RotateCcw,
+  Percent,
+  ChevronLeft,
+  CircleCheck
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
+
+registerLocaleData(localePt);
 
 // 1. Criamos a função que "Trava" o Angular até o login silencioso terminar
 export function initializeApp(authService: AuthService) {
@@ -66,6 +82,7 @@ export function initializeApp(authService: AuthService) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: LOCALE_ID, useValue: 'pt-BR' },
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor])),
     provideEnvironmentNgxMask(),
@@ -85,8 +102,10 @@ export const appConfig: ApplicationConfig = {
         Users, MessageSquare, Menu, Search, Bell, ShoppingBag, AlertTriangle, RefreshCw,
         Settings, TrendingUp, Clock, DollarSign, Calendar, MoreVertical, FileText, Download,
         Plus, PackagePlus, Pencil, Eye, Trash2, EyeOff, X, ImagePlus, Save, ChevronUp, Tag,
-        Gift, MessageCircle, User, Bot, Hand, Paperclip, Mic, Send, Truck, UserPlus, CheckCircle ,LogOut,
-        HelpCircle, Check, Inbox, ArrowRight, FileUp, ExternalLink, Instagram , MapPin
+        Gift, MessageCircle, User, Bot, Hand, Paperclip, Mic, Send, Truck, UserPlus, CheckCircle, LogOut,
+        HelpCircle, Check, Inbox, ArrowRight, FileUp, ExternalLink, Instagram, MapPin,
+        CreditCard, QrCode, Minus, ShieldCheck, Sparkles, Phone, Building, Copy, RotateCcw, Percent, ChevronLeft,
+        CircleCheck
       })
     )
   ]

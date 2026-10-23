@@ -1,0 +1,928 @@
+<div class="checkout-page">
+
+  <!-- ─── 1. NAVBAR / HEADER SUPERIOR DA LOJA ─────────────────── -->
+  <header class="store-header">
+    <div class="header-container">
+      
+      <!-- Logo da Loja -->
+      <div class="brand-area" routerLink="/checkout" (click)="goToStep(1)">
+        <img src="/HavocV1.png" alt="Havoc Suplementos" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">HAVOC</span>
+          <span class="brand-tag">LOJA OFICIAL</span>
+        </div>
+      </div>
+
+      <!-- Trust Badges (Desktop) -->
+      <div class="trust-bar d-none-mobile">
+        <div class="trust-item">
+          <lucide-icon name="truck" class="trust-icon"></lucide-icon>
+          <span>Entrega Expressa Camaçari</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <lucide-icon name="shield-check" class="trust-icon"></lucide-icon>
+          <span>Compra 100% Segura</span>
+        </div>
+      </div>
+
+      <!-- Botão do Carrinho -->
+      <div class="header-actions">
+        <button class="cart-pill-btn" (click)="toggleCartDrawer()">
+          <div class="cart-icon-wrap">
+            <lucide-icon name="shopping-bag"></lucide-icon>
+            @if (cartCount() > 0) {
+              <span class="cart-badge">{{ cartCount() }}</span>
+            }
+          </div>
+          <div class="cart-info d-none-mobile">
+            <span class="cart-label">Meu Pedido</span>
+            <span class="cart-val">R${{ grandTotal() | number:'1.2-2' }}</span>
+          </div>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ─── 2. PROGRESS STEPPER (INDICADOR DE ETAPAS) ────────────── -->
+  @if (!isOrderCompleted()) {
+    <div class="stepper-section">
+      <div class="stepper-container">
+        
+        <button 
+          class="step-item" 
+          [class.active]="currentStep() === 1" 
+          [class.completed]="currentStep() > 1"
+          (click)="goToStep(1)"
+        >
+          <lucide-icon name="package" class="mobile-step-icon"></lucide-icon>
+          <div class="step-circle">
+            @if (currentStep() > 1) {
+              <lucide-icon name="check" class="step-check-icon"></lucide-icon>
+            } @else {
+              <span>1</span>
+            }
+          </div>
+          <span class="step-title"><span class="desktop-step-label">Catálogo & Produtos</span><span class="mobile-step-label">Produtos</span></span>
+        </button>
+
+        <div class="step-line" [class.completed]="currentStep() > 1"></div>
+
+        <button 
+          class="step-item" 
+          [class.active]="currentStep() === 2" 
+          [class.completed]="currentStep() > 2"
+          [disabled]="cart().length === 0"
+          (click)="goToStep(2)"
+        >
+          <lucide-icon name="truck" class="mobile-step-icon"></lucide-icon>
+          <div class="step-circle">
+            @if (currentStep() > 2) {
+              <lucide-icon name="check" class="step-check-icon"></lucide-icon>
+            } @else {
+              <span>2</span>
+            }
+          </div>
+          <span class="step-title"><span class="desktop-step-label">Dados & Entrega</span><span class="mobile-step-label">Entrega</span></span>
+        </button>
+
+        <div class="step-line" [class.completed]="currentStep() > 2"></div>
+
+        <button 
+          class="step-item" 
+          [class.active]="currentStep() === 3" 
+          [disabled]="cart().length === 0"
+          (click)="goToStep(3)"
+        >
+          <lucide-icon name="credit-card" class="mobile-step-icon"></lucide-icon>
+          <div class="step-circle">
+            <span>3</span>
+          </div>
+          <span class="step-title"><span class="desktop-step-label">Pagamento & Revisão</span><span class="mobile-step-label">Pagamento</span></span>
+        </button>
+
+      </div>
+    </div>
+  }
+
+  <!-- ─── 3. CONTEÚDO PRINCIPAL ────────────────────────────────── -->
+  <main class="main-content">
+    <div class="content-container">
+
+      <!-- ======================================================== -->
+      <!-- ETAPA 1: CATÁLOGO DE PRODUTOS E KITS                     -->
+      <!-- ======================================================== -->
+      @if (currentStep() === 1 && !isOrderCompleted()) {
+        
+        @if (bestSellers().length > 0) {
+          <section
+            class="mobile-featured"
+            aria-label="Produtos mais vendidos"
+            (mouseenter)="setFeaturedPaused(true)"
+            (mouseleave)="setFeaturedPaused(false)"
+            (focusin)="setFeaturedPaused(true)"
+            (focusout)="setFeaturedPaused(false)"
+            (touchstart)="setFeaturedPaused(true)"
+            (touchend)="setFeaturedPaused(false)"
+          >
+            <div class="mobile-featured-head">
+              <div><span>DESTAQUES HAVOC</span><h1>Mais vendidos</h1></div>
+              <span class="featured-position">{{ featuredIndex() + 1 }}/{{ bestSellers().length }}</span>
+            </div>
+
+            <div class="mobile-featured-track" #featuredCarousel (scroll)="onFeaturedScroll()">
+              @for (item of bestSellers(); track item.type + item.id; let index = $index) {
+                <article class="featured-slide" [attr.data-featured-index]="index">
+                  <a class="featured-image" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                    <span class="featured-badge">Mais vendido</span>
+                    @if (item.imageUrl) {
+                      <img [src]="item.imageUrl" [alt]="item.name" loading="eager">
+                    } @else {
+                      <lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'"></lucide-icon>
+                    }
+                  </a>
+                  <div class="featured-copy">
+                    <span class="featured-type">{{ item.type === 'kit' ? 'KIT HAVOC' : (item.categories[0]?.name || 'PRODUTO') }}</span>
+                    <h2>{{ item.name }}</h2>
+                    <div class="featured-price"><small>R$</small>{{ item.price | number:'1.2-2' }}</div>
+                    <div class="featured-actions">
+                      <a [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Ver detalhes</a>
+                      <button (click)="addToCart(item)" [disabled]="!item.available">
+                        <lucide-icon name="shopping-bag"></lucide-icon>
+                        {{ item.available ? 'Adicionar' : 'Indisponível' }}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+
+            @if (bestSellers().length > 1) {
+              <div class="featured-controls">
+                <button class="featured-arrow" (click)="goToFeatured(featuredIndex() - 1)" aria-label="Destaque anterior"><lucide-icon name="chevron-left"></lucide-icon></button>
+                <div class="featured-dots">
+                  @for (item of bestSellers(); track item.type + item.id; let index = $index) {
+                    <button [class.active]="featuredIndex() === index" (click)="goToFeatured(index)" [attr.aria-label]="'Ir para destaque ' + (index + 1)"></button>
+                  }
+                </div>
+                <button class="featured-arrow" (click)="goToFeatured(featuredIndex() + 1)" aria-label="Próximo destaque"><lucide-icon name="chevron-right"></lucide-icon></button>
+              </div>
+            }
+          </section>
+        }
+
+        @if (bestSellers().length > 0) {
+          <section class="best-sellers-section desktop-best-sellers" aria-labelledby="best-sellers-title">
+            <div class="catalog-heading">
+              <div><span class="section-kicker">ESCOLHAS DA COMUNIDADE</span><h2 id="best-sellers-title">Mais vendidos</h2></div>
+              <span class="section-count">Top {{ bestSellers().length }} dos últimos 90 dias</span>
+            </div>
+            <div class="best-sellers-scroll">
+              @for (item of bestSellers(); track item.type + item.id) {
+                <article class="product-card best-seller-card" [class.is-kit-card]="item.type === 'kit'">
+                  <div class="card-badge badge-best">Mais vendido</div>
+                  <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                    @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
+                    @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
+                  </a>
+                  <div class="card-body">
+                    <span class="card-category">{{ item.type === 'kit' ? 'KIT HAVOC' : (item.categories[0]?.name || 'PRODUTO') }}</span>
+                    <h3 class="card-title">{{ item.name }}</h3>
+                    <div class="price-container"><div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div></div>
+                    <div class="card-actions">
+                      <a class="btn-details" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Detalhes</a>
+                      <button class="btn-add-cart" (click)="addToCart(item)" [disabled]="!item.available">{{ item.available ? 'Adicionar' : 'Indisponível' }}</button>
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
+        <div class="catalog-filters-bar">
+          <div class="type-filter-group">
+            <button class="type-btn" [class.active]="activeCatalogType() === 'all'" (click)="setCatalogType('all')">Todos</button>
+            <button class="type-btn" [class.active]="activeCatalogType() === 'product'" (click)="setCatalogType('product')"><lucide-icon name="package" class="btn-icon-xs"></lucide-icon>Produtos</button>
+            <button class="type-btn" [class.active]="activeCatalogType() === 'kit'" (click)="setCatalogType('kit')"><lucide-icon name="gift" class="btn-icon-xs text-yellow"></lucide-icon>Kits & Combos</button>
+          </div>
+          <div class="search-input-wrap">
+            <lucide-icon name="search" class="search-icon"></lucide-icon>
+            <input type="text" class="catalog-search" placeholder="Buscar por Whey, Creatina, Pré-Treino..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+            @if (searchQuery()) { <button class="clear-search" (click)="clearSearch()" aria-label="Limpar busca"><lucide-icon name="x"></lucide-icon></button> }
+          </div>
+        </div>
+
+        <div class="categories-scroll-wrapper">
+          <div class="categories-list">
+            <button class="category-pill" [class.active]="selectedCategoryId() === ''" (click)="setCategory('')">Todas as Categorias</button>
+            @for (cat of categories(); track cat.id) { <button class="category-pill" [class.active]="selectedCategoryId() === cat.id" (click)="setCategory(cat.id)">{{ cat.name }}</button> }
+          </div>
+        </div>
+
+        <div class="catalog-grid-wrapper" #catalogSection>
+          <div class="catalog-heading">
+            <div><span class="section-kicker">CATÁLOGO HAVOC</span><h2>{{ activeCatalogType() === 'kit' ? 'Kits e combos' : activeCatalogType() === 'product' ? 'Produtos' : 'Todos os produtos' }}</h2></div>
+            @if (!isLoadingCatalog() && !catalogError()) { <span class="section-count">{{ meta().total }} {{ meta().total === 1 ? 'item encontrado' : 'itens encontrados' }}</span> }
+          </div>
+          @if (isLoadingCatalog()) {
+            <div class="catalog-grid">
+              @for (i of [1,2,3,4,5,6]; track i) { <div class="product-skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-text-lg"></div><div class="skeleton-text-sm"></div><div class="skeleton-price"></div><div class="skeleton-btn"></div></div></div> }
+            </div>
+          } @else if (catalogError()) {
+            <div class="empty-catalog error-state"><div class="empty-icon-wrap"><lucide-icon name="alert-triangle"></lucide-icon></div><h3>Não foi possível carregar o catálogo</h3><p>Verifique sua conexão e tente novamente.</p><button class="ui-btn ui-btn--primary" (click)="retryCatalog()">Tentar novamente</button></div>
+          } @else if (catalog().length === 0) {
+            <div class="empty-catalog"><div class="empty-icon-wrap"><lucide-icon name="search"></lucide-icon></div><h3>Nenhum item encontrado</h3><p>Tente ajustar a busca ou limpar os filtros de categoria.</p><button class="ui-btn ui-btn--primary" (click)="clearSearch(); setCategory('')">Ver Todos os Produtos</button></div>
+          } @else {
+            <div class="catalog-grid">
+              @for (item of catalog(); track item.type + item.id) {
+                <article class="product-card" [class.is-kit-card]="item.type === 'kit'" [class.is-unavailable]="!item.available">
+                  <div class="card-badge" [class.badge-kit]="item.type === 'kit'" [class.badge-unavailable]="!item.available">{{ !item.available ? 'Indisponível' : item.type === 'kit' ? 'Kit especial' : 'Disponível' }}</div>
+                  <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                    @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
+                    @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
+                  </a>
+                  <div class="card-body">
+                    <span class="card-category">{{ item.type === 'kit' ? 'COMBO PROMOCIONAL' : (item.categories[0]?.name || 'PRODUTO') }}</span>
+                    <h3 class="card-title" [title]="item.name">{{ item.name }}</h3>
+                    @if (item.description) { <p class="card-desc">{{ item.description }}</p> }
+                    <div class="price-container"><div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div></div>
+                    <div class="card-actions"><a class="btn-details" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Ver detalhes</a><button class="btn-add-cart" (click)="addToCart(item)" [disabled]="!item.available" [attr.aria-label]="item.available ? 'Adicionar ' + item.name + ' ao carrinho' : item.name + ' indisponível'"><lucide-icon name="plus" class="btn-icon-xs"></lucide-icon><span>{{ item.available ? 'Adicionar' : 'Indisponível' }}</span></button></div>
+                  </div>
+                </article>
+              }
+            </div>
+            @if (meta().totalPages > 1) {
+              <nav class="catalog-pagination" aria-label="Paginação do catálogo"><button (click)="goToPage(page() - 1)" [disabled]="page() === 1"><lucide-icon name="chevron-left"></lucide-icon><span>Anterior</span></button><div class="page-numbers">@for (pageNumber of pageNumbers(); track pageNumber) { <button (click)="goToPage(pageNumber)" [class.active]="pageNumber === page()" [attr.aria-current]="pageNumber === page() ? 'page' : null">{{ pageNumber }}</button> }</div><span class="mobile-page-status">Página {{ page() }} de {{ meta().totalPages }}</span><button (click)="goToPage(page() + 1)" [disabled]="page() === meta().totalPages"><span>Próximo</span><lucide-icon name="chevron-right"></lucide-icon></button></nav>
+            }
+          }
+        </div>
+
+      }
+
+      <!-- ======================================================== -->
+      <!-- ETAPA 2: DADOS CADASTRAIS & ENTREGA OU RETIRADA          -->
+      <!-- ======================================================== -->
+      @if (currentStep() === 2 && !isOrderCompleted()) {
+        <div class="checkout-layout">
+          
+          <!-- Formulários (Esquerda) -->
+          <div class="checkout-forms">
+            
+            <!-- Card 1: Dados do Cliente -->
+            <div class="checkout-card">
+              <div class="card-section-header">
+                <div class="section-icon-wrap">
+                  <lucide-icon name="user"></lucide-icon>
+                </div>
+                <div>
+                  <h2 class="section-title">Dados Cadastrais</h2>
+                  <p class="section-subtitle">Informe seus dados para contato e emissão do pedido</p>
+                </div>
+              </div>
+
+              <form [formGroup]="customerForm" class="form-grid">
+                
+                <div class="form-field col-full">
+                  <label class="form-label">Nome Completo *</label>
+                  <input 
+                    type="text" 
+                    formControlName="name" 
+                    class="ui-input" 
+                    placeholder="Ex: João da Silva Santos"
+                  >
+                  @if (customerForm.get('name')?.touched && customerForm.get('name')?.invalid) {
+                    <span class="field-error">Informe o nome completo</span>
+                  }
+                </div>
+
+                <div class="form-field col-half">
+                  <label class="form-label">WhatsApp / Celular *</label>
+                  <input 
+                    type="text" 
+                    formControlName="phone" 
+                    class="ui-input" 
+                    placeholder="(71) 99999-9999"
+                    mask="(00) 00000-0000"
+                  >
+                  @if (customerForm.get('phone')?.touched && customerForm.get('phone')?.invalid) {
+                    <span class="field-error">Informe um WhatsApp válido</span>
+                  }
+                </div>
+
+                <div class="form-field col-half">
+                  <label class="form-label">CPF *</label>
+                  <input 
+                    type="text" 
+                    formControlName="cpf" 
+                    class="ui-input" 
+                    placeholder="000.000.000-00"
+                    mask="000.000.000-00"
+                  >
+                  @if (customerForm.get('cpf')?.touched && customerForm.get('cpf')?.invalid) {
+                    <span class="field-error">Informe o CPF</span>
+                  }
+                </div>
+
+                <div class="form-field col-full">
+                  <label class="form-label">E-mail (opcional para recibo)</label>
+                  <input 
+                    type="email" 
+                    formControlName="email" 
+                    class="ui-input" 
+                    placeholder="seuemail@exemplo.com"
+                  >
+                </div>
+
+                <div class="form-field col-full">
+                  <label class="form-label">Observações do Pedido (opcional)</label>
+                  <textarea 
+                    formControlName="notes" 
+                    class="ui-input ui-textarea" 
+                    placeholder="Ex: Horário preferencial, cuidados com a embalagem, etc."
+                  ></textarea>
+                </div>
+
+              </form>
+            </div>
+
+            <!-- Card 2: Modalidade (Entrega ou Retirada) -->
+            <div class="checkout-card">
+              <div class="card-section-header">
+                <div class="section-icon-wrap">
+                  <lucide-icon name="truck"></lucide-icon>
+                </div>
+                <div>
+                  <h2 class="section-title">Entrega ou Retirada?</h2>
+                  <p class="section-subtitle">Escolha como deseja receber seus suplementos</p>
+                </div>
+              </div>
+
+              <!-- Seleção de Modalidade -->
+              <div class="delivery-options-grid">
+                
+                <div 
+                  class="delivery-card-option" 
+                  [class.selected]="deliveryMethod() === 'DELIVERY'"
+                  (click)="setDeliveryMethod('DELIVERY')"
+                >
+                  <div class="radio-indicator"></div>
+                  <div class="delivery-icon-box">
+                    <lucide-icon name="truck"></lucide-icon>
+                  </div>
+                  <div class="delivery-card-info">
+                    <strong>Entrega no Endereço</strong>
+                    <span>Receba em casa com envio rápido</span>
+                    <span class="shipping-tag">
+                      @if (selectedShippingRegion(); as rule) {
+                        R${{ rule.price | number:'1.2-2' }} • {{ rule.region }}
+                      } @else {
+                        Selecione seu bairro
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div 
+                  class="delivery-card-option" 
+                  [class.selected]="deliveryMethod() === 'PICKUP'"
+                  (click)="setDeliveryMethod('PICKUP')"
+                >
+                  <div class="radio-indicator"></div>
+                  <div class="delivery-icon-box">
+                    <lucide-icon name="building"></lucide-icon>
+                  </div>
+                  <div class="delivery-card-info">
+                    <strong>Retirar na Loja Havoc</strong>
+                    <span>Grátis • Pronto em até 30 min</span>
+                    <span class="shipping-tag tag-free">100% Gratuito</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Detalhes da Opção Selecionada -->
+              @if (deliveryMethod() === 'DELIVERY') {
+                
+                <div class="delivery-form-wrapper">
+                  <div class="address-subhead">
+                    <lucide-icon name="map-pin"></lucide-icon>
+                    <span>Endereço de Entrega</span>
+                  </div>
+
+                  <form [formGroup]="addressForm" class="form-grid">
+                    
+                    <div class="form-field col-full">
+                      <label class="form-label" for="shipping-region">Bairro *</label>
+                      <select
+                        id="shipping-region"
+                        class="ui-input shipping-region-select"
+                        [value]="selectedShippingRegion()?.id ?? (isCustomNeighborhood() ? 'custom' : '')"
+                        (change)="selectShippingRegion($any($event.target).value)"
+                        [disabled]="isShippingRegionsLoading()"
+                      >
+                        <option value="" disabled>
+                          {{ isShippingRegionsLoading() ? 'Carregando bairros...' : 'Selecione seu bairro' }}
+                        </option>
+                        @for (rule of shippingRegions(); track rule.id) {
+                          <option [value]="rule.id">{{ rule.region }} • R${{ rule.price | number:'1.2-2' }}</option>
+                        }
+                        <option value="custom">Meu bairro não está na lista</option>
+                      </select>
+
+                      @if (selectedShippingRegion(); as rule) {
+                        <span class="shipping-result">{{ rule.name }} • entrega em até {{ rule.estimatedDays }} dia(s)</span>
+                      }
+                    </div>
+
+                    @if (isCustomNeighborhood()) {
+                      <div class="form-field col-full custom-neighborhood-box">
+                        <label class="form-label" for="custom-neighborhood">Digite seu bairro *</label>
+                        <input id="custom-neighborhood" type="text" formControlName="neighborhood" class="ui-input" placeholder="Nome do bairro">
+                        <span class="shipping-result">Taxa fixa para bairro fora da lista: R$15,00</span>
+                      </div>
+                    }
+
+                    <div class="form-field col-3-4">
+                      <label class="form-label">Rua / Logradouro *</label>
+                      <input type="text" formControlName="street" class="ui-input" placeholder="Rua, Avenida, Praça">
+                    </div>
+
+                    <div class="form-field col-1-4">
+                      <label class="form-label">Número *</label>
+                      <input type="text" formControlName="number" class="ui-input" placeholder="123">
+                    </div>
+
+                    <div class="form-field col-half">
+                      <label class="form-label">Complemento</label>
+                      <input type="text" formControlName="complement" class="ui-input" placeholder="Apto, Bloco, Casa B">
+                    </div>
+
+                    <div class="form-field col-half">
+                      <label class="form-label">Ponto de Referência</label>
+                      <input type="text" formControlName="reference" class="ui-input" placeholder="Próximo à padaria...">
+                    </div>
+
+                    <div class="form-field col-half">
+                      <label class="form-label">Cidade</label>
+                      <input type="text" formControlName="city" class="ui-input">
+                    </div>
+
+                    <div class="form-field col-half">
+                      <label class="form-label">Estado</label>
+                      <input type="text" formControlName="state" class="ui-input">
+                    </div>
+
+                  </form>
+                </div>
+
+              } @else {
+                
+                <!-- Informações da Loja Física -->
+                <div class="pickup-info-box">
+                  <div class="pickup-header">
+                    <lucide-icon name="map-pin" class="pickup-pin-icon"></lucide-icon>
+                    <div>
+                      <strong>Havoc Suplementos Camaçari</strong>
+                      <p>R. Francisco Drumond, 10 - Centro, Camaçari - BA, 42800-063</p>
+                    </div>
+                  </div>
+                  <div class="pickup-details">
+                    <div class="pickup-badge">
+                      <lucide-icon name="clock"></lucide-icon>
+                      <span>Horário: Seg a Sex 08h às 19h | Sáb 08h às 14h</span>
+                    </div>
+                    <p class="pickup-note">
+                      Assim que o pagamento for confirmado, seu pedido será separado com prioridade e ficará disponível no balcão.
+                    </p>
+                  </div>
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+          <!-- Resumo Lateral (Direita) -->
+          <div class="checkout-sidebar">
+            <ng-container *ngTemplateOutlet="orderSummaryTemplate; context: { nextStep: 3, nextLabel: 'Prosseguir para Pagamento' }"></ng-container>
+          </div>
+
+        </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- ETAPA 3: PAGAMENTO & FINALIZAÇÃO                         -->
+      <!-- ======================================================== -->
+      @if (currentStep() === 3 && !isOrderCompleted()) {
+        <div class="checkout-layout">
+          
+          <!-- Opções de Pagamento (Esquerda) -->
+          <div class="checkout-forms">
+            
+            <div class="checkout-card">
+              <div class="card-section-header">
+                <div class="section-icon-wrap">
+                  <lucide-icon name="credit-card"></lucide-icon>
+                </div>
+                <div>
+                  <h2 class="section-title">Forma de Pagamento</h2>
+                  <p class="section-subtitle">Selecione o método de pagamento de sua preferência</p>
+                </div>
+              </div>
+
+              <!-- Grid de Métodos -->
+              <div class="payment-methods-grid" role="radiogroup" aria-label="Forma de pagamento">
+                
+                <!-- PIX -->
+                <button
+                  type="button"
+                  class="payment-option-card"
+                  [class.selected]="paymentMethod() === 'PIX'"
+                  role="radio"
+                  [attr.aria-checked]="paymentMethod() === 'PIX'"
+                  (click)="setPaymentMethod('PIX')"
+                >
+                  <div class="payment-card-top">
+                    <div class="radio-indicator"></div>
+                    <div class="payment-icon-wrap text-yellow">
+                      <lucide-icon name="qr-code"></lucide-icon>
+                    </div>
+                  </div>
+                  <span class="payment-copy">
+                    <strong class="payment-name">PIX</strong>
+                    <span class="payment-desc">QR Code e PIX Copia e Cola serão gerados após confirmar</span>
+                  </span>
+                </button>
+
+                <!-- Cartão de Crédito -->
+                <button
+                  type="button"
+                  class="payment-option-card"
+                  [class.selected]="paymentMethod() === 'CREDIT_CARD'"
+                  role="radio"
+                  [attr.aria-checked]="paymentMethod() === 'CREDIT_CARD'"
+                  (click)="setPaymentMethod('CREDIT_CARD')"
+                >
+                  <div class="payment-card-top">
+                    <div class="radio-indicator"></div>
+                    <div class="payment-icon-wrap">
+                      <lucide-icon name="credit-card"></lucide-icon>
+                    </div>
+                  </div>
+                  <span class="payment-copy">
+                    <strong class="payment-name">Cartão de crédito</strong>
+                    <span class="payment-desc">Você será redirecionado ao ambiente seguro do Mercado Pago</span>
+                  </span>
+                </button>
+
+                <!-- Dinheiro -->
+                @if (deliveryMethod() === 'PICKUP') {
+                  <button
+                    type="button"
+                    class="payment-option-card"
+                    [class.selected]="paymentMethod() === 'CASH'"
+                    role="radio"
+                    [attr.aria-checked]="paymentMethod() === 'CASH'"
+                    (click)="setPaymentMethod('CASH')"
+                  >
+                    <div class="payment-card-top">
+                      <div class="radio-indicator"></div>
+                      <div class="payment-icon-wrap">
+                        <lucide-icon name="dollar-sign"></lucide-icon>
+                      </div>
+                    </div>
+                    <span class="payment-copy">
+                      <strong class="payment-name">Dinheiro</strong>
+                      <span class="payment-desc">Pagamento no balcão no momento da retirada</span>
+                    </span>
+                  </button>
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Resumo Lateral (Direita) -->
+          <div class="checkout-sidebar">
+            <ng-container *ngTemplateOutlet="orderSummaryTemplate; context: { isFinalStep: true }"></ng-container>
+          </div>
+
+        </div>
+      }
+
+      <!-- ======================================================== -->
+      <!-- TELA DE SUCESSO: PEDIDO CONCLUÍDO                        -->
+      <!-- ======================================================== -->
+      @if (paymentReturnStatus(); as returnStatus) {
+        <div class="order-success-screen payment-return-screen">
+          <div class="success-card" [class.return-failure]="returnStatus === 'failure'" [class.return-pending]="returnStatus === 'pending'">
+            <div class="success-icon-wrap">
+              <lucide-icon [name]="returnStatus === 'failure' ? 'circle-x' : returnStatus === 'pending' ? 'clock' : 'check-circle'" class="success-icon"></lucide-icon>
+            </div>
+            <span class="success-tag">RETORNO DO PAGAMENTO</span>
+            <h1 class="success-title">
+              {{ returnStatus === 'success' ? 'Pagamento confirmado' : returnStatus === 'pending' ? 'Pagamento em processamento' : 'Pagamento não concluído' }}
+            </h1>
+            @if (returnOrderCode()) {
+              <p class="success-code">Pedido <strong>#{{ returnOrderCode() }}</strong></p>
+            }
+            <p class="return-message">
+              {{ returnStatus === 'success'
+                ? 'Recebemos seu pagamento e o pedido seguirá para preparação.'
+                : returnStatus === 'pending'
+                  ? 'Estamos aguardando a confirmação. Esta página será atualizada automaticamente.'
+                  : 'O pedido foi registrado, mas o pagamento falhou ou foi cancelado.' }}
+            </p>
+            <button class="ui-btn ui-btn--secondary w-full" (click)="resetOrderFlow()">Voltar à loja</button>
+          </div>
+        </div>
+      } @else if (completedOrder(); as order) {
+        <div class="order-success-screen">
+          
+          <div class="success-card">
+            
+            <div class="success-icon-wrap">
+              <lucide-icon name="check-circle" class="success-icon"></lucide-icon>
+            </div>
+
+            <span class="success-tag">{{ checkoutStatus()?.paymentStatus === 'PAID' ? 'PAGAMENTO CONFIRMADO' : 'PEDIDO REGISTRADO COM SUCESSO' }}</span>
+            <h1 class="success-title">
+              {{ checkoutStatus()?.paymentStatus === 'PAID' ? 'Pagamento recebido!' : order.paymentMethod === 'CASH' ? 'Pedido confirmado para retirada!' : 'Finalize o pagamento' }}
+            </h1>
+            <p class="success-code">Código do Pedido: <strong>#{{ order.code }}</strong></p>
+
+            <!-- AVISO DE PIX (SE FOR PIX) -->
+            @if (order.paymentMethod === 'PIX' && completedPayment(); as payment) {
+              <div class="pix-payment-box">
+                <div class="pix-box-header">
+                  <lucide-icon name="qr-code" class="text-yellow"></lucide-icon>
+                  <div>
+                    <strong>{{ checkoutStatus()?.paymentStatus === 'PAID' ? 'PIX confirmado' : 'Pague via PIX para liberação rápida' }}</strong>
+                    <span>Total do pedido: <strong>R${{ order.total | number:'1.2-2' }}</strong></span>
+                  </div>
+                </div>
+
+                @if (pixQrCodeSrc(); as qrCodeSrc) {
+                  <img class="pix-qr-code" [src]="qrCodeSrc" alt="QR Code PIX do pedido">
+                }
+                @if (payment.pixCode) {
+                  <div class="pix-key-wrapper">
+                    <input type="text" readonly class="pix-key-input" [value]="payment.pixCode" aria-label="Código PIX Copia e Cola">
+                    <button class="btn-copy-pix" (click)="copyPixCode()">
+                      <lucide-icon [name]="pixCopied() ? 'check' : 'copy'"></lucide-icon>
+                      <span>{{ pixCopied() ? 'Copiado!' : 'Copiar código' }}</span>
+                    </button>
+                  </div>
+                }
+                <span class="pix-instruction">
+                  {{ checkoutStatus()?.paymentStatus === 'PAID' ? 'Pagamento confirmado. Seu pedido seguirá para preparação.' : 'Abra o app do seu banco e use o QR Code ou PIX Copia e Cola.' }}
+                </span>
+                @if (payment.expiresAt && checkoutStatus()?.paymentStatus !== 'PAID') {
+                  <span class="pix-expiration">Este PIX expira às {{ payment.expiresAt | date:'HH:mm' }}.</span>
+                }
+              </div>
+            }
+
+            <div class="action-buttons-group">
+              <button class="ui-btn ui-btn--secondary w-full" (click)="resetOrderFlow()">
+                <lucide-icon name="shopping-bag" class="btn-icon-xs"></lucide-icon>
+                Fazer Outro Pedido
+              </button>
+
+            </div>
+
+            <!-- Resumo Rápido dos Itens -->
+            <div class="completed-summary-box">
+              <h4 class="summary-box-title">Resumo do Pedido</h4>
+              <ul class="summary-items-list">
+                @for (item of order.items; track item.id) {
+                  <li>
+                    <span>{{ item.quantity }}x {{ item.name }}</span>
+                    <strong>R${{ item.totalPrice | number:'1.2-2' }}</strong>
+                  </li>
+                }
+              </ul>
+              <div class="summary-total-row">
+                <span>Total do pedido:</span>
+                <span class="text-yellow">R${{ order.total | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      }
+
+    </div>
+  </main>
+
+  <!-- ─── 4. TEMPLATE DE RESUMO DO PEDIDO (REUTILIZADO) ────────── -->
+  <ng-template #orderSummaryTemplate let-nextStep="nextStep" let-nextLabel="nextLabel" let-isFinalStep="isFinalStep">
+    <div class="order-summary-card">
+      <h3 class="summary-card-title">Resumo do Pedido</h3>
+
+      <!-- Lista de Itens no Resumo -->
+      <div class="summary-items-scroll">
+        @for (item of cart(); track item.type + item.id) {
+          <div class="summary-item-row">
+            <div class="item-thumb-name">
+              <span class="item-name" [title]="item.name">{{ item.name }}</span>
+            </div>
+            <div class="summary-item-actions">
+              <div class="summary-stepper" aria-label="Quantidade de {{ item.name }}">
+                <button type="button" (click)="updateQuantity(item.id, item.type, item.quantity - 1)" [disabled]="item.quantity <= 1" aria-label="Diminuir quantidade">
+                  <lucide-icon name="minus"></lucide-icon>
+                </button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" (click)="updateQuantity(item.id, item.type, item.quantity + 1)" aria-label="Aumentar quantidade">
+                  <lucide-icon name="plus"></lucide-icon>
+                </button>
+              </div>
+              <span class="item-price">R${{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+              <button type="button" class="summary-remove-item" (click)="removeFromCart(item.id, item.type)" aria-label="Remover {{ item.name }}">
+                <lucide-icon name="trash-2"></lucide-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <!-- Linhas Financeiras -->
+      <div class="summary-lines">
+        
+        <div class="line-row">
+          <span>Subtotal</span>
+          <span>R${{ subtotal() | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="line-row">
+          <span>Entrega</span>
+          @if (deliveryMethod() === 'PICKUP') {
+            <span class="text-success font-bold">GRÁTIS</span>
+          } @else if (selectedShippingRegion() || isCustomNeighborhood()) {
+            <span>R${{ effectiveShipping() | number:'1.2-2' }}</span>
+          } @else {
+            <span>A calcular</span>
+          }
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <!-- Total -->
+        <div class="grand-total-row">
+          <div>
+            <span class="total-label">Total a Pagar</span>
+          </div>
+          <span class="total-amount">R${{ grandTotal() | number:'1.2-2' }}</span>
+        </div>
+
+      </div>
+
+      <!-- Botão de Ação -->
+      @if (isFinalStep) {
+        <button 
+          class="btn-complete-order" 
+          (click)="submitOrder()" 
+          [disabled]="isSubmitting() || cart().length === 0"
+        >
+          @if (isSubmitting()) {
+            <lucide-icon name="refresh-cw" class="spin-icon"></lucide-icon>
+            <span>Processando Pedido...</span>
+          } @else {
+            <lucide-icon [name]="paymentMethod() === 'PIX' ? 'qr-code' : paymentMethod() === 'CREDIT_CARD' ? 'credit-card' : 'check-circle'" class="btn-icon-xs"></lucide-icon>
+            <span>{{ finalButtonLabel() }} • R${{ grandTotal() | number:'1.2-2' }}</span>
+          }
+        </button>
+      } @else {
+        <button 
+          class="btn-next-step" 
+          (click)="goToStep(nextStep)"
+          [disabled]="cart().length === 0"
+        >
+          <span>{{ nextLabel }}</span>
+          <lucide-icon name="arrow-right" class="btn-icon-xs"></lucide-icon>
+        </button>
+      }
+
+      <button class="btn-back-catalog" (click)="goToStep(1)">
+        <lucide-icon name="chevron-left" class="btn-icon-xs"></lucide-icon>
+        <span>Adicionar mais produtos</span>
+      </button>
+
+    </div>
+  </ng-template>
+
+  <!-- ─── 5. CART DRAWER (GAVETA LATERAL DO CARRINHO) ─────────── -->
+  @if (isCartDrawerOpen()) {
+    <div class="drawer-overlay" (click)="toggleCartDrawer()">
+      <div class="drawer-container" (click)="$event.stopPropagation()">
+        
+        <div class="drawer-header">
+          <div class="drawer-title-wrap">
+            <lucide-icon name="shopping-bag" class="text-yellow"></lucide-icon>
+            <h3>Seu Pedido ({{ cartCount() }})</h3>
+          </div>
+          <button class="btn-close-drawer" (click)="toggleCartDrawer()">
+            <lucide-icon name="x"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="drawer-body">
+          @if (cart().length === 0) {
+            <div class="empty-drawer">
+              <lucide-icon name="shopping-cart" class="empty-drawer-icon"></lucide-icon>
+              <h4>Seu carrinho está vazio</h4>
+              <p>Adicione suplementos ou kits para iniciar seu pedido.</p>
+              <button class="ui-btn ui-btn--primary" (click)="toggleCartDrawer()">
+                Explorar Catálogo
+              </button>
+            </div>
+          } @else {
+            <div class="cart-items-list">
+              @for (item of cart(); track item.type + item.id) {
+                <div class="cart-item-card">
+                  
+                  <div class="cart-item-img-wrap">
+                    @if (item.imageUrl) {
+                      <img [src]="item.imageUrl" [alt]="item.name">
+                    } @else {
+                      <lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'"></lucide-icon>
+                    }
+                  </div>
+
+                  <div class="cart-item-info">
+                    <h4 class="cart-item-title">{{ item.name }}</h4>
+                    <span class="cart-item-unit-price">R${{ item.price | number:'1.2-2' }} cada</span>
+                    
+                    <div class="cart-stepper-wrap">
+                      <div class="stepper">
+                        <button (click)="updateQuantity(item.id, item.type, item.quantity - 1)" [disabled]="item.quantity <= 1">
+                          <lucide-icon name="minus"></lucide-icon>
+                        </button>
+                        <span>{{ item.quantity }}</span>
+                        <button (click)="updateQuantity(item.id, item.type, item.quantity + 1)">
+                          <lucide-icon name="plus"></lucide-icon>
+                        </button>
+                      </div>
+
+                      <span class="cart-item-total">
+                        R${{ (item.price * item.quantity) | number:'1.2-2' }}
+                      </span>
+
+                      <button class="btn-remove-item" (click)="removeFromCart(item.id, item.type)" title="Remover">
+                        <lucide-icon name="trash-2"></lucide-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        @if (cart().length > 0) {
+          <div class="drawer-footer">
+            <div class="drawer-subtotal-row">
+              <span>Subtotal:</span>
+              <strong>R${{ subtotal() | number:'1.2-2' }}</strong>
+            </div>
+
+            <button 
+              class="btn-checkout-drawer" 
+              (click)="toggleCartDrawer(); goToStep(2)"
+            >
+              <span>Continuar Pedido</span>
+              <lucide-icon name="arrow-right" class="btn-icon-xs"></lucide-icon>
+            </button>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
+  <!-- ─── 6. BARRA FLUTUANTE INFERIOR (MOBILE) ─────────────────── -->
+  @if (cartCount() > 0 && currentStep() === 1 && !isOrderCompleted()) {
+    <div class="mobile-floating-bar">
+      <div class="mobile-bar-info" (click)="toggleCartDrawer()">
+        <span class="mobile-count">{{ cartCount() }} {{ cartCount() === 1 ? 'item' : 'itens' }}</span>
+        <span class="mobile-price">R${{ grandTotal() | number:'1.2-2' }}</span>
+      </div>
+      <button class="mobile-btn-action" (click)="goToStep(2)">
+        <span>Fechar Pedido</span>
+        <lucide-icon name="arrow-right"></lucide-icon>
+      </button>
+    </div>
+  }
+
+  <app-supplement-consultant [clearMobileBottomBar]="true" />
+
+</div>

@@ -54,4 +54,11 @@ export class OrderService {
 
     return this.http.patch<any>(`${this.baseUrl}/${id}/status`, payload);
   }
+
+  /**
+   * 4. Cria um novo pedido (Checkout / Loja / PDV)
+   */
+  createOrder(data: any): Observable<any> {
+    return this.http.post<any>(this.baseUrl, data);
+  }
 }

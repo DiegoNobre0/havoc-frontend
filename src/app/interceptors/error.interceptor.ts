@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { SKIP_AUTH } from './http-context.tokens';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -10,7 +11,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Verifica se o erro é 401 (Não Autorizado) 
       // Ignoramos a rota de login, pois lá o 401 significa apenas "senha errada"
-      if (error.status === 401 && !req.url.includes('/auth/login')) {
+      if (error.status === 401 && !req.context.get(SKIP_AUTH) && !req.url.includes('/auth/login')) {
         console.warn('Sessão inválida ou expirada. Efetuando logout de segurança...');
         
         // Dispara a rotina de limpeza que já criamos no Service!

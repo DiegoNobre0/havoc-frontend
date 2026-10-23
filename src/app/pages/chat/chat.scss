@@ -1,367 +1,311 @@
-$havoc-yellow: #F2B90F;
-$havoc-bg-main: #000000; // Fundo mais profundo
-$havoc-bg-surface: #000000;
-$havoc-border: rgba(255, 255, 255, 0.05); // Bordas super sutis
-$havoc-text: #F8FAFC;
-$havoc-muted: #94A3B8;
-
-* {
-    box-sizing: border-box;
-}
+@use '../../../styles/variables' as *;
 
 :host {
-    display: block;
-    // O height vai depender do seu layout pai, mas 100% garante que ele preencha sem transbordar
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 .layout-chat {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    background-color: $havoc-bg-main;
-    border-radius: 12px;
-    border: 1px solid $havoc-border;
-    overflow: hidden; // Mata qualquer scroll fantasma do container pai
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); // Sombra premium no layout todo
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background-color: var(--ui-surface);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  overflow: hidden;
+  box-shadow: var(--ui-shadow-md);
 }
 
 // ─── SIDEBAR ───
 .chat-sidebar {
-    width: 340px;
-    flex-shrink: 0; // Impede que a sidebar amasse ou estoure a tela
-    display: flex;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0);
-    border-right: 1px solid $havoc-border;
-    z-index: 5;
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--ui-surface);
+  border-right: 1px solid var(--ui-border);
+  z-index: 5;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .sidebar-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid $havoc-border;
+  padding: var(--ui-space-4) var(--ui-space-5);
+  border-bottom: 1px solid var(--ui-divider);
 
-    .header-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--ui-space-3);
 
-        .sidebar-title {
-            color: #F2B90F;
-            font-size: 1.15rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin: 0;
-        }
+    .sidebar-title {
+      color: var(--ui-primary);
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+  }
+
+  .search-container {
+    position: relative;
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ui-text-muted);
     }
 
-    .search-container {
-        position: relative;
-
-        .search-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: $havoc-muted;
-        }
-
-        .nexora-input {
-            background-color: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 0.65rem 1rem 0.65rem 2.5rem;
-            color: $havoc-text;
-            width: 100%;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-
-            &:focus {
-                outline: none;
-                border-color: $havoc-yellow;
-                background-color: rgba(0, 0, 0, 0.4);
-            }
-
-            &::placeholder {
-                color: $havoc-muted;
-            }
-        }
+    .nexora-input {
+      @include ui-input;
+      padding-left: 38px;
+      min-height: 40px;
+      font-size: 0.875rem;
     }
+  }
 }
 
 // ─── TABS ───
 .tabs-container {
-    display: flex;
-    padding: 0 1rem;
-    gap: 1.5rem;
-    border-bottom: 1px solid $havoc-border;
+  display: flex;
+  padding: 0 var(--ui-space-5);
+  gap: var(--ui-space-6);
+  border-bottom: 1px solid var(--ui-divider);
+  background: transparent;
+
+  .tab-btn {
     background: transparent;
+    border: none;
+    color: var(--ui-text-muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: var(--ui-space-3) 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--ui-space-2);
+    border-bottom: 2px solid transparent;
+    transition: all var(--ui-transition);
+    margin-bottom: -1px;
 
-    .tab-btn {
-        background: transparent;
-        border: none;
-        color: $havoc-muted;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 1rem 0;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        border-bottom: 2px solid transparent;
-        transition: all 0.2s;
-        margin-bottom: -1px;
-
-        &.active {
-            color: $havoc-yellow;
-            border-bottom-color: $havoc-yellow;
-        }
-
-        .badge {
-            background: $havoc-yellow;
-            color: #000;
-            font-size: 0.65rem;
-            padding: 0.1rem 0.4rem;
-            border-radius: 12px;
-            font-weight: 800;
-        }
+    &.active {
+      color: var(--ui-primary);
+      border-bottom-color: var(--ui-primary);
     }
+
+    .badge {
+      background: var(--ui-primary);
+      color: var(--ui-text-on-primary);
+      font-size: 0.6875rem;
+      padding: 1px 6px;
+      border-radius: var(--ui-radius-full);
+      font-weight: 800;
+    }
+  }
 }
 
 // ─── LISTA DE CHATS ───
 .chat-list {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  @include custom-scrollbar(4px);
 
-    &::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .empty-state {
-        padding: 2rem;
-        text-align: center;
-        color: $havoc-muted;
-        font-size: 0.875rem;
-    }
+  .empty-state {
+    padding: var(--ui-space-8) var(--ui-space-4);
+    text-align: center;
+    color: var(--ui-text-muted);
+    font-size: 0.875rem;
+  }
 }
 
 .chat-item {
-    display: flex;
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-    transition: all 0.2s ease;
+  display: flex;
+  padding: var(--ui-space-3) var(--ui-space-4);
+  cursor: pointer;
+  border-bottom: 1px solid var(--ui-divider);
+  transition: all var(--ui-transition);
+  position: relative;
+
+  &:hover {
+    background-color: var(--ui-surface-2);
+    padding-left: var(--ui-space-5);
+  }
+
+  &.active {
+    background-color: var(--ui-primary-subtle);
+    border-left: 3px solid var(--ui-primary);
+    padding-left: var(--ui-space-5);
+  }
+
+  .avatar-wrap {
     position: relative;
+    margin-right: var(--ui-space-3);
+    flex-shrink: 0;
 
-    &:hover {
-        background-color: rgba(255, 255, 255, 0.02);
-        padding-left: 1.5rem; // Efeito Premium: move levemente para a direita
+    .avatar-fallback {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--ui-surface-3);
+      border: 1px solid var(--ui-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ui-text-primary);
+      font-weight: 700;
+      font-size: 0.9375rem;
     }
+  }
 
-    &.active {
-        background-color: rgba(242, 185, 15, 0.05);
-        border-left: 3px solid $havoc-yellow;
-        padding-left: 1.5rem;
-    }
+  .chat-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
 
-    .avatar-wrap {
-        position: relative;
-        margin-right: 1rem;
-        flex-shrink: 0;
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
 
-        .avatar-fallback {
-            width: 2.75rem;
-            height: 2.75rem;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: $havoc-text;
-            font-weight: 700;
-            font-size: 1rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      .chat-name {
+        color: var(--ui-text-primary);
+        font-weight: 600;
+        font-size: 0.875rem;
+        @include text-truncate;
+      }
+
+      .chat-time {
+        color: var(--ui-text-muted);
+        font-size: 0.75rem;
+
+        &.unread-time {
+          color: var(--ui-primary);
+          font-weight: 700;
         }
-
-        .channel-icon {
-            width: 0.1rem;
-            height: 0.1rem;
-            position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: #25D366;
-            color: #fff;
-            border-radius: 50%;
-            padding: 3px;
-            display: flex;
-            border: 2px solid $havoc-bg-main; // Borda da cor do fundo para recortar o ícone
-        }
+      }
     }
 
-    .chat-info {
-        flex: 1;
-        min-width: 0; // Essencial para o truncate (reticências) funcionar no flex
+    .row-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .chat-message {
+        color: var(--ui-text-muted);
+        font-size: 0.8125rem;
+        margin: 0;
+        @include text-truncate;
+        padding-right: var(--ui-space-2);
+
+        &.unread-msg {
+          color: var(--ui-text-primary);
+          font-weight: 600;
+        }
+      }
+
+      .unread-badge {
+        background: var(--ui-primary);
+        color: var(--ui-text-on-primary);
+        font-size: 0.65rem;
+        font-weight: 800;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         justify-content: center;
-        gap: 0.35rem;
-
-        .row-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-
-            .chat-name {
-                color: $havoc-text;
-                font-weight: 600;
-                font-size: 0.9rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .chat-time {
-                color: $havoc-muted;
-                font-size: 0.7rem;
-
-                &.unread-time {
-                    color: $havoc-yellow;
-                    font-weight: 700;
-                }
-            }
-        }
-
-        .row-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            .chat-message {
-                color: $havoc-muted;
-                font-size: 0.8rem;
-                margin: 0;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                padding-right: 10px;
-
-                &.unread-msg {
-                    color: #E2E8F0;
-                    font-weight: 500;
-                }
-            }
-
-            .unread-badge {
-                background: $havoc-yellow;
-                color: #000;
-                font-size: 0.65rem;
-                font-weight: 800;
-                min-width: 1.25rem;
-                height: 1.25rem;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-            }
-        }
-
-        .tags-container {
-            margin-top: 0.2rem;
-
-            .status-tag {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.25rem;
-                font-size: 0.6rem;
-                font-weight: 700;
-                padding: 0.15rem 0.4rem;
-                border-radius: 4px;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-
-                &.tag--ai {
-                    background: rgba(168, 85, 247, 0.1);
-                    color: #C084FC;
-                    border: 1px solid rgba(168, 85, 247, 0.2);
-                }
-
-                &.tag--human {
-                    background: rgba(34, 197, 94, 0.1);
-                    color: #4ADE80;
-                    border: 1px solid rgba(34, 197, 94, 0.2);
-                }
-
-                /* 👉 NOVAS CORES DE STATUS */
-                &.tag--novo {
-                    background: rgba(59, 130, 246, 0.1);
-                    color: #3B82F6; // Azul
-                    border: 1px solid rgba(59, 130, 246, 0.2);
-                }
-
-                &.tag--andamento {
-                    background: rgba(245, 158, 11, 0.1);
-                    color: #F59E0B; // Laranja
-                    border: 1px solid rgba(245, 158, 11, 0.2);
-                }
-
-                &.tag--pagamento {
-                    background: rgba(242, 185, 15, 0.1);
-                    color: #F2B90F; // Amarelo Havoc
-                    border: 1px solid rgba(242, 185, 15, 0.2);
-                }
-
-                &.tag--finalizado {
-                    background: rgba(16, 185, 129, 0.1);
-                    color: #10B981; // Verde
-                    border: 1px solid rgba(16, 185, 129, 0.2);
-                }
-
-                &.tag--cancelado {
-                    background: rgba(239, 68, 68, 0.1);
-                    color: #EF4444; // Vermelho
-                    border: 1px solid rgba(239, 68, 68, 0.2);
-                }
-            }
-        }
+        flex-shrink: 0;
+      }
     }
+
+    .tags-container {
+      margin-top: 2px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+
+      .status-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: var(--ui-radius-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+
+        &.tag--ai {
+          background: rgba(168, 85, 247, 0.12);
+          color: #C084FC;
+          border: 1px solid rgba(168, 85, 247, 0.25);
+        }
+
+        &.tag--human {
+          background: var(--ui-success-bg);
+          color: var(--ui-success);
+          border: 1px solid var(--ui-success-border);
+        }
+
+        &.tag--novo {
+          background: var(--ui-info-bg);
+          color: var(--ui-info);
+          border: 1px solid var(--ui-info-border);
+        }
+
+        &.tag--andamento {
+          background: var(--ui-warning-bg);
+          color: var(--ui-warning);
+          border: 1px solid var(--ui-warning-border);
+        }
+
+        &.tag--pagamento {
+          background: var(--ui-primary-subtle);
+          color: var(--ui-primary);
+          border: 1px solid rgba(242, 185, 15, 0.25);
+        }
+
+        &.tag--finalizado {
+          background: var(--ui-success-bg);
+          color: var(--ui-success);
+          border: 1px solid var(--ui-success-border);
+        }
+
+        &.tag--cancelado {
+          background: var(--ui-danger-bg);
+          color: var(--ui-danger);
+          border: 1px solid var(--ui-danger-border);
+        }
+      }
+    }
+  }
 }
 
 .action-btn {
-    background: transparent;
-    border: none;
-    color: $havoc-muted;
-    cursor: pointer;
-    transition: color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-        color: $havoc-text;
-    }
+  @include ui-btn;
+  @include ui-btn-icon;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
 }
 
 // ─── MAIN (Área de Mensagens) ───
 .chat-main {
-    flex: 1;
-    min-width: 0; // Resolve o scroll horizontal
-    background-color: #000000;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background-color: var(--ui-bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }

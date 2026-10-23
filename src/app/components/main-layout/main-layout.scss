@@ -1,49 +1,54 @@
-@use '../../../styles/variables' as *; 
+@use '../../../styles/variables' as *;
 
-.layout-wrapper {
-  display: flex;
-  height: 100vh;
-  height: 100dvh; 
-  width: 100vw;
-  overflow: hidden; 
-  background: $havoc-bg-dark;
+:host {
+  display: block;
 }
 
-.main-content {
+.layout-wrapper,
+.ui-layout-shell {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--ui-bg);
+}
+
+.main-content,
+.ui-layout-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; 
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  @include custom-scrollbar(6px);
 }
 
-.page-content {
+.page-content,
+.ui-page-wrapper {
   flex: 1;
-  padding: 2rem;
-  overflow-y: auto; 
-  
-  // Barra de rolagem minimalista (Padrão Sênior)
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { 
-    background: rgba(51, 51, 51, 0.5); // Cor da borda
-    border-radius: 10px; 
-    &:hover { background: rgba(140, 140, 140, 0.5); } // Cor do texto muted
-  }
+  padding: var(--ui-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-6);
+  min-width: 0;
 
-  @media (max-width: 992px) {
-    padding: 1rem; 
+  @media (max-width: 768px) {
+    padding: var(--ui-space-4);
+    gap: var(--ui-space-4);
   }
 }
 
 .mobile-backdrop {
-  display: none; 
+  display: none;
   cursor: pointer;
-  
+
   @media (max-width: 991px) {
-    display: block; 
+    display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
     z-index: 90;
   }

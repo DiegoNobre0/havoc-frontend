@@ -13,7 +13,34 @@ export const routes: Routes = [
   {
     path:'bio-links',
     title: 'Havoc | Links',
-    loadComponent:() => import('./pages/bio-links/bio-links').then(m => m.BioLinksComponent)
+    loadComponent: () => import('./pages/bio-links/bio-links').then(m => m.BioLinksComponent)
+  },
+  {
+    path: 'checkout',
+    title: 'Havoc | Comprar Suplementos',
+    loadComponent: () => import('./pages/checkout/checkout').then(m => m.CheckoutComponent)
+  },
+  {
+    path: 'produto/:slug',
+    title: 'Havoc | Produto',
+    data: { type: 'product' },
+    loadComponent: () => import('./pages/storefront-detail/storefront-detail').then(m => m.StorefrontDetailComponent)
+  },
+  {
+    path: 'kit/:slug',
+    title: 'Havoc | Kit',
+    data: { type: 'kit' },
+    loadComponent: () => import('./pages/storefront-detail/storefront-detail').then(m => m.StorefrontDetailComponent)
+  },
+  {
+    path: 'comprar',
+    redirectTo: 'checkout',
+    pathMatch: 'full'
+  },
+  {
+    path: 'loja',
+    redirectTo: 'checkout',
+    pathMatch: 'full'
   },
 
   // ----------------------------------------------------

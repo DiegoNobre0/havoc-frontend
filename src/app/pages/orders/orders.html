@@ -8,7 +8,7 @@
             </p>
         </div>
         <div class="kanban-header-actions">
-            <button (click)="loadOrders()" class="btn-outline">
+            <button (click)="loadOrders()" class="ui-btn ui-btn--secondary">
                 <lucide-icon name="refresh-cw" class="btn-icon"></lucide-icon>
                 Atualizar
             </button>
@@ -168,7 +168,7 @@
 
                     @if (getNextActionLabel(selectedOrder()!.status)) {
                     <button (click)="advanceOrder(selectedOrder()!); closeDetail()"
-                        class="btn-primary btn-primary--full">
+                        class="ui-btn ui-btn--primary ui-btn--full">
                         <lucide-icon name="arrow-right" class="btn-icon"></lucide-icon>
                         {{ getNextActionLabel(selectedOrder()!.status) }} Pedido
                     </button>
@@ -196,9 +196,9 @@
                         (input)="cancelReason.set($any($event.target).value)"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button (click)="closeCancel()" class="btn-cancel">Voltar</button>
+                    <button (click)="closeCancel()" class="ui-btn ui-btn--secondary">Voltar</button>
                     <button (click)="confirmCancel()" [disabled]="!cancelReason()"
-                        class="btn-danger">Confirmar</button>
+                        class="ui-btn ui-btn--danger">Confirmar</button>
                 </div>
             </div>
         </div>

@@ -1,84 +1,79 @@
-.havoc-dialog {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background-color: #000000; // Garante o fundo escuro do próprio componente
-    border-radius: 1rem;
-
-    &__icon {
-        width: 3.5rem;
-        height: 3.5rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1.25rem;
-
-        lucide-icon {
-            width: 1.75rem;
-            height: 1.75rem;
-        }
-    }
-
-    &__title {
-        color: #F2B90F ;
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0 0 0.75rem 0;
-    }
-
-    &__text {
-        color: #ffffff;
-        font-size: 0.875rem;
-        margin: 0;
-        line-height: 1.5;
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
+:host {
+  display: block;
 }
 
-// Estilos locais dos botões para o modal funcionar em qualquer lugar
-.btn-primary {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background: #F2B90F ;
-    color: #111;
-    font-weight: 700;
-    font-size: 0.875rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-
-    &:hover {
-        filter: brightness(1.1);
-        transform: translateY(-2px);
-    }
+.ui-confirm-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--ui-space-6) var(--ui-space-8);
+  text-align: center;
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
 }
 
-.btn-cancel {
-    flex: 1;
-    padding: 0.625rem;
-    border: 1px solid #F2B90F;
-    background: transparent;
-    color: #CBD5E1;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
+.ui-confirm-dialog__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--ui-space-5);
+  border-radius: 50%;
 
-    &:hover {
-        background: #1E293B;
-        color: #ffffff;
-    }
+  lucide-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  &.is-info {
+    color: var(--ui-primary);
+    background: var(--ui-primary-subtle);
+  }
+
+  &.is-danger {
+    color: var(--ui-danger);
+    background: var(--ui-danger-bg);
+  }
+}
+
+.ui-confirm-dialog__title {
+  margin: 0 0 var(--ui-space-3);
+  color: var(--ui-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ui-confirm-dialog__text {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.ui-confirm-dialog__actions {
+  display: flex;
+  width: 100%;
+  gap: var(--ui-space-3);
+  margin-top: var(--ui-space-8);
+
+  .ui-btn {
+    flex: 1;
+  }
+}
+
+.action-icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 480px) {
+  .ui-confirm-dialog {
+    padding: var(--ui-space-5);
+  }
+
+  .ui-confirm-dialog__actions {
+    flex-direction: column-reverse;
+  }
 }

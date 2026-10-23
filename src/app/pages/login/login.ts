@@ -1,44 +1,42 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { finalize } from 'rxjs';
 
-// 1. Importação correta do Lucide
 import { LucideAngularModule, RefreshCw } from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  // 2. Apenas o LucideAngularModule puro aqui
   imports: [
-    CommonModule, 
+    CommonModule,
     ReactiveFormsModule,
-    LucideAngularModule
+    RouterLink,
+    LucideAngularModule,
   ],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class Login {
-  private fb = inject(NonNullableFormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  
+  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  // 3. Deixa o ícone disponível para o HTML ler
   readonly RefreshCwIcon = RefreshCw;
 
-  // Signals
-  isLoading = signal(false);
-  errorMessage = signal('');
-  showPassword = signal(false);
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal('');
+  readonly showPassword = signal(false);
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -47,19 +45,26 @@ export class Login {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.authService.login(this.loginForm.getRawValue()).subscribe({
+    const credentials = this.loginForm.getRawValue();
+    credentials.email = credentials.email.trim().toLowerCase();
+
+    this.authService.login(credentials).pipe(
+      finalize(() => this.isLoading.set(false)),
+    ).subscribe({
       next: () => {
-        this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        void this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(err.error?.message || 'Erro ao realizar login.');
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage.set(
+          error.status === 0
+            ? 'Não foi possível conectar ao servidor local.'
+            : error.error?.message || 'Não foi possível acessar o painel.',
+        );
       }
     });
   }
 
-  togglePassword() {
+  togglePassword(): void {
     this.showPassword.set(!this.showPassword());
   }
 }

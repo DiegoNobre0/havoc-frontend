@@ -1,5 +1,4 @@
-<div class="layout-wrapper">
-  
+<div class="ui-layout-shell layout-wrapper">
   @if (isMobileMenuOpen()) {
     <div class="mobile-backdrop" (click)="closeMobileMenu()"></div>
   }
@@ -9,10 +8,10 @@
     [isMobileOpen]="isMobileMenuOpen()">
   </app-sidebar> 
 
-  <div class="main-content">
+  <div class="ui-layout-main main-content">
     <app-header (toggleMenu)="toggleMenu()"></app-header>
     
-    <main class="page-content">
+    <main class="ui-page-wrapper page-content">
       <router-outlet></router-outlet>
     </main>
   </div>

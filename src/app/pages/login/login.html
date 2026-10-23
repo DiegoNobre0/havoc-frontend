@@ -1,73 +1,122 @@
-<div class="login-page-wrapper">
+<main class="login-page">
+  <section class="brand-panel" aria-label="Havoc Suplementos">
+    <div class="brand-glow brand-glow--top"></div>
+    <div class="brand-glow brand-glow--bottom"></div>
 
-  <div class="brand-section">
-    <img src="/HavocV3.png" class="giant-bg-logo" alt="Havoc Marca d'água">
+    <a class="brand-mark" routerLink="/checkout" aria-label="Ir para a loja Havoc">
+      <img src="/HavocV3.png" alt="Havoc Suplementos">
+    </a>
 
-    <div class="brand-content">
-      <h1 class="welcome-title">Seja bem-vindo à <span class="highlight">HAVOC</span></h1>
-      <p class="welcome-text">O painel administrativo para gerenciar suplementos, vendas e clientes com extrema velocidade e performance.</p>
-      <!-- <button class="btn-learn-more">Saiba Mais</button> -->
+    <div class="brand-copy">
+      <span class="eyebrow">CENTRAL DE OPERAÇÕES</span>
+      <h1>Performance dentro<br>e fora da loja.</h1>
+      <p>Gerencie catálogo, pedidos e atendimento em um painel criado para acompanhar o ritmo da Havoc.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <lucide-icon name="package"></lucide-icon>
+          <span><strong>Catálogo centralizado</strong>Produtos, kits e estoque em um só lugar.</span>
+        </div>
+        <div class="feature-item">
+          <lucide-icon name="shopping-bag"></lucide-icon>
+          <span><strong>Pedidos em tempo real</strong>Acompanhe cada etapa da operação.</span>
+        </div>
+        <div class="feature-item">
+          <lucide-icon name="shield-check"></lucide-icon>
+          <span><strong>Acesso protegido</strong>Ambiente exclusivo para a equipe Havoc.</span>
+        </div>
+      </div>
     </div>
-    <div class="abstract-graphic"></div>
-  </div>
 
-  <div class="form-section">
+    <span class="brand-footer">HAVOC SUPLEMENTOS · CAMAÇARI, BA</span>
+  </section>
+
+  <section class="form-panel">
+    <a class="mobile-brand" routerLink="/checkout" aria-label="Ir para a loja Havoc">
+      <img src="/HavocV3.png" alt="Havoc Suplementos">
+    </a>
+
     <div class="login-card">
-
       <header class="card-header">
-        <img src="/HavocV3.png" class="logo" alt="Logo Havoc Suplementos">
-        <h2>Acesso ao Painel</h2>
-        <p>Insira suas credenciais para continuar</p>
+        <span class="access-label"><i></i> ACESSO ADMINISTRATIVO</span>
+        <h2>Bem-vindo de volta</h2>
+        <p>Entre com suas credenciais para acessar o painel.</p>
       </header>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-        
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
         @if (errorMessage()) {
-          <div class="error-message-box">
-            {{ errorMessage() }}
+          <div class="error-message-box" role="alert">
+            <lucide-icon name="alert-triangle"></lucide-icon>
+            <div>
+              <strong>Não foi possível entrar</strong>
+              <span>{{ errorMessage() }}</span>
+            </div>
           </div>
         }
 
         <div class="form-group">
-          <label>E-mail</label>
-          <input type="email" formControlName="email" placeholder="admin@havoc.com.br" class="havoc-input">
+          <label for="login-email">E-mail</label>
+          <input
+            id="login-email"
+            type="email"
+            formControlName="email"
+            placeholder="admin@havoc.com.br"
+            class="havoc-input"
+            autocomplete="email"
+            inputmode="email"
+            [class.invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+          >
+          @if (loginForm.controls.email.touched && loginForm.controls.email.invalid) {
+            <span class="field-error">Informe um e-mail válido.</span>
+          }
         </div>
-<div class="form-group">
-          <div class="label-wrapper">
-            <label>Senha</label>
-            <a href="#" class="forgot-link">Esqueceu a senha?</a>
-          </div>
-          
+
+        <div class="form-group">
+          <label for="login-password">Senha</label>
           <div class="input-icon-wrapper">
-            <input 
-              [type]="showPassword() ? 'text' : 'password'" 
-              formControlName="password" 
-              placeholder="••••••••" 
+            <input
+              id="login-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Digite sua senha"
               class="havoc-input"
+              autocomplete="current-password"
+              [class.invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid"
             >
-            <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+            <button
+              type="button"
+              class="btn-toggle-password"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+            >
               <lucide-icon [name]="showPassword() ? 'eye-off' : 'eye'"></lucide-icon>
             </button>
           </div>
+          @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+            <span class="field-error">A senha deve ter pelo menos 6 caracteres.</span>
+          }
         </div>
 
-        <!-- <div class="form-options">
-          <label class="checkbox-wrapper">
-            <input type="checkbox"> Lembrar deste Dispositivo
-          </label>
-        </div> -->
-
-        <button type="submit" class="btn-login" [disabled]="loginForm.invalid || isLoading()">
-          
+        <button type="submit" class="btn-login" [disabled]="isLoading()">
           @if (isLoading()) {
             <lucide-icon [img]="RefreshCwIcon" class="loading-icon"></lucide-icon>
-            Entrando...
+            <span>Validando acesso...</span>
           } @else {
-            Entrar
+            <span>Entrar no painel</span>
+            <lucide-icon name="arrow-right"></lucide-icon>
           }
         </button>
       </form>
 
+      <div class="card-footer">
+        <lucide-icon name="shield-check"></lucide-icon>
+        <span>Conexão segura e acesso monitorado</span>
+      </div>
     </div>
-  </div>
-</div>
+
+    <a class="store-link" routerLink="/checkout">
+      Acessar a loja virtual
+      <lucide-icon name="external-link"></lucide-icon>
+    </a>
+  </section>
+</main>

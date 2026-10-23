@@ -1,7 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../environments/environment';
+import {
+    CatalogProduct,
+    PdfImportResponse,
+    ProductFilters,
+    ProductPage,
+    SaveProductRequest,
+} from '../models/product.models';
+import { SupplementFacts, normalizeSupplementFacts } from '../models/supplement-facts.models';
 
 
 @Injectable({
@@ -33,7 +41,7 @@ export class CatalogService {
     // ==========================================
     // PRODUTOS
     // ==========================================
-    getProducts(filters: any = {}): Observable<any> {
+    getProducts(filters: ProductFilters = {}): Observable<ProductPage> {
   let params = new HttpParams();
 
   params = params.set('page', filters.page || 1);
@@ -43,23 +51,37 @@ export class CatalogService {
   if (filters.categoryId) params = params.set('categoryId', filters.categoryId);
   if (filters.isActive !== undefined) params = params.set('isActive', String(filters.isActive));
 
-  return this.http.get<any>(`${this.apiUrl}/products`, { params });
+  return this.http.get<ProductPage>(`${this.apiUrl}/products`, { params }).pipe(
+      map((response) => ({
+          ...response,
+          data: response.data.map((product) => ({
+              ...product,
+              supplementFacts: normalizeSupplementFacts(product),
+          })),
+      })),
+  );
 }
 
-    createProduct(data: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/products`, data);
+    createProduct(data: SaveProductRequest): Observable<CatalogProduct> {
+        return this.http.post<CatalogProduct>(`${this.apiUrl}/products`, data);
     }
 
-    updateProduct(id: string, data: any): Observable<any> {
-        return this.http.put<any>(`${this.apiUrl}/products/${id}`, data);
+    updateProduct(id: string, data: SaveProductRequest): Observable<CatalogProduct> {
+        return this.http.put<CatalogProduct>(`${this.apiUrl}/products/${id}`, data);
     }
 
-    importPdf(file: File) {
+    syncProductLabel(id: string): Observable<SupplementFacts | null> {
+        return this.http.post<unknown>(`${this.apiUrl}/products/${id}/sync-label`, {}).pipe(
+            map((response) => normalizeSupplementFacts(response)),
+        );
+    }
+
+    importPdf(file: File): Observable<PdfImportResponse> {
         const formData = new FormData();
         formData.append('file', file);
 
         // O Fastify multipart requer que seja enviado como FormData
-        return this.http.post(`${this.apiUrl}/products/import-pdf`, formData);
+        return this.http.post<PdfImportResponse>(`${this.apiUrl}/products/import-pdf`, formData);
     }
 
     deleteProduct(id: string): Observable<void> {

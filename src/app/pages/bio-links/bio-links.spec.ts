@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BioLinks } from './bio-links';
+import { BioLinksComponent } from './bio-links';
 
 describe('BioLinks', () => {
-  let component: BioLinks;
-  let fixture: ComponentFixture<BioLinks>;
+  let component: BioLinksComponent;
+  let fixture: ComponentFixture<BioLinksComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BioLinks]
+      imports: [BioLinksComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(BioLinks);
+    fixture = TestBed.createComponent(BioLinksComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

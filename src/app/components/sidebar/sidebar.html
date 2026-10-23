@@ -24,6 +24,11 @@
 
 
 
+            <a routerLink="/checkout" target="_blank" class="menu-item highlight-store">
+                <lucide-icon name="shopping-bag" class="sidebar-icon text-yellow"></lucide-icon>
+                @if (!isCollapsed()) { <span class="label">Loja & Checkout</span> }
+            </a>
+
             <a routerLink="/orders" routerLinkActive="active" class="menu-item">
                 <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
                 @if (!isCollapsed()) { <span class="label">Fila de Pedidos</span> }

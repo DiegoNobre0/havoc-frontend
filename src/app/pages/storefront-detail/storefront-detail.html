@@ -1,0 +1,155 @@
+<div class="detail-page">
+  <header class="detail-header">
+    <div class="detail-header-container">
+      <a class="brand-area" routerLink="/checkout">
+        <img src="/HavocV1.png" alt="Havoc Suplementos">
+        <div><strong>HAVOC</strong><span>LOJA OFICIAL</span></div>
+      </a>
+      <a class="cart-link" routerLink="/checkout" [queryParams]="{ cart: 'open' }" aria-label="Abrir carrinho">
+        <span class="cart-icon-wrap">
+          <lucide-icon name="shopping-bag"></lucide-icon>
+          @if (cart.count() > 0) { <b>{{ cart.count() }}</b> }
+        </span>
+        <span class="cart-info">
+          <small>Meu pedido</small>
+          <strong>R${{ cart.subtotal() | number:'1.2-2' }}</strong>
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <nav class="breadcrumb" aria-label="Navegação estrutural">
+      <a routerLink="/checkout"><lucide-icon name="chevron-left"></lucide-icon> Voltar ao catálogo</a>
+      @if (item(); as currentItem) { <span>/</span><span>{{ currentItem.type === 'kit' ? 'Kits' : 'Produtos' }}</span><span>/</span><span>{{ currentItem.name }}</span> }
+    </nav>
+
+    @if (loading()) {
+      <div class="detail-skeleton"><div></div><section><i></i><i></i><i></i><i></i></section></div>
+    } @else if (error()) {
+      <div class="detail-state">
+        <lucide-icon name="alert-triangle"></lucide-icon>
+        <h1>Item não encontrado</h1>
+        <p>O item pode ter sido removido ou está temporariamente indisponível.</p>
+        <div><button class="primary-button" (click)="load()">Tentar novamente</button><a class="secondary-button" routerLink="/checkout">Ver catálogo</a></div>
+      </div>
+    } @else if (item(); as currentItem) {
+      <article class="product-detail">
+        <div class="visual-panel">
+          <span class="type-badge">{{ currentItem.type === 'kit' ? 'KIT HAVOC' : (currentItem.categories[0]?.name || 'PRODUTO') }}</span>
+          @if (currentItem.imageUrl) { <img [src]="currentItem.imageUrl" [alt]="currentItem.name"> }
+          @else { <lucide-icon [name]="currentItem.type === 'kit' ? 'gift' : 'package'" class="image-placeholder"></lucide-icon> }
+        </div>
+
+        <div class="detail-content">
+          <div class="status-row">
+            <span class="availability" [class.unavailable]="!currentItem.available">{{ currentItem.available ? 'Em estoque' : 'Indisponível' }}</span>
+            @if (currentItem.type === 'product' && currentItem.sku) { <span class="sku">SKU {{ currentItem.sku }}</span> }
+          </div>
+          <h1>{{ currentItem.name }}</h1>
+          @if (currentItem.categories.length) {
+            <div class="category-list">@for (category of currentItem.categories; track category.id) { <span>{{ category.name }}</span> }</div>
+          }
+          <p class="description">{{ currentItem.description || 'Produto selecionado para elevar sua performance com qualidade e procedência.' }}</p>
+
+          @if (currentItem.type === 'kit' && currentItem.items?.length) {
+            <section class="kit-components">
+              <h2>O que vem neste kit</h2>
+              @for (component of currentItem.items; track component.product.id) {
+                <div class="component-row">
+                  <div class="component-image">@if (component.product.imageUrl) { <img [src]="component.product.imageUrl" [alt]="component.product.name"> } @else { <lucide-icon name="package"></lucide-icon> }</div>
+                  <div><strong>{{ component.product.name }}</strong><span>{{ component.quantity }}x {{ component.product.unit }}</span></div>
+                  <span [class.component-unavailable]="!component.product.available">{{ component.product.available ? 'Disponível' : 'Sem estoque' }}</span>
+                </div>
+              }
+            </section>
+          }
+
+          <div class="purchase-panel">
+            <div class="main-price"><small>R$</small>{{ currentItem.price | number:'1.2-2' }}</div>
+            <div class="purchase-actions">
+              <div class="quantity-control"><button (click)="changeQuantity(-1)" [disabled]="quantity() === 1"><lucide-icon name="minus"></lucide-icon></button><span>{{ quantity() }}</span><button (click)="changeQuantity(1)"><lucide-icon name="plus"></lucide-icon></button></div>
+              <button class="primary-button" (click)="addToCart()" [disabled]="!currentItem.available"><lucide-icon [name]="added() ? 'check' : 'shopping-bag'"></lucide-icon>{{ !currentItem.available ? 'Indisponível' : added() ? 'Adicionado' : 'Adicionar ao pedido' }}</button>
+            </div>
+            <button class="checkout-button" (click)="addToCart(true)" [disabled]="!currentItem.available">Adicionar e ir para o checkout <lucide-icon name="arrow-right"></lucide-icon></button>
+          </div>
+        </div>
+      </article>
+
+      @if (publicFacts(); as facts) {
+        <section class="supplement-facts" aria-labelledby="supplement-facts-title">
+          <header class="supplement-facts__header">
+            <div>
+              <span class="supplement-facts__eyebrow">Rótulo do produto</span>
+              <h2 id="supplement-facts-title">Informações oficiais</h2>
+              @if (facts.manufacturer) { <p>{{ facts.manufacturer }}</p> }
+            </div>
+            @if (facts.source.url) {
+              <a [href]="facts.source.url" target="_blank" rel="noopener noreferrer">
+                <lucide-icon name="external-link"></lucide-icon>
+                {{ facts.source.title || 'Consultar fonte oficial' }}
+              </a>
+            }
+          </header>
+
+          <div class="supplement-facts__grid">
+            @if (facts.usageInstructions) {
+              <section class="fact-block">
+                <h3><lucide-icon name="clipboard-list"></lucide-icon> Modo de uso</h3>
+                <p>{{ facts.usageInstructions }}</p>
+              </section>
+            }
+
+            @if (facts.servingSize || facts.servingsPerContainer) {
+              <section class="fact-block">
+                <h3><lucide-icon name="scale"></lucide-icon> Porção</h3>
+                @if (facts.servingSize) { <p><strong>Tamanho da porção:</strong> {{ facts.servingSize }}</p> }
+                @if (facts.servingsPerContainer) { <p><strong>Porções por embalagem:</strong> {{ facts.servingsPerContainer }}</p> }
+              </section>
+            }
+
+            @if (facts.ingredients) {
+              <section class="fact-block fact-block--wide">
+                <h3><lucide-icon name="list"></lucide-icon> Ingredientes</h3>
+                <p>{{ facts.ingredients }}</p>
+              </section>
+            }
+
+            @if (facts.allergenStatement) {
+              <section class="fact-block fact-block--warning fact-block--wide">
+                <h3><lucide-icon name="shield-alert"></lucide-icon> Alérgicos</h3>
+                <p>{{ facts.allergenStatement }}</p>
+              </section>
+            }
+
+            @if (facts.warnings.length) {
+              <section class="fact-block fact-block--warning fact-block--wide">
+                <h3><lucide-icon name="triangle-alert"></lucide-icon> Advertências</h3>
+                <ul>@for (warning of facts.warnings; track warning) { <li>{{ warning }}</li> }</ul>
+              </section>
+            }
+          </div>
+
+          @if (facts.nutritionFacts.length) {
+            <div class="nutrition-table-wrap">
+              <table class="nutrition-table">
+                <caption>Informação nutricional@if (facts.servingSize) { <span>Porção de {{ facts.servingSize }}</span> }</caption>
+                <thead><tr><th scope="col">Nutriente</th><th scope="col">Quantidade por porção</th><th scope="col">%VD*</th></tr></thead>
+                <tbody>
+                  @for (row of facts.nutritionFacts; track row.name) {
+                    <tr><th scope="row">{{ row.name }}</th><td>{{ row.amount }}</td><td>{{ row.dailyValue || '—' }}</td></tr>
+                  }
+                </tbody>
+              </table>
+              <p class="nutrition-table__note">* Percentual de valores diários. “—” indica valor diário não informado na fonte oficial.</p>
+            </div>
+          }
+        </section>
+      }
+    }
+  </main>
+
+  @if (consultantContext(); as context) {
+    <app-supplement-consultant [context]="context" [featuredItem]="item()" />
+  }
+</div>

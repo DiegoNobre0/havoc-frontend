@@ -1,74 +1,75 @@
 <header class="top-header">
-  
   <div class="header-left">
-    <button class="action-btn menu-btn" (click)="toggleMenu.emit()">
+    <button type="button" class="ui-btn ui-btn--icon menu-btn" (click)="toggleMenu.emit()" aria-label="Menu">
       <lucide-icon name="menu"></lucide-icon>
     </button>
-    
-    <div class="store-info" style="margin-left: 1rem; display: flex; flex-direction: column;">
-      <h2 style="margin: 0; font-size: 1rem; font-weight: 700; color: white;">HAVOC SUPLEMENTOS</h2>
+
+    <div class="store-info">
+      <span class="store-brand">HAVOC SUPLEMENTOS</span>
     </div>
   </div>
 
   <div class="header-right">
-    <!-- <button class="action-btn">
-      <lucide-icon name="search"></lucide-icon>
-    </button> -->
-
     <div class="dropdown-container">
-      <button class="action-btn" (click)="toggleNotif()" [class.active]="isNotifOpen()">
+      <button
+        type="button"
+        class="ui-btn ui-btn--icon notification-btn"
+        (click)="toggleNotif()"
+        [class.active]="isNotifOpen()"
+        aria-label="Notificações"
+      >
         <lucide-icon name="bell"></lucide-icon>
-        
-        <!-- 👉 SÓ MOSTRA O BADGE SE TIVER NOTIFICAÇÃO NÃO LIDA -->
         @if (unreadCount() > 0) {
-          <span class="badge danger">{{ unreadCount() }}</span>
+          <span class="badge-indicator">{{ unreadCount() }}</span>
         }
       </button>
 
       @if (isNotifOpen()) {
         <div class="dropdown-menu">
           <div class="dropdown-header">
-            <h3>Notificações</h3>
+            <h3 class="ui-heading-sm">Notificações</h3>
             @if (unreadCount() > 0) {
-              <span class="badge-pill info">{{ unreadCount() }} novas</span>
+              <span class="ui-badge ui-badge--brand">{{ unreadCount() }} novas</span>
             }
           </div>
-          
+
           <div class="dropdown-list">
-            <!-- 👉 LAÇO DE REPETIÇÃO DAS NOTIFICAÇÕES -->
             @for (notif of notificacoes(); track notif.id) {
-              <div class="list-item" [style.background]="notif.read ? 'transparent' : 'rgba(242, 185, 15, 0.05)'" (click)="clicarNotificacao(notif)">
-                
-                <!-- ÍCONE DINÂMICO BASEADO NO TIPO -->
-                <div class="icon-circle" 
-                     [class.info]="notif.type === 'order'" 
-                     [class.warning]="notif.type === 'alert'"
-                     [style.background]="notif.type === 'chat' ? 'rgba(34, 197, 94, 0.1)' : ''"
-                     [style.color]="notif.type === 'chat' ? '#22C55E' : ''">
-                  
+              <div
+                class="list-item"
+                [class.unread]="!notif.read"
+                (click)="clicarNotificacao(notif)"
+              >
+                <div
+                  class="icon-circle"
+                  [class.info]="notif.type === 'order'"
+                  [class.warning]="notif.type === 'alert'"
+                  [class.success]="notif.type === 'chat'"
+                >
                   @if (notif.type === 'order') { <lucide-icon name="shopping-bag"></lucide-icon> }
                   @if (notif.type === 'alert') { <lucide-icon name="alert-triangle"></lucide-icon> }
                   @if (notif.type === 'chat') { <lucide-icon name="message-circle"></lucide-icon> }
                 </div>
-                
+
                 <div class="item-content">
-                  <h4 [style.font-weight]="notif.read ? '500' : '700'">{{ notif.title }}</h4>
+                  <h4 [class.font-bold]="!notif.read">{{ notif.title }}</h4>
                   <p>{{ notif.message }}</p>
                 </div>
-                
+
                 <span class="time">{{ notif.time | date:'HH:mm' }}</span>
               </div>
             } @empty {
-              <!-- ESTADO VAZIO -->
-              <div style="padding: 2rem; text-align: center; color: #888;">
-                <lucide-icon name="bell-off" style="width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5;"></lucide-icon>
-                <p style="margin: 0; font-size: 0.85rem;">Nenhuma notificação por aqui.</p>
+              <div class="ui-empty-state">
+                <lucide-icon name="bell-off" class="empty-icon"></lucide-icon>
+                <p class="ui-caption">Nenhuma notificação por aqui.</p>
               </div>
             }
           </div>
-          
+
           @if (notificacoes().length > 0) {
-            <button class="btn-block" (click)="marcarTodasComoLidas()">Marcar todas como lidas</button>
+            <button type="button" class="btn-mark-all" (click)="marcarTodasComoLidas()">
+              Marcar todas como lidas
+            </button>
           }
         </div>
       }

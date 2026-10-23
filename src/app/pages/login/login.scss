@@ -1,359 +1,437 @@
-@use '../../../styles/variables' as var;
+@use '../../../styles/variables' as *;
 
-// Como você está usando as cores da Havoc, vou mapeá-las diretamente aqui 
-// para o código ficar idêntico às suas variáveis, garantindo o Dark Mode!
-$primary: #F2B90F;
-$primary-dark: #D9A40D;
-$background: #0D0D0D;
-$surface: #1A1A1A;
-$surface-2: #262626;
-$text-primary: #F2F2F2;
-$text-secondary: #8C8C8C;
-$border: #333333;
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: #090909;
+  color: var(--ui-text-primary);
+}
+
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(500px, 1.08fr) minmax(420px, 0.92fr);
+  background: #090909;
+}
+
+.brand-panel {
+  position: relative;
+  min-height: 100dvh;
+  padding: clamp(32px, 5vw, 72px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(242, 185, 15, 0.06), transparent 42%),
+    #111111;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+    background-size: 54px 54px;
+    mask-image: linear-gradient(to bottom right, black, transparent 70%);
+  }
+}
+
+.brand-glow {
+  position: absolute;
+  width: 430px;
+  height: 430px;
+  border-radius: 50%;
+  background: rgba(242, 185, 15, 0.12);
+  filter: blur(100px);
+  pointer-events: none;
+
+  &--top { top: -240px; right: -180px; }
+  &--bottom { bottom: -300px; left: -120px; opacity: 0.55; }
+}
+
+.brand-mark {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+
+  img {
+    width: clamp(190px, 18vw, 260px);
+    height: 62px;
+    object-fit: contain;
+    object-position: left center;
+  }
+}
+
+.brand-copy {
+  position: relative;
+  z-index: 1;
+  width: min(590px, 100%);
+  margin: auto 0;
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ui-primary);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+
+    &::before {
+      content: '';
+      width: 28px;
+      height: 2px;
+      background: var(--ui-primary);
+    }
+  }
+
+  h1 {
+    margin: 22px 0 20px;
+    color: #ffffff;
+    font-size: clamp(2.8rem, 5vw, 5.25rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+  }
+
+  > p {
+    max-width: 540px;
+    margin: 0;
+    color: #a8a8a8;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+}
+
+.feature-list {
+  margin-top: clamp(34px, 5vh, 56px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.feature-item {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+
+  lucide-icon {
+    width: 21px;
+    height: 21px;
+    color: var(--ui-primary);
+  }
+
+  span {
+    display: block;
+    margin-top: 13px;
+    color: #888888;
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #eeeeee;
+    font-size: 0.78rem;
+  }
+}
+
+.brand-footer {
+  position: relative;
+  z-index: 1;
+  color: #666666;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.form-panel {
+  position: relative;
+  min-height: 100dvh;
+  padding: 40px clamp(24px, 6vw, 88px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(242, 185, 15, 0.055), transparent 30%),
+    #090909;
+}
+
+.mobile-brand { display: none; }
+
+.login-card {
+  width: min(440px, 100%);
+  padding: clamp(28px, 4vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: linear-gradient(145deg, #151515, #101010);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+}
+
+.card-header {
+  margin-bottom: 32px;
+
+  .access-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ui-primary);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+
+    i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ui-primary);
+      box-shadow: 0 0 12px rgba(242, 185, 15, 0.75);
+    }
+  }
+
+  h2 {
+    margin: 15px 0 8px;
+    color: #ffffff;
+    font-size: clamp(1.8rem, 3vw, 2.25rem);
+    font-weight: 850;
+    letter-spacing: -0.035em;
+  }
+
+  p {
+    margin: 0;
+    color: #858585;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    color: #d8d8d8;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+}
+
+.havoc-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 15px;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  outline: none;
+  background: #0d0d0d;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.9rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+
+  &::placeholder { color: #585858; }
+
+  &:hover { border-color: #454545; }
+
+  &:focus {
+    border-color: var(--ui-primary);
+    background: #101010;
+    box-shadow: 0 0 0 3px rgba(242, 185, 15, 0.12);
+  }
+
+  &.invalid {
+    border-color: #d65b5b;
+    box-shadow: 0 0 0 3px rgba(214, 91, 91, 0.1);
+  }
+}
 
 .input-icon-wrapper {
   position: relative;
+
+  .havoc-input { padding-right: 50px; }
+}
+
+.btn-toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #747474;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--ui-primary);
+    outline: none;
+  }
+
+  lucide-icon { width: 19px; height: 19px; }
+}
+
+.field-error {
+  color: #ef8585;
+  font-size: 0.72rem;
+}
+
+.error-message-box {
+  padding: 13px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  border: 1px solid rgba(225, 84, 84, 0.38);
+  border-radius: 10px;
+  background: rgba(225, 84, 84, 0.08);
+  animation: slide-down 180ms ease-out;
+
+  lucide-icon {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+    color: #ef7777;
+  }
+
+  div { display: flex; flex-direction: column; gap: 2px; }
+  strong { color: #ffaaaa; font-size: 0.78rem; }
+  span { color: #c98d8d; font-size: 0.74rem; line-height: 1.4; }
+}
+
+.btn-login {
+  width: 100%;
+  height: 54px;
+  margin-top: 6px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ui-primary);
+  color: #090909;
+  font-size: 0.88rem;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(242, 185, 15, 0.16);
+  transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
 
-  .havoc-input {
-    width: 100%;
-    padding-right: 44px; // Dá um respiro para o texto não encavalar no ícone
+  &:hover:not(:disabled) {
+    background: #ffd21f;
+    transform: translateY(-1px);
+    box-shadow: 0 13px 32px rgba(242, 185, 15, 0.24);
   }
 
-  .btn-toggle-password {
-    position: absolute;
-    right: 12px;
-    background: transparent;
-    border: none;
-    color: #8C8C8C; // Pode trocar pela sua var.$havoc-text-muted
-    display: flex;
-    align-items: center;
+  &:active:not(:disabled) { transform: translateY(0); }
+
+  &:disabled {
+    opacity: 0.62;
+    cursor: wait;
+  }
+
+  lucide-icon { width: 18px; height: 18px; }
+}
+
+.loading-icon { animation: spin 850ms linear infinite; }
+
+.card-footer {
+  margin-top: 26px;
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: #656565;
+  font-size: 0.68rem;
+
+  lucide-icon { width: 14px; height: 14px; }
+}
+
+.store-link {
+  margin-top: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #777777;
+  font-size: 0.74rem;
+  font-weight: 650;
+  text-decoration: none;
+
+  &:hover { color: var(--ui-primary); }
+  lucide-icon { width: 14px; height: 14px; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1100px) {
+  .login-page { grid-template-columns: minmax(430px, 0.95fr) minmax(410px, 1.05fr); }
+  .brand-panel { padding: 44px; }
+  .feature-list { grid-template-columns: 1fr; max-width: 430px; }
+  .feature-item { display: flex; align-items: center; gap: 14px; padding: 13px 15px; }
+  .feature-item span { margin: 0; }
+}
+
+@media (max-width: 820px) {
+  .login-page { display: block; }
+  .brand-panel { display: none; }
+
+  .form-panel {
+    min-height: 100dvh;
     justify-content: center;
-    cursor: pointer;
-    padding: 4px;
-    transition: color 0.2s ease;
-    outline: none;
+    padding: 32px 20px;
+  }
 
-    &:hover, &:focus {
-      color: #F2B90F; // Fica com o Amarelo Havoc ao passar o mouse
-    }
+  .mobile-brand {
+    width: min(190px, 46vw);
+    margin-bottom: 28px;
+    display: block;
 
-    lucide-icon {
-      width: 20px;
-      height: 20px;
-    }
+    img { width: 100%; height: auto; display: block; }
   }
 }
 
-// ==========================================
-// 1. WRAPPER PRINCIPAL
-// ==========================================
-.login-page-wrapper {
-    height: 100dvh;
-    width: 100%;
-    display: flex;
-    background-color: $background;
-    overflow: hidden;
-}
+@media (max-width: 480px) {
+  .form-panel {
+    justify-content: flex-start;
+    padding: max(28px, env(safe-area-inset-top)) 16px 28px;
+  }
 
-// ==========================================
-// 2. LADO ESQUERDO: BRANDING (Só Desktop)
-// ==========================================
-.brand-section {
-    display: none;
-    // Gradiente escuro e agressivo para combinar com a Havoc
-    background: radial-gradient(circle at center, $surface 0%, $background 100%);
-    position: relative;
-    overflow: hidden;
+  .mobile-brand { margin: 16px 0 26px; }
 
-    @media (min-width: 1024px) {
-        display: flex;
-        flex: 1.2;
-        align-items: center;
-        justify-content: center;
-        padding: 4rem;
-    }
+  .login-card {
+    padding: 26px 20px;
+    border-radius: 18px;
+  }
 
-    .giant-bg-logo {
-        position: absolute;
-        top: 20%;
-        transform: translateY(-50%);
-        width: 50%;
-        opacity: 0.8;
-        pointer-events: none;
-        z-index: 1;
-        // Sombra dourada super suave
-        filter: drop-shadow(0 0 60px rgba(242, 185, 15, 0.15));
-    }
-
-    .brand-content {
-        max-width: 480px;
-        z-index: 2;
-        position: relative;
-
-        .welcome-title {
-            font-size: 3rem;
-            font-weight: 800;
-            color: $text-primary;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-
-            .highlight {
-                color: $primary;
-            }
-        }
-
-        .welcome-text {
-            color: $text-secondary;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
-
-        .btn-learn-more {
-            background: $primary;
-            color: $background; // Texto escuro no botão amarelo dá um contraste absurdo
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-
-            &:hover {
-                background: $primary-dark;
-            }
-        }
-    }
-
-    .abstract-graphic {
-        position: absolute;
-        bottom: -100px;
-        left: -100px;
-        width: 600px;
-        height: 600px;
-        // Reflexo amarelo/dourado no canto inferior
-        background: radial-gradient(circle, rgba(242, 185, 15, 0.1) 0%, transparent 70%);
-        filter: blur(60px);
-        z-index: 0;
-    }
-}
-
-// ==========================================
-// 3. LADO DIREITO: FORMULÁRIO
-// ==========================================
-.form-section {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    background-color: $background; // Fundo dark principal
-    padding: 1.5rem;
-
-    @media (min-width: 1024px) {
-        padding: 3rem;
-    }
-
-    .login-card {
-        width: 100%;
-        max-width: 420px;
-        background: $surface;
-        padding: 2.5rem 2rem;
-        border-radius: 12px;
-        border: 1px solid $border;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); // Sombra mais densa pro dark mode
-        transition: all 0.3s ease;
-
-        @media (max-width: 480px) {
-            padding: 1rem;
-            border: none;
-            background: transparent;
-            box-shadow: none;
-        }
-
-        .card-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-
-            .logo {
-                height: 2.5rem; // Ajustei o tamanho para ficar harmonioso no form
-                width: auto;
-                object-fit: contain;
-                margin-bottom: 1.5rem;
-                transition: transform 0.3s ease;
-
-                &:hover {
-                    transform: scale(1.05);
-                }
-            }
-
-            h2 {
-                font-size: 1.8rem;
-                color: $text-primary;
-                margin: 0 0 0.5rem 0;
-                font-weight: 700;
-            }
-
-            p {
-                color: $text-secondary;
-                font-size: 0.9rem;
-                margin: 0;
-            }
-        }
-    }
-}
-
-// ==========================================
-// 4. ELEMENTOS INTERNOS DO FORM
-// ==========================================
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        label {
-            font-size: 0.85rem;
-            color: $text-primary;
-            font-weight: 500;
-        }
-
-        .label-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            .forgot-link {
-                font-size: 0.8rem;
-                color: $primary;
-                text-decoration: none;
-                font-weight: 500;
-
-                &:hover {
-                    color: $primary-dark;
-                }
-            }
-        }
-    }
-
-    .havoc-input {
-        background: $surface-2; // Cor de fundo do input sutilmente mais clara que o card
-        border: 1px solid $border;
-        padding: 14px 16px;
-        border-radius: 8px;
-        color: $text-primary;
-        font-size: 0.95rem;
-        transition: all 0.2s;
-
-        &::placeholder {
-            color: rgba(242, 242, 242, 0.3);
-        }
-
-        &:focus {
-            outline: none;
-            border-color: $primary;
-            // Brilho amarelo/dourado ao focar no input
-            box-shadow: 0 0 0 3px rgba(242, 185, 15, 0.2);
-        }
-    }
-
-    .form-options {
-        font-size: 0.85rem;
-        color: $text-secondary;
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-
-            input[type="checkbox"] {
-                accent-color: $primary;
-                width: 16px;
-                height: 16px;
-                cursor: pointer;
-            }
-        }
-    }
-
-    .btn-login {
-        background: $primary;
-        color: $background; // Letra escura no fundo amarelo
-        border: none;
-        padding: 16px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-        margin-top: 0.5rem;
-
-        &:hover:not(:disabled) {
-            background: $primary-dark;
-        }
-
-        &:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    }
-}
-
-// ==========================================
-// 5. ESTADOS DE ERRO E LOADING
-// ==========================================
-.error-message-box {
-    background: rgba(217, 56, 56, 0.1); // Usando sua variável $havoc-danger
-    border: 1px solid rgba(217, 56, 56, 0.4);
-    color: #ff8a8a;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    text-align: center;
-    font-weight: 500;
-    animation: slideDown 0.3s ease-out;
-}
-
-.loading-icon {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    vertical-align: middle;
-    animation: spin 1s linear infinite;
-    display: inline-block;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  .card-header { margin-bottom: 26px; }
+  .card-header h2 { font-size: 1.75rem; }
+  .store-link { margin-bottom: env(safe-area-inset-bottom); }
 }

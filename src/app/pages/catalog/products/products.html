@@ -143,13 +143,13 @@
             </td>
 
             <td class="data-table__td data-table__td--right">
-              <span class="data-table__value">R$ {{ product.price | number:'1.2-2' }}</span>
+              <span class="data-table__value">R${{ product.price | number:'1.2-2' }}</span>
             </td>
 
             <td class="data-table__td data-table__td--center">
               <div class="stock-cell">
-                <span class="stock-cell__qty" [class.stock-cell__qty--low]="product.stock <= product.stock_min">
-                  {{ product.stock}}
+                <span class="stock-cell__qty" [class.stock-cell__qty--low]="isLowStock(product)">
+                  {{ product.stock_qty ?? product.stock ?? 0 }}
                 </span>
               </div>
             </td>
@@ -236,7 +236,7 @@
           <p class="product-summary-card__name">{{ selectedProduct()?.name }}</p>
           <p class="product-summary-card__stock">
             Estoque atual:
-            <strong>{{ selectedProduct()?.stock_qty }} {{ selectedProduct()?.unit }}</strong>
+            <strong>{{ selectedProduct()?.stock_qty ?? selectedProduct()?.stock ?? 0 }} {{ selectedProduct()?.unit }}</strong>
           </p>
         </div>
 
@@ -346,6 +346,71 @@
             <textarea formControlName="description" class="nexora-input product-form__textarea"
               placeholder="Descreva o produto — será usado pelo bot no WhatsApp..."></textarea>
           </div>
+        </div>
+
+        <div class="product-form__section">
+          <div class="official-data__heading">
+            <div>
+              <p class="product-form__section-label">Dados oficiais do suplemento</p>
+              <p class="form-hint">Informe o fabricante e o domínio oficial para localizar o rótulo correto.</p>
+            </div>
+            @if (isEditing()) {
+              <button type="button" class="btn-secondary official-data__sync" (click)="syncOfficialFacts()"
+                [disabled]="syncState() === 'loading'">
+                <lucide-icon name="search" class="btn-icon" [class.btn-icon--spin]="syncState() === 'loading'"></lucide-icon>
+                {{ syncState() === 'loading' ? 'Buscando...' : 'Buscar dados oficiais' }}
+              </button>
+            }
+          </div>
+
+          <div class="product-form__row">
+            <div class="form-field product-form__col">
+              <label class="form-label" for="product-manufacturer">Fabricante</label>
+              <input id="product-manufacturer" type="text" formControlName="manufacturer" class="nexora-input" placeholder="Ex: Integralmédica">
+            </div>
+            <div class="form-field product-form__col">
+              <label class="form-label" for="product-manufacturer-domain">Domínio oficial</label>
+              <input id="product-manufacturer-domain" type="text" formControlName="manufacturerDomain" class="nexora-input"
+                placeholder="Ex: integralmedica.com.br" inputmode="url">
+            </div>
+          </div>
+
+          @if (!isEditing()) {
+            <p class="official-data__notice">Salve o produto para habilitar a busca dos dados oficiais.</p>
+          }
+
+          @if (syncMessage()) {
+            <div class="sync-feedback" [class.sync-feedback--success]="syncState() === 'success'"
+              [class.sync-feedback--error]="syncState() === 'error'" role="status">
+              @if (syncState() === 'loading') { <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon> }
+              @else if (syncState() === 'error') { <lucide-icon name="alert-triangle" class="btn-icon"></lucide-icon> }
+              @else { <lucide-icon name="check-circle" class="btn-icon"></lucide-icon> }
+              <span>{{ syncMessage() }}</span>
+            </div>
+          }
+
+          @if (isEditing()) {
+            <div class="source-summary">
+              <div>
+                <span class="source-summary__label">Status da fonte</span>
+                <strong>{{ factsStatusLabel(currentFacts()?.status) }}</strong>
+              </div>
+              @if (currentFacts()?.source?.url; as sourceUrl) {
+                <div>
+                  <span class="source-summary__label">Fonte recuperada</span>
+                  <a [href]="sourceUrl" target="_blank" rel="noopener noreferrer">
+                    {{ currentFacts()?.source?.title || sourceUrl }} <lucide-icon name="external-link"></lucide-icon>
+                  </a>
+                </div>
+              }
+              @if (currentFacts()?.source?.retrievedAt; as retrievedAt) {
+                <div>
+                  <span class="source-summary__label">Consultada em</span>
+                  <span>{{ retrievedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <div class="product-form__section">

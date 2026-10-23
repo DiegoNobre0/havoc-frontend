@@ -1,26 +1,12 @@
-// ==========================================
-// VARIÁVEIS HAVOC
-// ==========================================
-$havoc-yellow: #F2B90F;
-$havoc-yellow-dark: #D9A40D;
-$havoc-bg-main: #000000;
-$havoc-bg-surface: rgba(0, 0, 0, 0.6);
-$havoc-border: #F2B90F;
-$havoc-text-main: #ffffff;
-$havoc-text-muted: #ffffff;
+@use '../../../../styles/variables' as *;
 
 // ─── Layout da Página ──────────────────────────────────────────
 .categories-page {
-  padding: 2rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: $havoc-text-main;
-
-  @media (max-width: 640px) {
-    padding: 1rem;
-  }
+  gap: var(--ui-space-6);
+  color: var(--ui-text-primary);
 }
 
 // ─── Header ───────────────────────────────────────────────────
@@ -28,80 +14,27 @@ $havoc-text-muted: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--ui-space-4);
   flex-wrap: wrap;
-  background: $havoc-bg-surface;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border: 1px solid $havoc-border;
-  backdrop-filter: blur(8px);
 
   &__title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #ffffff;
-    margin: 0 0 0.25rem 0;
+    color: var(--ui-text-primary);
+    margin: 0 0 2px 0;
+    letter-spacing: -0.01em;
   }
 
   &__subtitle {
     font-size: 0.875rem;
-    color: $havoc-text-muted;
+    color: var(--ui-text-muted);
     margin: 0;
-  }
-}
-
-// ─── Botões ───────────────────────────────────────────────────
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border: none;
-  background: $havoc-yellow;
-  color: #111111;
-  font-weight: 700;
-  font-size: 0.875rem;
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: $havoc-yellow-dark;
-    transform: translateY(-2px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.btn-cancel {
-  flex: 1;
-  padding: 0.625rem;
-  background: transparent;
-  border: 1px solid #334155;
-  color: #CBD5E1;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    background: #1E293B;
-    color: #ffffff;
   }
 }
 
 // ─── Tabela ───────────────────────────────────────────────────
 .data-table-wrapper {
-  background: #000000;
-  border: 1px solid $havoc-border;
-  border-radius: 1rem;
-  overflow: hidden;
+  @include ui-table-wrapper;
 }
 
 .data-table-scroll {
@@ -109,64 +42,28 @@ $havoc-text-muted: #ffffff;
 }
 
 .data-table {
-  width: 100%;
-  text-align: left;
-  border-collapse: collapse;
+  @include ui-table;
   min-width: 600px;
 
   &__head {
-    background: rgba(0, 0, 0, 0);
-    border-bottom: 1px solid $havoc-border;
-  }
-
-  &__th {
-    padding: 1rem 1.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: $havoc-text-muted;
-
-    &--center {
-      text-align: center;
-    }
-
-    &--right {
-      text-align: right;
-    }
-  }
-
-  &__row {
-    border-bottom: 1px solid rgba(51, 65, 85, 0.4);
-  }
-
-  &__row--hoverable {
-    transition: background-color 0.2s;
-
-    &:hover {
-      background: rgba(30, 41, 59, 0.4);
+    th {
+      &--center { text-align: center; }
+      &--right { text-align: right; }
     }
   }
 
   &__td {
-    padding: 1rem 1.5rem;
-    font-size: 0.875rem;
-
-    &--center {
-      text-align: center;
-    }
-
-    &--right {
-      text-align: right;
-    }
+    &--center { text-align: center; }
+    &--right { text-align: right; }
   }
 
   &__value {
-    color: #E2E8F0;
+    color: var(--ui-text-primary);
     font-weight: 600;
   }
 
   &__empty {
-    padding: 4rem 1.25rem;
+    padding: var(--ui-space-10) var(--ui-space-4);
     text-align: center;
   }
 }
@@ -175,20 +72,20 @@ $havoc-text-muted: #ffffff;
 .item-cell {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--ui-space-3);
 
   &__icon {
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.75rem;
-    background: rgba(242, 185, 15, 0.1);
+    border-radius: var(--ui-radius-md);
+    background: var(--ui-primary-subtle);
     border: 1px solid rgba(242, 185, 15, 0.2);
-    color: $havoc-yellow;
+    color: var(--ui-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.3s ease;
+    transition: all var(--ui-transition);
   }
 
   &__icon-svg {
@@ -197,47 +94,21 @@ $havoc-text-muted: #ffffff;
   }
 
   &__name {
-    color: #E2E8F0;
+    color: var(--ui-text-primary);
     font-weight: 600;
-    transition: color 0.2s;
   }
 }
 
 // ─── Badge ────────────────────────────────────────────────────
 .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-  }
+  @include ui-badge;
 
   &--active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #34D399;
-    border: 1px solid rgba(16, 185, 129, 0.2);
-
-    &::before {
-      background-color: #34D399;
-    }
+    @include ui-badge-success;
   }
 
   &--inactive {
-    background: rgba(30, 41, 59, 0.5);
-    color: #94A3B8;
-    border: 1px solid #334155;
-
-    &::before {
-      background-color: #64748B;
-    }
+    @include ui-badge-neutral;
   }
 }
 
@@ -246,219 +117,141 @@ $havoc-text-muted: #ffffff;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--ui-space-2);
 }
 
 .action-btn {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  color: #94A3B8;
-  background: transparent;
-  transition: all 0.2s;
-  cursor: pointer;
-  display: flex;
-  border: none;
-
-  &__icon {
-    width: 1.125rem;
-    height: 1.125rem;
-  }
-
-  &:hover {
-    color: #F2B90F;
-    background: #334155;
-  }
+  @include ui-btn;
+  @include ui-btn-icon;
 
   &--danger:hover {
-    color: #F87171;
-    background: rgba(239, 68, 68, 0.1);
+    color: var(--ui-danger) !important;
+    background: var(--ui-danger-bg) !important;
   }
 }
 
 // ─── Estado Vazio ─────────────────────────────────────────────
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4rem 1rem;
+  @include ui-empty-state;
 
   &__icon-wrap {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 1rem;
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid #334155;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--ui-radius-lg);
+    background: var(--ui-surface-2);
+    border: 1px solid var(--ui-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #64748B;
-    margin-bottom: 1rem;
+    color: var(--ui-primary);
+    margin-bottom: var(--ui-space-2);
   }
 
   &__text {
-    font-size: 1.125rem;
-    color: #CBD5E1;
+    font-size: 1rem;
+    color: var(--ui-text-secondary);
     font-weight: 600;
+    margin: 0;
   }
 
   &__cta {
-    margin-top: 1.5rem;
+    margin-top: var(--ui-space-2);
     font-size: 0.875rem;
     font-weight: 600;
-    color: $havoc-yellow;
+    color: var(--ui-primary);
     background: none;
     border: none;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color var(--ui-transition);
 
     &:hover {
-      color: $havoc-yellow-dark;
+      color: var(--ui-primary-hover);
       text-decoration: underline;
     }
   }
 }
 
-// ─── Modal Overlay ────────────────────────────────────────────
+// ─── Modal ────────────────────────────────────────────────────
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: rgba(2, 6, 23, 0.8);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
+  @include ui-modal-overlay;
 }
 
 .modal-card {
-  background: #000000;
-  width: 100%;
+  @include ui-modal-card;
   max-width: 28rem;
-  border-radius: 1rem;
-  border: 1px solid $havoc-yellow;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #1E293B;
+  @include ui-modal-header;
 
   &__title {
     font-size: 1.25rem;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--ui-text-primary);
     margin: 0;
   }
 
   &__close {
     background: transparent;
     border: none;
-    color: #94A3B8;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
+    color: var(--ui-text-muted);
+    padding: 6px;
+    border-radius: var(--ui-radius-sm);
     cursor: pointer;
-    margin-right: -0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
-      color: #fff;
-      background: #1E293B;
+      color: #ffffff;
+      background: var(--ui-surface-2);
     }
   }
 }
 
 .modal-form {
-  padding: 1.5rem;
+  padding: var(--ui-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-4);
 }
 
-// ─── Inputs do Form ───────────────────────────────────────────
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: var(--ui-space-2);
 }
 
 .form-label {
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #CBD5E1;
-}
-
-.nexora-input {
-  background: #000000;
-  border: 1px solid #ffffff;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  color: #F1F5F9;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  outline: none;
-
-  &::placeholder {
-    color: #64748B;
-  }
-
-  &:focus {
-    border-color: $havoc-yellow;
-    box-shadow: 0 0 0 2px rgba(242, 185, 15, 0.15);
-  }
+  font-weight: 600;
+  color: var(--ui-text-secondary);
 }
 
 .form-error {
-  color: #F87171;
+  color: var(--ui-danger);
   font-size: 0.75rem;
-  margin-top: 0.375rem;
+  margin-top: 2px;
 }
 
 .modal-actions {
   display: flex;
-  gap: 0.75rem;
-  padding-top: 0.5rem;
-}
+  gap: var(--ui-space-3);
+  padding-top: var(--ui-space-2);
 
-// ─── Animações ────────────────────────────────────────────────
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
+  button {
+    flex: 1;
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-// ─── Skeletons ────────────────────────────────────────────────
+// Skeletons
 .skeleton {
-  background: linear-gradient(90deg, #1E293B 25%, #273449 50%, #1E293B 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 0.5rem;
-  height: 1rem;
+  @include ui-skeleton;
 
   &--icon {
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 0.75rem;
+    border-radius: var(--ui-radius-md);
   }
 
   &--text-md {
@@ -474,53 +267,20 @@ $havoc-text-muted: #ffffff;
   &--badge {
     width: 4rem;
     height: 1.5rem;
-    border-radius: 9999px;
+    border-radius: var(--ui-radius-full);
     margin: 0 auto;
   }
 
   &--right {
-    width: 6rem;
+    width: 4rem;
     margin-left: auto;
-    height: 2rem;
-    border-radius: 0.5rem;
+    height: 1.5rem;
+    border-radius: var(--ui-radius-sm);
   }
 }
 
 .skeleton-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-@keyframes shimmer {
-  from {
-    background-position: 200% 0;
-  }
-
-  to {
-    background-position: -200% 0;
-  }
-}
-
-// ─── Estilos do MatSnackBar (Popups Nativos) ───
-::ng-deep .havoc-snackbar-success {
-  background-color: #F2B90F !important;
-  border-left: 4px solid #17B169 !important;
-  color: #000000 !important;
-  border-radius: 6px !important;
-
-  .mat-mdc-snack-bar-action {
-    color: #000000 !important;
-  }
-}
-
-::ng-deep .havoc-snackbar-error {
-  background-color: #F2B90F !important;
-  border-left: 4px solid #EF4444 !important;
-  color: #000000 !important;
-  border-radius: 6px !important;
-
-  .mat-mdc-snack-bar-action {
-    color: #000000 !important;
-  }
+  gap: var(--ui-space-3);
 }

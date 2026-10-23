@@ -1,0 +1,171 @@
+<div class="consultant" [class.consultant--raised]="clearMobileBottomBar()">
+  @if (isOpen()) {
+    <section
+      id="consultant-panel"
+      class="consultant-panel"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="consultant-title"
+    >
+      <header class="consultant-header">
+        <div class="consultant-heading">
+          <span class="consultant-mark" aria-hidden="true"><lucide-icon name="sparkles"></lucide-icon></span>
+          <div>
+            <h2 id="consultant-title">Consultor Havoc</h2>
+            <p>Ajuda para escolher seu suplemento</p>
+          </div>
+        </div>
+        <div class="consultant-header-actions">
+          <button type="button" (click)="startNewConversation()" [disabled]="audioPhase() !== 'idle' || state.isLoading()" aria-label="Iniciar nova conversa" title="Nova conversa">
+            <lucide-icon name="rotate-ccw"></lucide-icon>
+          </button>
+          <button #closeButton type="button" (click)="close()" aria-label="Fechar consultor">
+            <lucide-icon name="x"></lucide-icon>
+          </button>
+        </div>
+      </header>
+
+      @if (featuredItem(); as item) {
+        <div class="consultant-product" aria-label="Item em exibição">
+          <div class="consultant-product-image">
+            @if (item.imageUrl) {
+              <img [src]="item.imageUrl" [alt]="item.name">
+            } @else {
+              <lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'"></lucide-icon>
+            }
+          </div>
+          <div class="consultant-product-copy">
+            <span>Você está vendo</span>
+            <strong>{{ item.name }}</strong>
+            <small>R$ {{ item.price | number:'1.2-2' }} · {{ item.available ? 'Em estoque' : 'Indisponível' }}</small>
+          </div>
+          <lucide-icon class="consultant-product-check" name="circle-check"></lucide-icon>
+        </div>
+      }
+
+      <div #messageList class="consultant-messages" aria-live="polite" aria-relevant="additions">
+        @if (state.isLoading()) {
+          <p class="consultant-status">Recuperando sua conversa...</p>
+        } @else if (state.messages().length === 0) {
+          <div class="consultant-welcome">
+            <span aria-hidden="true">H</span>
+            <h3>Qual é o seu objetivo?</h3>
+            <p>Conte o que você busca e eu ajudo a encontrar opções no catálogo.</p>
+          </div>
+        }
+
+        @for (message of state.messages(); track message.id) {
+          <article class="consultant-message" [class.consultant-message--user]="message.role === 'user'" [class.consultant-message--pending]="message.deliveryStatus === 'pending'" [class.consultant-message--failed]="message.deliveryStatus === 'failed'">
+            <span class="message-author">{{ message.role === 'user' ? 'Você' : 'Consultor Havoc' }}</span>
+            <p>{{ message.content }}</p>
+            @if (message.role === 'user' && message.deliveryStatus === 'pending') {
+              <span class="message-delivery" role="status">Enviando...</span>
+            }
+            @if (message.role === 'user' && message.deliveryStatus === 'failed') {
+              <span class="message-delivery message-delivery--failed" role="alert">{{ message.deliveryError }}</span>
+              <button class="message-retry" type="button" (click)="state.retryMessage(message.requestId!)">Tentar novamente</button>
+            }
+
+            @if (message.recommendations?.length) {
+              <div class="recommendations" aria-label="Recomendações">
+                @for (recommendation of message.recommendations; track recommendation.type + recommendation.id) {
+                  @if (!isFeaturedRecommendation(recommendation)) {
+                    <div class="recommendation-item">
+                      <a
+                        class="recommendation-card"
+                        [class.recommendation-card--unavailable]="!recommendation.available"
+                        [routerLink]="['/', recommendation.type === 'kit' ? 'kit' : 'produto', recommendation.slug]"
+                        (click)="close()"
+                      >
+                        @if (recommendation.imageUrl) {
+                          <img [src]="recommendation.imageUrl" [alt]="recommendation.name" loading="lazy">
+                        } @else {
+                          <span class="recommendation-placeholder" aria-hidden="true"><lucide-icon name="package"></lucide-icon></span>
+                        }
+                        <span class="recommendation-copy">
+                          <strong>{{ recommendation.name }}</strong>
+                          @if (recommendation.description) { <span>{{ recommendation.description }}</span> }
+                          <b>R$ {{ recommendation.price | number:'1.2-2' }}</b>
+                          <small>{{ recommendation.available ? 'Ver detalhes' : 'Indisponível no momento' }}</small>
+                        </span>
+                      </a>
+                      @if (isSelectionPrompt(message.content)) {
+                        <button type="button" class="recommendation-select" (click)="selectRecommendation($index)">
+                          Escolher opção {{ $index + 1 }}
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </article>
+          @if (state.activeRequestId() === message.requestId) {
+            <div class="assistant-typing" role="status">
+              <span></span><span></span><span></span>
+              <em>Consultando catálogo e fontes confiáveis...</em>
+            </div>
+          }
+        }
+
+        @if (state.error(); as error) {
+          <p class="consultant-error" role="alert">{{ error }}</p>
+        }
+      </div>
+
+      <form class="consultant-composer" (ngSubmit)="submit()">
+        <label for="consultant-message">Sua pergunta</label>
+        <div class="composer-row">
+          <textarea
+            id="consultant-message"
+            name="consultantMessage"
+            [(ngModel)]="draft"
+            maxlength="500"
+            rows="2"
+            placeholder="Ex.: Qual a diferença entre whey concentrado e isolado?"
+            (keydown)="onComposerKeydown($event)"
+            [disabled]="audioPhase() !== 'idle'"
+          ></textarea>
+          <button
+            type="button"
+            class="audio-button"
+            [class.audio-button--recording]="isRecording()"
+            [disabled]="audioPhase() === 'stopping' || state.isLoading()"
+            [attr.aria-label]="isRecording() ? 'Parar e enviar gravação' : 'Gravar mensagem de áudio'"
+            [attr.aria-pressed]="isRecording()"
+            (click)="toggleRecording()"
+          >
+            <lucide-icon name="mic"></lucide-icon>
+          </button>
+          <button type="submit" [disabled]="!draft.trim() || audioPhase() !== 'idle'" aria-label="Enviar mensagem">
+            <lucide-icon name="send"></lucide-icon>
+          </button>
+        </div>
+        @if (isRecording()) {
+          <span class="recording-status" role="status">
+            <span aria-hidden="true"></span>
+            Gravando {{ recordingTime() }} · Toque novamente para parar e enviar
+          </span>
+        } @else {
+          <span class="composer-hint">Enter envia, Shift+Enter quebra a linha · {{ draft.length }}/500</span>
+        }
+        @if (recordingError(); as error) {
+          <span class="composer-error" role="alert">{{ error }}</span>
+        }
+      </form>
+    </section>
+  }
+
+  <button
+    #launcher
+    type="button"
+    class="consultant-launcher"
+    [attr.aria-expanded]="isOpen()"
+    aria-controls="consultant-panel"
+    [attr.aria-label]="isOpen() ? 'Consultor de suplementos aberto' : 'Abrir consultor de suplementos'"
+    (click)="isOpen() ? close() : open()"
+  >
+    <lucide-icon name="sparkles"></lucide-icon>
+    <span>Precisa de ajuda?</span>
+  </button>
+</div>

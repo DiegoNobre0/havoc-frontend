@@ -66,7 +66,7 @@
         </div>
         <p class="kit-card__desc">{{ kit.description || 'Sem descrição' }}</p>
         <div class="kit-card__footer">
-          <span class="kit-card__price">R$ {{ kit.finalPrice | number:'1.2-2' }}</span>
+          <span class="kit-card__price">R${{ kit.finalPrice | number:'1.2-2' }}</span>
           <div class="kit-card__actions">
             <button (click)="toggleKit(kit)" class="action-btn action-btn--primary"
               [title]="kit.isActive ? 'Pausar Kit' : 'Reativar Kit'">
@@ -171,7 +171,7 @@
             <div class="kit-item">
               <div class="kit-item__info">
                 <p class="kit-item__name">{{ item.product.name }}</p>
-                <p class="kit-item__cost">Preço Base : R$ {{ item.product.price | number:'1.2-2' }}</p>
+                <p class="kit-item__cost">Preço Base: R${{ item.product.price | number:'1.2-2' }}</p>
               </div>
               <div class="kit-item__controls">
                 <div class="nx-qty-control">
@@ -196,7 +196,7 @@
           <div class="profit-card">
             <div class="profit-card__row">
               <span class="profit-card__label">Subtotal dos Produtos:</span>
-              <span class="profit-card__value">R$ {{ rawSubtotal() | number:'1.2-2' }}</span>
+              <span class="profit-card__value">R${{ rawSubtotal() | number:'1.2-2' }}</span>
             </div>
 
             <div class="profit-card__divider my-3"></div>
@@ -213,7 +213,7 @@
 
             <div class="profit-card__margin mt-2">
               <span class="profit-card__label">Preço Final do Kit:</span>
-              <span class="profit-card__price">R$ {{ finalPrice() | number:'1.2-2' }}</span>
+              <span class="profit-card__price">R${{ finalPrice() | number:'1.2-2' }}</span>
             </div>
           </div>
         </div>

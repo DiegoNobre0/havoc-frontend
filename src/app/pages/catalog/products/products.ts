@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
 import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs';
 import { CatalogService } from '../../../services/catalog.service';
@@ -10,6 +11,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog';
 import { NgxCurrencyDirective } from 'ngx-currency';
+import { CatalogCategory, CatalogProduct, ProductFilters, SaveProductRequest } from '../../../models/product.models';
+import { SupplementFacts } from '../../../models/supplement-facts.models';
 
 
 @Component({
@@ -37,11 +40,9 @@ export class Products implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;
 
-  @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<any>;
-
   // ─── ESTADOS DA LISTAGEM ────────────────────────────────────
-  products = signal<any[]>([]);
-  categories = signal<any[]>([]);
+  products = signal<CatalogProduct[]>([]);
+  categories = signal<CatalogCategory[]>([]);
   isLoading = signal<boolean>(true);
 
   // ─── PAGINAÇÃO E FILTROS ────────────────────────────────────
@@ -60,7 +61,7 @@ export class Products implements OnInit, OnDestroy {
 
   // ─── MODAL: MOVIMENTAR ESTOQUE ──────────────────────────────
   isStockModalOpen = signal<boolean>(false);
-  selectedProduct = signal<any | null>(null);
+  selectedProduct = signal<CatalogProduct | null>(null);
 
   stockOperations = [
     { label: 'Entrada', value: 'IN' },
@@ -83,6 +84,9 @@ export class Products implements OnInit, OnDestroy {
   isEditing = signal<boolean>(false);
   currentId = signal<string | null>(null);
   showFiscal = signal<boolean>(false);
+  currentFacts = signal<SupplementFacts | null>(null);
+  syncState = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  syncMessage = signal<string>('');
 
   productForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -96,6 +100,8 @@ export class Products implements OnInit, OnDestroy {
     stock_min: [0, Validators.min(0)],
     ncm: [''],
     cfop: [''],
+    manufacturer: [''],
+    manufacturerDomain: [''],
     isActive: [true]
   });
 
@@ -131,14 +137,17 @@ export class Products implements OnInit, OnDestroy {
   }
 
   loadCategories() {
-    this.catalogService.getCategories().subscribe((res: any) => {
-      this.categories.set(res.data || res);
+    this.catalogService.getCategories().subscribe((res: unknown) => {
+      const value = typeof res === 'object' && res !== null && 'data' in res
+        ? (res as { data: unknown }).data
+        : res;
+      this.categories.set(Array.isArray(value) ? value.filter(this.isCatalogCategory) : []);
     });
   }
 
   loadProducts() {
     this.isLoading.set(true);
-    const filters: any = {
+    const filters: ProductFilters = {
       page: this.currentPage(),
       limit: 10,
       search: this.searchTerm()
@@ -148,7 +157,7 @@ export class Products implements OnInit, OnDestroy {
     if (this.selectedStatus()) filters.isActive = this.selectedStatus() === 'true';
 
     this.catalogService.getProducts(filters).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         this.products.set(res.data);
         
         this.totalPages.set(res.meta.totalPages);
@@ -176,7 +185,7 @@ export class Products implements OnInit, OnDestroy {
     // TODO: Implementar filtro de estoque no backend
   }
 
-  toggleProduct(product: any) {
+  toggleProduct(product: CatalogProduct) {
     const newStatus = !product.isActive;
     this.products.update(prods => prods.map(p => p.id === product.id ? { ...p, isActive: newStatus } : p));
 
@@ -192,34 +201,46 @@ export class Products implements OnInit, OnDestroy {
     this.showFiscal.update(v => !v);
   }
 
-  openModal(product?: any) {
+  openModal(product?: CatalogProduct) {
     this.imagePreview.set(null);
     this.selectedFile.set(null);
+    this.currentFacts.set(null);
+    this.syncState.set('idle');
+    this.syncMessage.set('');
+    this.showFiscal.set(false);
 
     if (product) {
-
-      console.log('Editing product:', product);
       this.isEditing.set(true);
       this.currentId.set(product.id);
       if (product.ncm || product.cfop) this.showFiscal.set(true);
 
       this.imagePreview.set(product.imageUrl || null);
+      this.currentFacts.set(product.supplementFacts ?? null);
 
-      this.productForm.patchValue({
+      this.productForm.reset({
         name: product.name,
         unit: product.unit || 'UN',
-        category_ids: product.categories ? product.categories.map((c: any) => c.id) : [],
+        category_ids: product.categories?.map((category) => category.id) ?? [],
         description: product.description || '',
         price: Number(product.price),
-        stock_qty: product.stock || 0,
+        cost_price: Number(product.cost_price ?? product.costPrice ?? 0),
+        price_wholesale: Number(product.price_wholesale ?? product.priceWholesale ?? 0),
+        stock_qty: Number(product.stock_qty ?? product.stock ?? 0),
+        stock_min: Number(product.stock_min ?? product.stockMin ?? 0),
+        ncm: product.ncm ?? '',
+        cfop: product.cfop ?? '',
+        manufacturer: product.manufacturer ?? product.supplementFacts?.manufacturer ?? '',
+        manufacturerDomain: product.manufacturerDomain ?? product.supplementFacts?.manufacturerDomain ?? '',
+        isActive: product.isActive,
       });
 
     } else {
       this.isEditing.set(false);
       this.currentId.set(null);
-      this.showFiscal.set(false);
       this.productForm.reset({
-        isActive: true, unit: 'UN', price: 0, cost_price: 0, stock_qty: 0, stock_min: 0, category_ids: []
+        name: '', description: '', isActive: true, unit: 'UN', price: 0, cost_price: 0,
+        price_wholesale: 0, stock_qty: 0, stock_min: 0, category_ids: [], ncm: '', cfop: '',
+        manufacturer: '', manufacturerDomain: '',
       });
     }
     this.isModalOpen.set(true);
@@ -230,7 +251,7 @@ export class Products implements OnInit, OnDestroy {
   }
 
   // ─── DELETAR PRODUTO ─────────────
-openDeleteConfirm(product: any) {
+openDeleteConfirm(product: CatalogProduct) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       panelClass: 'havoc-dialog-container',
@@ -250,7 +271,7 @@ openDeleteConfirm(product: any) {
     });
   }
 
-executeDelete(product: any) {
+executeDelete(product: CatalogProduct) {
     this.isDeleting.set(true);
 
     this.catalogService.deleteProduct(product.id).subscribe({
@@ -278,7 +299,7 @@ executeDelete(product: any) {
 
     const generatedSlug = formValues.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    const payload = {
+    const payload: SaveProductRequest = {
       name: formValues.name,
       slug: generatedSlug,
       description: formValues.description,
@@ -290,6 +311,8 @@ executeDelete(product: any) {
       unit: formValues.unit,
       ncm: formValues.ncm,
       cfop: formValues.cfop,
+      ...(formValues.manufacturer.trim() && { manufacturer: formValues.manufacturer.trim() }),
+      ...(formValues.manufacturerDomain.trim() && { manufacturerDomain: formValues.manufacturerDomain.trim() }),
       isActive: formValues.isActive,
       category_ids: formValues.category_ids && formValues.category_ids.length > 0 ? formValues.category_ids : undefined
     };
@@ -314,7 +337,7 @@ executeDelete(product: any) {
           this.finalizeSave();
         }
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error(err);
         this.showToast('Erro ao salvar os dados do produto.', true);
         this.isSaving.set(false);
@@ -330,7 +353,7 @@ executeDelete(product: any) {
   }
 
   // ─── ESTOQUE E IMAGENS ──────────────────────────────────────
-  openStockModal(product: any) {
+  openStockModal(product: CatalogProduct) {
     this.selectedProduct.set(product);
     this.stockForm.reset({ operation: 'IN', quantity: 1, reason: '' });
     this.isStockModalOpen.set(true);
@@ -354,15 +377,16 @@ executeDelete(product: any) {
     }
   }
 
-onFileSelected(event: any) {
-    const file = event.target.files[0];
+onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     
     if (file) {
       // 1. Trava de Formato (Bloqueia WEBP, GIF, SVG, etc)
       const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
       if (!allowedTypes.includes(file.type)) {
         alert('Formato inválido! O WhatsApp exige imagens JPG ou PNG. Por favor, escolha outra foto.');
-        event.target.value = ''; // Limpa o campo para o usuário tentar de novo
+        input.value = ''; // Limpa o campo para o usuário tentar de novo
         return;
       }
 
@@ -370,14 +394,14 @@ onFileSelected(event: any) {
       const maxSizeInBytes = 5 * 1024 * 1024;
       if (file.size > maxSizeInBytes) {
         alert('A imagem é muito pesada! O tamanho máximo permitido é de 5MB.');
-        event.target.value = ''; // Limpa o campo
+        input.value = ''; // Limpa o campo
         return;
       }
 
       // Se passou por todas as travas, salva a imagem e gera o preview
       this.selectedFile.set(file);
       const reader = new FileReader();
-      reader.onload = (e: any) => this.imagePreview.set(e.target.result);
+      reader.onload = () => this.imagePreview.set(typeof reader.result === 'string' ? reader.result : null);
       reader.readAsDataURL(file);
     }
   }
@@ -388,7 +412,7 @@ onFileSelected(event: any) {
   }
 
   // ─── ALERTAS (MatSnackBar) ──────────────────────────────────
-  showToast(message: string, isError: boolean = false) {
+  showToast(message: string, isError = false) {
     this.snackBar.open(message, 'X', {
       duration: 3000,
       horizontalPosition: 'right',
@@ -398,21 +422,22 @@ onFileSelected(event: any) {
   }
 
   // ─── UPLOAD DE PDF (CLIPP) ──────────────────────────────────
-  onPdfSelected(event: any) {
-    const file = event.target.files[0];
+  onPdfSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file) return;
 
     // Validação de segurança no Front
     if (file.type !== 'application/pdf') {
       this.showToast('Formato inválido! Por favor, selecione um arquivo PDF.', true);
-      event.target.value = ''; // Limpa o input
+      input.value = ''; // Limpa o input
       return;
     }
 
     this.isImportingPdf.set(true);
 
     this.catalogService.importPdf(file).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         this.isImportingPdf.set(false);
         const { criados, atualizados, erros } = res.resumo;
         
@@ -423,13 +448,59 @@ onFileSelected(event: any) {
         this.currentPage.set(1);
         this.loadProducts();
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error(err);
         this.isImportingPdf.set(false);
-        this.showToast(err.error?.message || 'Erro ao processar o PDF. Tente novamente.', true);
+        const message = typeof err.error?.message === 'string' ? err.error.message : 'Erro ao processar o PDF. Tente novamente.';
+        this.showToast(message, true);
       }
     });
 
-    event.target.value = ''; // Limpa o input para permitir subir o mesmo arquivo de novo se precisar
+    input.value = ''; // Limpa o input para permitir subir o mesmo arquivo de novo se precisar
+  }
+
+  syncOfficialFacts(): void {
+    const productId = this.currentId();
+    if (!productId || this.syncState() === 'loading') return;
+
+    this.syncState.set('loading');
+    this.syncMessage.set('Buscando a fonte oficial do fabricante...');
+    this.catalogService.syncProductLabel(productId).subscribe({
+      next: (facts) => {
+        this.currentFacts.set(facts);
+        this.syncState.set('success');
+        this.syncMessage.set(facts
+          ? 'Busca concluída. Confira abaixo o status e a fonte encontrada.'
+          : 'Busca concluída, mas nenhuma informação oficial foi retornada.');
+        this.loadProducts();
+      },
+      error: () => {
+        this.syncState.set('error');
+        this.syncMessage.set('Não foi possível buscar os dados oficiais. Verifique fabricante e domínio e tente novamente.');
+      },
+    });
+  }
+
+  factsStatusLabel(status: string | null | undefined): string {
+    const labels: Record<string, string> = {
+      SOURCE_MATCHED: 'Fonte oficial confirmada',
+      NOT_FOUND: 'Fonte oficial não encontrada',
+      FAILED: 'Falha na busca',
+      SOURCE_NOT_FOUND: 'Fonte oficial não encontrada',
+      SOURCE_MISMATCH: 'Produto da fonte não corresponde',
+      PENDING: 'Aguardando busca',
+      ERROR: 'Falha na busca',
+    };
+    return status ? labels[status] ?? status : 'Ainda não sincronizado';
+  }
+
+  isLowStock(product: CatalogProduct): boolean {
+    return Number(product.stock_qty ?? product.stock ?? 0) <= Number(product.stock_min ?? product.stockMin ?? 0);
+  }
+
+  private isCatalogCategory(value: unknown): value is CatalogCategory {
+    return typeof value === 'object' && value !== null
+      && 'id' in value && typeof value.id === 'string'
+      && 'name' in value && typeof value.name === 'string';
   }
 }

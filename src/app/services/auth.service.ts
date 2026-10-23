@@ -61,7 +61,7 @@ autoLogin(): Observable<any> {
       this.isInitializing.set(false); // <-- libera o guard
     }),
     catchError(() => {
-      this.logout();
+      this.clearSession();
       this.isInitializing.set(false);
       return of(null);
     })
@@ -79,10 +79,14 @@ logout() {
       .subscribe();
   }
 
+  this.clearSession();
+  this.router.navigate(['/login']);
+}
+
+private clearSession(): void {
   localStorage.removeItem(this.REFRESH_KEY);
   this.accessToken.set(null);
   this.currentUser.set(null);
-  this.router.navigate(['/login']);
 }
 
   // Renova o token de acesso usando o Refresh Token
