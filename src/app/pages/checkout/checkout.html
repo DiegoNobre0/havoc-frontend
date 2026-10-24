@@ -923,6 +923,8 @@
     </div>
   }
 
-  <app-supplement-consultant [clearMobileBottomBar]="true" />
+  <app-supplement-consultant
+    [clearMobileBottomBar]="cartCount() > 0 && currentStep() === 1 && !isOrderCompleted()"
+  />
 
 </div>

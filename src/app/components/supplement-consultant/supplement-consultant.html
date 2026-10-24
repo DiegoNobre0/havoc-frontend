@@ -156,6 +156,10 @@
     </section>
   }
 
+  @if (!isOpen()) {
+    <span class="consultant-prompt" aria-hidden="true">Como posso ajudar?</span>
+  }
+
   <button
     #launcher
     type="button"
@@ -166,6 +170,5 @@
     (click)="isOpen() ? close() : open()"
   >
     <lucide-icon name="sparkles"></lucide-icon>
-    <span>Precisa de ajuda?</span>
   </button>
 </div>

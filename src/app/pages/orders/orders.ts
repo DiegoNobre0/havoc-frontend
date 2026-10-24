@@ -2,7 +2,9 @@ import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
+import { Subscription } from 'rxjs';
 import { OrderService } from '../../services/order.service';
+import { SocketService } from '../../services/socket.service';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
 
@@ -46,6 +48,8 @@ interface KanbanColumn {
 })
 export class Orders implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
+  private readonly socketService = inject(SocketService);
+  private newOrderSubscription?: Subscription;
 
   // ─── State ──────────────────────────────────────────────
   isLoading = signal(true);
@@ -69,16 +73,20 @@ export class Orders implements OnInit, OnDestroy {
   // ─── Lifecycle ──────────────────────────────────────────
   ngOnInit() {
     this.loadOrders();
-    this.refreshTimer = setInterval(() => this.loadOrders(), 30_000);
+    this.newOrderSubscription = this.socketService.onNewOrder.subscribe(() =>
+      this.loadOrders(false)
+    );
+    this.refreshTimer = setInterval(() => this.loadOrders(false), 30_000);
   }
 
   ngOnDestroy() {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.newOrderSubscription?.unsubscribe();
   }
 
   // ─── API (só na carga inicial e refresh silencioso) ──────
-  loadOrders() {
-    this.isLoading.set(true);
+  loadOrders(showLoading = true) {
+    if (showLoading) this.isLoading.set(true);
     this.orderService.listOrders(1, 100).subscribe({
       next: (res: any) => {
         const orders: Order[] = res.data;
@@ -90,11 +98,11 @@ export class Orders implements OnInit, OnDestroy {
               .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
           }))
         );
-        this.isLoading.set(false);
+        if (showLoading) this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Erro ao buscar pedidos', err);
-        this.isLoading.set(false);
+        if (showLoading) this.isLoading.set(false);
       },
     });
   }

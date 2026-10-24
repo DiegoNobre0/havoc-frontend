@@ -12,24 +12,61 @@
 }
 
 .consultant-launcher {
-  min-width: 196px;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 0 18px;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: 1px solid rgba(0, 0, 0, .5);
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--ui-primary);
   color: #090909;
   box-shadow: 0 10px 32px rgba(0, 0, 0, .55), 0 0 0 1px rgba(242, 185, 15, .2);
   font: inherit;
-  font-size: .86rem;
-  font-weight: 850;
+  line-height: 0;
   cursor: pointer;
 
-  lucide-icon { width: 19px; height: 19px; }
+  lucide-icon {
+    width: 23px;
+    height: 23px;
+    display: grid;
+    place-items: center;
+  }
+}
+
+.consultant-prompt {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 11px);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 13px;
+  transform: translateY(-50%);
+  border: 1px solid rgba(242, 185, 15, .32);
+  border-radius: 11px;
+  background: #151515;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .42);
+  font-size: .75rem;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: consultant-prompt-in 180ms ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -5px;
+    width: 9px;
+    height: 9px;
+    transform: translateY(-50%) rotate(45deg);
+    border-top: 1px solid rgba(242, 185, 15, .32);
+    border-right: 1px solid rgba(242, 185, 15, .32);
+    background: #151515;
+  }
 }
 
 .consultant-panel {
@@ -465,6 +502,10 @@ textarea:focus-visible {
   from { opacity: 0; transform: translateY(10px) scale(.98); }
 }
 
+@keyframes consultant-prompt-in {
+  from { opacity: 0; transform: translate(8px, -50%); }
+}
+
 @keyframes typing { to { opacity: .3; transform: translateY(-2px); } }
 
 @media (max-width: 600px) {
@@ -472,12 +513,15 @@ textarea:focus-visible {
   .consultant--raised { bottom: calc(88px + env(safe-area-inset-bottom)); }
 
   .consultant-launcher {
-    min-width: 52px;
     width: 52px;
     height: 52px;
-    padding: 0;
+  }
 
-    span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .consultant-prompt {
+    right: calc(100% + 9px);
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: .7rem;
   }
 
   .consultant-panel {
@@ -523,6 +567,7 @@ textarea:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .consultant-panel { animation: none; }
+  .consultant-panel,
+  .consultant-prompt { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }

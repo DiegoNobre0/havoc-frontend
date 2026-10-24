@@ -64,7 +64,7 @@ export class Header implements OnInit {
         type: 'order',
         title: `Novo Pedido ${order.code}`,
         message: `${order.customer} - R$ ${order.total}`, // Coloquei um R$ aqui pra ficar mais bonito!
-        link: `/painel/pedidos` // Esse caminho dos pedidos deve estar correto
+        link: '/orders'
       });
     });
 
