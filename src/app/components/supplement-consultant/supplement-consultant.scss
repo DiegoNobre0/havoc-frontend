@@ -449,13 +449,81 @@
     background: var(--ui-surface-2);
     color: var(--ui-primary);
   }
+}
 
-  .audio-button--recording {
-    border-color: #ff4d4d;
-    background: rgba(255, 38, 38, .16);
-    color: #ff6464;
-    box-shadow: 0 0 0 2px rgba(255, 38, 38, .12);
+.composer-row--recording {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+
+  .audio-button {
+    grid-column: 1;
+    grid-row: 1;
+    color: var(--ui-text-secondary);
   }
+
+  .recording-preview {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  > button[type='submit'] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+.recording-preview {
+  height: 48px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border-hover);
+  border-radius: 11px;
+  background: var(--ui-surface-2);
+
+  strong {
+    flex: 0 0 auto;
+    color: var(--ui-text-primary);
+    font-size: .72rem;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.recording-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #ff4848;
+  box-shadow: 0 0 0 3px rgba(255, 72, 72, .12);
+  animation: recording-pulse 900ms ease-in-out infinite alternate;
+}
+
+.recording-wave {
+  min-width: 0;
+  flex: 1;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  overflow: hidden;
+
+  i {
+    width: 2px;
+    height: 7px;
+    flex: 1 1 2px;
+    max-width: 3px;
+    border-radius: 999px;
+    background: var(--ui-primary);
+    opacity: .7;
+    animation: recording-wave 700ms ease-in-out infinite alternate;
+  }
+
+  i:nth-child(2), i:nth-child(6) { height: 13px; animation-delay: 100ms; }
+  i:nth-child(3), i:nth-child(5) { height: 19px; animation-delay: 200ms; }
+  i:nth-child(4) { height: 10px; animation-delay: 300ms; }
 }
 
 .composer-hint {
@@ -507,6 +575,8 @@ textarea:focus-visible {
 }
 
 @keyframes typing { to { opacity: .3; transform: translateY(-2px); } }
+@keyframes recording-pulse { to { opacity: .4; } }
+@keyframes recording-wave { to { transform: scaleY(.45); opacity: .4; } }
 
 @media (max-width: 600px) {
   .consultant { right: 12px; bottom: 12px; }
@@ -564,10 +634,15 @@ textarea:focus-visible {
 
     button { width: 42px; height: 42px; }
   }
+
+  .composer-row--recording { grid-template-columns: 42px minmax(0, 1fr) 42px; }
+  .recording-preview { height: 42px; padding: 0 10px; gap: 7px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .consultant-panel,
-  .consultant-prompt { animation: none; }
+  .consultant-prompt,
+  .recording-dot,
+  .recording-wave i { animation: none; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }

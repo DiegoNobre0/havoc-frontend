@@ -115,38 +115,46 @@
 
       <form class="consultant-composer" (ngSubmit)="submit()">
         <label for="consultant-message">Sua pergunta</label>
-        <div class="composer-row">
-          <textarea
-            id="consultant-message"
-            name="consultantMessage"
-            [(ngModel)]="draft"
-            maxlength="500"
-            rows="2"
-            placeholder="Ex.: Qual a diferença entre whey concentrado e isolado?"
-            (keydown)="onComposerKeydown($event)"
-            [disabled]="audioPhase() !== 'idle'"
-          ></textarea>
+        <div class="composer-row" [class.composer-row--recording]="isRecording()">
+          @if (isRecording()) {
+            <div class="recording-preview" role="status" aria-live="polite">
+              <span class="recording-dot" aria-hidden="true"></span>
+              <span class="recording-wave" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </span>
+              <strong>{{ recordingTime() }}</strong>
+            </div>
+          } @else {
+            <textarea
+              id="consultant-message"
+              name="consultantMessage"
+              [(ngModel)]="draft"
+              maxlength="500"
+              rows="2"
+              placeholder="Ex.: Qual a diferença entre whey concentrado e isolado?"
+              (keydown)="onComposerKeydown($event)"
+              [disabled]="audioPhase() !== 'idle'"
+            ></textarea>
+          }
           <button
             type="button"
             class="audio-button"
-            [class.audio-button--recording]="isRecording()"
             [disabled]="audioPhase() === 'stopping' || state.isLoading()"
-            [attr.aria-label]="isRecording() ? 'Parar e enviar gravação' : 'Gravar mensagem de áudio'"
+            [attr.aria-label]="isRecording() ? 'Cancelar gravação' : 'Gravar mensagem de áudio'"
             [attr.aria-pressed]="isRecording()"
-            (click)="toggleRecording()"
+            (click)="isRecording() ? cancelAudioRecording() : toggleRecording()"
           >
-            <lucide-icon name="mic"></lucide-icon>
+            <lucide-icon [name]="isRecording() ? 'trash-2' : 'mic'"></lucide-icon>
           </button>
-          <button type="submit" [disabled]="!draft.trim() || audioPhase() !== 'idle'" aria-label="Enviar mensagem">
+          <button
+            type="submit"
+            [disabled]="audioPhase() === 'stopping' || (!isRecording() && !draft.trim())"
+            [attr.aria-label]="isRecording() ? 'Enviar gravação' : 'Enviar mensagem'"
+          >
             <lucide-icon name="send"></lucide-icon>
           </button>
         </div>
-        @if (isRecording()) {
-          <span class="recording-status" role="status">
-            <span aria-hidden="true"></span>
-            Gravando {{ recordingTime() }} · Toque novamente para parar e enviar
-          </span>
-        } @else {
+        @if (!isRecording()) {
           <span class="composer-hint">Enter envia, Shift+Enter quebra a linha · {{ draft.length }}/500</span>
         }
         @if (recordingError(); as error) {

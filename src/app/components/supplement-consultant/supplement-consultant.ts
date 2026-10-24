@@ -94,6 +94,10 @@ export class SupplementConsultantComponent implements OnDestroy {
   }
 
   submit(): void {
+    if (this.isRecording()) {
+      this.stopRecording(true);
+      return;
+    }
     const content = this.draft.trim();
     if (!content || content.length > 500 || this.audioPhase() !== 'idle') return;
     if (this.state.sendMessage(content, this.context())) {
@@ -125,7 +129,7 @@ export class SupplementConsultantComponent implements OnDestroy {
 
   async toggleRecording(): Promise<void> {
     if (this.isRecording()) {
-      this.stopRecording(true);
+      this.cancelRecording();
       return;
     }
     if (this.audioPhase() !== 'idle' || this.state.isLoading()) return;
@@ -199,6 +203,10 @@ export class SupplementConsultantComponent implements OnDestroy {
 
   recordingTime(): string {
     return `00:${this.recordingSeconds().toString().padStart(2, '0')}`;
+  }
+
+  cancelAudioRecording(): void {
+    if (this.isRecording()) this.cancelRecording();
   }
 
   ngOnDestroy(): void {
