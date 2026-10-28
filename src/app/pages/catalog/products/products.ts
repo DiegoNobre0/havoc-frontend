@@ -439,9 +439,12 @@ onFileSelected(event: Event) {
     this.catalogService.importPdf(file).subscribe({
       next: (res) => {
         this.isImportingPdf.set(false);
-        const { criados, atualizados, erros } = res.resumo;
+        const { criados, atualizados, semClassificacao, erros } = res.resumo;
         
-        this.showToast(`Sucesso! ${criados} produtos criados, ${atualizados} atualizados. (Erros: ${erros})`);
+        this.showToast(
+          `Importação concluída: ${criados} criados, ${atualizados} atualizados, ${semClassificacao} sem classificação e ${erros} erros.`,
+          erros > 0 || semClassificacao > 0,
+        );
         
         // Limpa a busca e recarrega a tabela para mostrar os produtos novos
         this.searchTerm.set('');

@@ -70,6 +70,7 @@ export interface PdfImportResponse {
   resumo: {
     criados: number;
     atualizados: number;
+    semClassificacao: number;
     erros: number;
   };
 }
