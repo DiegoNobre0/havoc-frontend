@@ -97,7 +97,6 @@ describe('Products', () => {
       isActive: false,
       categories: [{ id: 'category-1', name: 'Proteínas' }],
       manufacturer: 'Havoc Labs',
-      manufacturerDomain: 'havoclabs.example',
     };
 
     component.openModal(product);
@@ -115,7 +114,6 @@ describe('Products', () => {
       ncm: '2106.90.30',
       cfop: '5102',
       manufacturer: 'Havoc Labs',
-      manufacturerDomain: 'havoclabs.example',
       isActive: false,
     });
     expect(component.showFiscal()).toBe(true);
@@ -146,6 +144,34 @@ describe('Products', () => {
     component.openModal(product);
 
     expect(component.productForm.controls.manufacturer.value).toBe('Havoc Labs');
-    expect(component.productForm.controls.manufacturerDomain.value).toBe('havoclabs.example');
+    expect(component.currentFacts()?.manufacturerDomain).toBe('havoclabs.example');
+  });
+
+  it('keeps the manufacturer domain read-only and retries only terminal failures', () => {
+    component.openModal({
+      id: 'product-1',
+      name: 'Creatina',
+      price: 99.9,
+      isActive: true,
+      supplementFacts: {
+        manufacturer: null,
+        manufacturerDomain: 'fabricante.example',
+        source: { url: null, title: null, retrievedAt: null },
+        servingSize: null,
+        servingsPerContainer: null,
+        usageInstructions: null,
+        ingredients: null,
+        allergenStatement: null,
+        warnings: [],
+        nutritionFacts: [],
+        status: 'FAILED',
+        exactProductMatch: false,
+      },
+    });
+
+    expect(component.productForm.contains('manufacturerDomain')).toBe(false);
+    expect(component.canRetryFacts()).toBe(true);
+    component.currentFacts.update((facts) => facts ? { ...facts, status: 'PROCESSING' } : facts);
+    expect(component.canRetryFacts()).toBe(false);
   });
 });

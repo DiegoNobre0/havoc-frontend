@@ -62,7 +62,6 @@ export interface SaveProductRequest {
   cfop: string;
   isActive: boolean;
   manufacturer?: string;
-  manufacturerDomain?: string;
   category_ids?: string[];
 }
 
@@ -71,6 +70,7 @@ export interface PdfImportResponse {
     criados: number;
     atualizados: number;
     semClassificacao: number;
+    enriquecimentosEnfileirados?: number;
     erros: number;
   };
 }

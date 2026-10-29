@@ -37,6 +37,21 @@ describe('StorefrontService payment status', () => {
       statusDetail: 'accredited',
       paidAt: new Date().toISOString(),
       expiresAt: null,
+      order: {
+        id: 'order-id',
+        code: 'HAV-TEST',
+        status: 'CONFIRMED',
+        customerName: 'Cliente',
+        customerPhone: '5571999999999',
+        deliveryMethod: 'PICKUP',
+        deliveryAddress: null,
+        paymentMethod: 'PIX',
+        subtotal: 100,
+        shippingCost: 0,
+        discount: 0,
+        total: 100,
+        items: [],
+      },
     });
   });
 });

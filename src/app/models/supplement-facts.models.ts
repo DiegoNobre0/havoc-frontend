@@ -1,4 +1,12 @@
-export type SupplementFactsStatus = 'SOURCE_MATCHED' | 'SOURCE_NOT_FOUND' | 'SOURCE_MISMATCH' | 'PENDING' | 'ERROR';
+export type SupplementFactsStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SOURCE_MATCHED'
+  | 'NOT_FOUND'
+  | 'FAILED'
+  | 'SOURCE_NOT_FOUND'
+  | 'SOURCE_MISMATCH'
+  | 'ERROR';
 
 export interface SupplementFactsSource {
   url: string | null;

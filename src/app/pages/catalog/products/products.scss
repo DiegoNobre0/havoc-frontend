@@ -181,6 +181,12 @@
   }
 }
 
+@media (max-width: 900px) {
+  .data-table__official {
+    display: none;
+  }
+}
+
 .pagination {
   display: flex;
   align-items: center;

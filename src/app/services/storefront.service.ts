@@ -84,7 +84,7 @@ export interface CheckoutOrder {
   code: string;
   status: CheckoutOrderStatus;
   customerName: string;
-  customerPhone: string;
+  customerPhone?: string;
   deliveryMethod: CheckoutDeliveryMethod;
   deliveryAddress: string | null;
   paymentMethod: CheckoutPaymentMethod;
@@ -120,6 +120,7 @@ export interface CheckoutStatusResponse {
   statusDetail: string | null;
   paidAt: string | null;
   expiresAt: string | null;
+  order: CheckoutOrder;
 }
 
 @Injectable({ providedIn: 'root' })

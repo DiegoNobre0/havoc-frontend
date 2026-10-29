@@ -20,16 +20,19 @@ import { PaginationMeta, StorefrontCategory, StorefrontItem, StorefrontItemType 
 import { Subject, catchError, debounceTime, finalize, of, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SupplementConsultantComponent } from '../../components/supplement-consultant/supplement-consultant';
+import { buildStoreWhatsAppUrl } from './checkout-whatsapp';
 
 export type DeliveryMethod = 'DELIVERY' | 'PICKUP';
 export type PaymentMethod = 'PIX' | 'CREDIT_CARD' | 'CASH';
 
 type CompletedOrder = CheckoutOrder;
 type PaymentReturnStatus = 'success' | 'pending' | 'failure';
+type PaymentDisplayState = 'paid' | 'pending' | 'failure' | 'cash';
 
 interface StoredCheckoutSession {
   orderId: string;
   token: string;
+  providerPaymentId?: string;
   checkout?: CreateCheckoutResponse;
 }
 
@@ -114,6 +117,29 @@ export class CheckoutComponent implements OnInit {
   paymentReturnStatus = signal<PaymentReturnStatus | null>(null);
   returnOrderCode = signal<string | null>(null);
   pixCopied = signal<boolean>(false);
+  paymentDisplayState = computed<PaymentDisplayState>(() => {
+    const order = this.completedOrder();
+    if (order?.status === 'CANCELLED' || order?.status === 'REFUNDED') return 'failure';
+    if (order?.paymentMethod === 'CASH') return 'cash';
+    const status = this.checkoutStatus()?.paymentStatus ?? this.completedPayment()?.status;
+    if (status === 'PAID') return 'paid';
+    if (status === 'FAILED' || status === 'EXPIRED' || status === 'REFUNDED') return 'failure';
+    if (this.paymentReturnStatus() === 'failure') return 'failure';
+    return 'pending';
+  });
+  canSendOrderToStore = computed(() => {
+    const state = this.paymentDisplayState();
+    const order = this.completedOrder();
+    return Boolean(order) && order?.status !== 'CANCELLED' && order?.status !== 'REFUNDED' && (state === 'paid' || state === 'cash');
+  });
+  storeWhatsAppUrl = computed(() => {
+    const order = this.completedOrder();
+    if (!order || !this.canSendOrderToStore()) return null;
+    return buildStoreWhatsAppUrl(
+      order,
+      this.checkoutStatus()?.paymentStatus ?? this.completedPayment()?.status ?? null,
+    );
+  });
 
   // ─── FORMULÁRIO DO CLIENTE & ENDEREÇO ───────────────────────
   customerForm = this.fb.nonNullable.group({
@@ -559,6 +585,16 @@ export class CheckoutComponent implements OnInit {
     this.selectedShippingRegion.set(null);
     this.isCustomNeighborhood.set(false);
     this.shippingCost.set(0);
+    this.clearPaymentReturnParams();
+  }
+
+  refreshPaymentStatus(): void {
+    const session = this.getStoredCheckoutSession();
+    if (!session) {
+      this.showToast('Não foi possível recuperar os dados do pagamento.', 'error');
+      return;
+    }
+    this.checkPaymentStatus(session.orderId, session.token, true, session.providerPaymentId);
   }
 
   private saveCheckoutSession(checkout: CreateCheckoutResponse): void {
@@ -580,11 +616,10 @@ export class CheckoutComponent implements OnInit {
     this.completedOrder.set(session.checkout.order);
     this.completedPayment.set(session.checkout.payment);
     this.isOrderCompleted.set(true);
-    if (
-      session.checkout.order.paymentMethod === 'PIX' &&
-      session.checkout.payment?.status === 'PENDING'
-    ) {
-      this.startPaymentPolling(session.orderId, session.token);
+    if (session.checkout.order.paymentMethod !== 'CASH' && session.checkout.payment?.status === 'PENDING') {
+      this.startPaymentPolling(session.orderId, session.token, false, session.providerPaymentId);
+    } else {
+      this.checkPaymentStatus(session.orderId, session.token);
     }
   }
 
@@ -605,18 +640,26 @@ export class CheckoutComponent implements OnInit {
             : null;
     if (!mappedStatus) return;
     const session = this.getStoredCheckoutSession();
-    const orderId = session?.orderId ?? returnedOrderId;
-    const token = session?.token ?? returnedToken;
+    const hasExplicitReturn = Boolean(returnedOrderId && returnedToken);
+    const orderId = hasExplicitReturn ? returnedOrderId : session?.orderId;
+    const token = hasExplicitReturn ? returnedToken : session?.token;
     if (!orderId || !token) return;
 
+    if (hasExplicitReturn && session?.orderId !== orderId) {
+      this.completedOrder.set(null);
+      this.completedPayment.set(null);
+      this.checkoutStatus.set(null);
+    }
+    this.persistCheckoutReference(orderId, token, providerPaymentId);
     this.isOrderCompleted.set(true);
     this.paymentReturnStatus.set(mappedStatus);
-    this.returnOrderCode.set(session?.checkout?.order.code ?? null);
+    this.returnOrderCode.set(session?.orderId === orderId ? session.checkout?.order.code ?? null : null);
     if (mappedStatus === 'failure') {
       this.checkPaymentStatus(orderId, token, true, providerPaymentId);
     } else {
       this.startPaymentPolling(orderId, token, true, providerPaymentId);
     }
+    this.clearPaymentReturnParams();
   }
 
   private getStoredCheckoutSession(): StoredCheckoutSession | null {
@@ -656,7 +699,7 @@ export class CheckoutComponent implements OnInit {
     providerPaymentId?: string,
   ): void {
     if (this.paymentPollInFlight) return;
-    if (this.paymentPollAttempts >= 60) {
+    if (this.paymentPollAttempts >= 360) {
       this.stopPaymentPolling();
       return;
     }
@@ -669,15 +712,22 @@ export class CheckoutComponent implements OnInit {
       next: (status) => {
         this.checkoutStatus.set(status);
         this.returnOrderCode.set(status.orderCode);
+        if (status.order) this.completedOrder.set(status.order);
+        const payment = this.completedPayment();
+        if (payment && status.paymentStatus) {
+          this.completedPayment.set({ ...payment, status: status.paymentStatus });
+        }
+        this.isOrderCompleted.set(true);
+        this.persistCurrentCheckout(orderId, token);
         if (status.paymentStatus === 'PAID') {
-          if (isReturn) this.paymentReturnStatus.set('success');
+          this.paymentReturnStatus.set('success');
           this.stopPaymentPolling();
         } else if (
           status.paymentStatus === 'FAILED' ||
           status.paymentStatus === 'EXPIRED' ||
           status.paymentStatus === 'REFUNDED'
         ) {
-          if (isReturn) this.paymentReturnStatus.set('failure');
+          this.paymentReturnStatus.set('failure');
           this.stopPaymentPolling();
         } else if (isReturn) {
           this.paymentReturnStatus.set('pending');
@@ -686,6 +736,70 @@ export class CheckoutComponent implements OnInit {
       error: () => {
         if (isReturn) this.showToast('Não foi possível consultar o pagamento.', 'error');
       },
+    });
+  }
+
+  private persistCurrentCheckout(orderId: string, token: string): void {
+    const order = this.completedOrder();
+    if (!order) return;
+    const stored = this.getStoredCheckoutSession();
+    const current = stored?.checkout;
+    const checkout: CreateCheckoutResponse = {
+      order,
+      payment: this.completedPayment(),
+      checkoutToken: token,
+    };
+    try {
+      sessionStorage.setItem(
+        CHECKOUT_SESSION_KEY,
+        JSON.stringify({
+          orderId,
+          token,
+          ...(stored?.providerPaymentId ? { providerPaymentId: stored.providerPaymentId } : {}),
+          checkout: current ? { ...current, ...checkout } : checkout,
+        }),
+      );
+    } catch {
+      // The paid screen remains available even when storage is unavailable.
+    }
+  }
+
+  private persistCheckoutReference(
+    orderId: string,
+    token: string,
+    providerPaymentId?: string,
+  ): void {
+    const current = this.getStoredCheckoutSession();
+    try {
+      sessionStorage.setItem(
+        CHECKOUT_SESSION_KEY,
+        JSON.stringify({
+          orderId,
+          token,
+          ...(providerPaymentId ? { providerPaymentId } : {}),
+          ...(current?.orderId === orderId && current.checkout ? { checkout: current.checkout } : {}),
+        }),
+      );
+    } catch {
+      // The return can still be recovered while its URL parameters are available.
+    }
+  }
+
+  private clearPaymentReturnParams(): void {
+    const queryParams = {
+      payment: null,
+      status: null,
+      collection_status: null,
+      payment_id: null,
+      collection_id: null,
+      orderId: null,
+      token: null,
+    };
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
 

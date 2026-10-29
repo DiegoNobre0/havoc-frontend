@@ -618,51 +618,37 @@
       <!-- ======================================================== -->
       <!-- TELA DE SUCESSO: PEDIDO CONCLUÍDO                        -->
       <!-- ======================================================== -->
-      @if (paymentReturnStatus(); as returnStatus) {
-        <div class="order-success-screen payment-return-screen">
-          <div class="success-card" [class.return-failure]="returnStatus === 'failure'" [class.return-pending]="returnStatus === 'pending'">
-            <div class="success-icon-wrap">
-              <lucide-icon [name]="returnStatus === 'failure' ? 'circle-x' : returnStatus === 'pending' ? 'clock' : 'check-circle'" class="success-icon"></lucide-icon>
-            </div>
-            <span class="success-tag">RETORNO DO PAGAMENTO</span>
-            <h1 class="success-title">
-              {{ returnStatus === 'success' ? 'Pagamento confirmado' : returnStatus === 'pending' ? 'Pagamento em processamento' : 'Pagamento não concluído' }}
-            </h1>
-            @if (returnOrderCode()) {
-              <p class="success-code">Pedido <strong>#{{ returnOrderCode() }}</strong></p>
-            }
-            <p class="return-message">
-              {{ returnStatus === 'success'
-                ? 'Recebemos seu pagamento e o pedido seguirá para preparação.'
-                : returnStatus === 'pending'
-                  ? 'Estamos aguardando a confirmação. Esta página será atualizada automaticamente.'
-                  : 'O pedido foi registrado, mas o pagamento falhou ou foi cancelado.' }}
-            </p>
-            <button class="ui-btn ui-btn--secondary w-full" (click)="resetOrderFlow()">Voltar à loja</button>
-          </div>
-        </div>
-      } @else if (completedOrder(); as order) {
+      @if (completedOrder(); as order) {
         <div class="order-success-screen">
-          
-          <div class="success-card">
-            
+          @if (paymentDisplayState(); as paymentState) {
+          <div class="success-card" [class.return-failure]="paymentState === 'failure'" [class.return-pending]="paymentState === 'pending'">
             <div class="success-icon-wrap">
-              <lucide-icon name="check-circle" class="success-icon"></lucide-icon>
+              <lucide-icon [name]="paymentState === 'failure' ? 'circle-x' : paymentState === 'pending' ? 'clock' : 'check-circle'" class="success-icon"></lucide-icon>
             </div>
 
-            <span class="success-tag">{{ checkoutStatus()?.paymentStatus === 'PAID' ? 'PAGAMENTO CONFIRMADO' : 'PEDIDO REGISTRADO COM SUCESSO' }}</span>
+            <span class="success-tag">
+              {{ paymentState === 'paid' ? 'PAGAMENTO CONFIRMADO' : paymentState === 'cash' ? 'PEDIDO CONFIRMADO' : paymentState === 'failure' ? 'PAGAMENTO NÃO CONCLUÍDO' : 'AGUARDANDO PAGAMENTO' }}
+            </span>
             <h1 class="success-title">
-              {{ checkoutStatus()?.paymentStatus === 'PAID' ? 'Pagamento recebido!' : order.paymentMethod === 'CASH' ? 'Pedido confirmado para retirada!' : 'Finalize o pagamento' }}
+              {{ paymentState === 'paid' ? 'Pagamento recebido!' : paymentState === 'cash' ? 'Pedido confirmado para retirada!' : paymentState === 'failure' ? 'Não foi possível confirmar o pagamento' : order.paymentMethod === 'PIX' ? 'Finalize o pagamento via PIX' : 'Pagamento em processamento' }}
             </h1>
             <p class="success-code">Código do Pedido: <strong>#{{ order.code }}</strong></p>
+            <p class="return-message">
+              {{ paymentState === 'paid'
+                ? 'Recebemos seu pagamento. Encaminhe o pedido para a loja e acompanhe a preparação pelo WhatsApp.'
+                : paymentState === 'cash'
+                  ? 'Seu pedido foi separado para pagamento em dinheiro na retirada.'
+                  : paymentState === 'failure'
+                    ? 'O pedido foi registrado, mas o pagamento falhou, expirou ou foi cancelado.'
+                    : 'Estamos aguardando a confirmação. Esta página será atualizada automaticamente.' }}
+            </p>
 
-            <!-- AVISO DE PIX (SE FOR PIX) -->
-            @if (order.paymentMethod === 'PIX' && completedPayment(); as payment) {
+            @if (order.paymentMethod === 'PIX' && paymentState === 'pending' && completedPayment(); as payment) {
               <div class="pix-payment-box">
                 <div class="pix-box-header">
                   <lucide-icon name="qr-code" class="text-yellow"></lucide-icon>
                   <div>
-                    <strong>{{ checkoutStatus()?.paymentStatus === 'PAID' ? 'PIX confirmado' : 'Pague via PIX para liberação rápida' }}</strong>
+                    <strong>Pague via PIX para liberação rápida</strong>
                     <span>Total do pedido: <strong>R${{ order.total | number:'1.2-2' }}</strong></span>
                   </div>
                 </div>
@@ -680,23 +666,33 @@
                   </div>
                 }
                 <span class="pix-instruction">
-                  {{ checkoutStatus()?.paymentStatus === 'PAID' ? 'Pagamento confirmado. Seu pedido seguirá para preparação.' : 'Abra o app do seu banco e use o QR Code ou PIX Copia e Cola.' }}
+                  Abra o app do seu banco e use o QR Code ou PIX Copia e Cola.
                 </span>
-                @if (payment.expiresAt && checkoutStatus()?.paymentStatus !== 'PAID') {
+                @if (payment.expiresAt) {
                   <span class="pix-expiration">Este PIX expira às {{ payment.expiresAt | date:'HH:mm' }}.</span>
                 }
               </div>
             }
 
             <div class="action-buttons-group">
+              @if (storeWhatsAppUrl(); as whatsappUrl) {
+                <a class="ui-btn whatsapp-order-btn w-full" [href]="whatsappUrl" target="_blank" rel="noopener noreferrer">
+                  <lucide-icon name="message-circle" class="btn-icon-xs"></lucide-icon>
+                  Enviar pedido para a loja pelo WhatsApp
+                </a>
+              }
+              @if (paymentState === 'pending') {
+                <button class="ui-btn ui-btn--primary w-full" (click)="refreshPaymentStatus()">
+                  <lucide-icon name="refresh-cw" class="btn-icon-xs"></lucide-icon>
+                  Atualizar pagamento
+                </button>
+              }
               <button class="ui-btn ui-btn--secondary w-full" (click)="resetOrderFlow()">
                 <lucide-icon name="shopping-bag" class="btn-icon-xs"></lucide-icon>
-                Fazer Outro Pedido
+                {{ paymentState === 'failure' ? 'Voltar à loja' : 'Fazer outro pedido' }}
               </button>
-
             </div>
 
-            <!-- Resumo Rápido dos Itens -->
             <div class="completed-summary-box">
               <h4 class="summary-box-title">Resumo do Pedido</h4>
               <ul class="summary-items-list">
@@ -711,10 +707,32 @@
                 <span>Total do pedido:</span>
                 <span class="text-yellow">R${{ order.total | number:'1.2-2' }}</span>
               </div>
+              <div class="completed-delivery-details">
+                <strong>{{ order.deliveryMethod === 'DELIVERY' ? 'Entrega' : 'Retirada na loja' }}</strong>
+                @if (order.deliveryMethod === 'DELIVERY' && order.deliveryAddress) {
+                  <span>{{ order.deliveryAddress }}</span>
+                }
+              </div>
             </div>
-
           </div>
-
+          }
+        </div>
+      } @else if (isOrderCompleted()) {
+        <div class="order-success-screen">
+          <div class="success-card return-pending">
+            <div class="success-icon-wrap">
+              <lucide-icon name="clock" class="success-icon"></lucide-icon>
+            </div>
+            <span class="success-tag">CONSULTANDO PEDIDO</span>
+            <h1 class="success-title">Verificando seu pagamento</h1>
+            <p class="return-message">Estamos recuperando os dados do pedido no Mercado Pago.</p>
+            <div class="action-buttons-group">
+              <button class="ui-btn ui-btn--primary w-full" (click)="refreshPaymentStatus()">
+                <lucide-icon name="refresh-cw" class="btn-icon-xs"></lucide-icon>
+                Tentar novamente
+              </button>
+            </div>
+          </div>
         </div>
       }
 

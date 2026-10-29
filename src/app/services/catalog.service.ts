@@ -19,6 +19,10 @@ export class CatalogService {
     private http = inject(HttpClient);
     private apiUrl = `${environment.apiUrl}/catalog`;
 
+    private normalizeProduct(product: CatalogProduct): CatalogProduct {
+        return { ...product, supplementFacts: normalizeSupplementFacts(product) };
+    }
+
     // ==========================================
     // CATEGORIAS
     // ==========================================
@@ -54,20 +58,21 @@ export class CatalogService {
   return this.http.get<ProductPage>(`${this.apiUrl}/products`, { params }).pipe(
       map((response) => ({
           ...response,
-          data: response.data.map((product) => ({
-              ...product,
-              supplementFacts: normalizeSupplementFacts(product),
-          })),
+          data: response.data.map((product) => this.normalizeProduct(product)),
       })),
   );
 }
 
     createProduct(data: SaveProductRequest): Observable<CatalogProduct> {
-        return this.http.post<CatalogProduct>(`${this.apiUrl}/products`, data);
+        return this.http.post<CatalogProduct>(`${this.apiUrl}/products`, data).pipe(
+            map((product) => this.normalizeProduct(product)),
+        );
     }
 
     updateProduct(id: string, data: SaveProductRequest): Observable<CatalogProduct> {
-        return this.http.put<CatalogProduct>(`${this.apiUrl}/products/${id}`, data);
+        return this.http.put<CatalogProduct>(`${this.apiUrl}/products/${id}`, data).pipe(
+            map((product) => this.normalizeProduct(product)),
+        );
     }
 
     syncProductLabel(id: string): Observable<SupplementFacts | null> {

@@ -39,6 +39,7 @@ export class Products implements OnInit, OnDestroy {
 
   private searchSubject = new Subject<string>();
   private searchSubscription!: Subscription;
+  private factsRefreshTimer?: ReturnType<typeof setTimeout>;
 
   // ─── ESTADOS DA LISTAGEM ────────────────────────────────────
   products = signal<CatalogProduct[]>([]);
@@ -85,7 +86,7 @@ export class Products implements OnInit, OnDestroy {
   currentId = signal<string | null>(null);
   showFiscal = signal<boolean>(false);
   currentFacts = signal<SupplementFacts | null>(null);
-  syncState = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  syncState = signal<'idle' | 'loading' | 'pending' | 'success' | 'error'>('idle');
   syncMessage = signal<string>('');
 
   productForm = this.fb.nonNullable.group({
@@ -101,7 +102,6 @@ export class Products implements OnInit, OnDestroy {
     ncm: [''],
     cfop: [''],
     manufacturer: [''],
-    manufacturerDomain: [''],
     isActive: [true]
   });
 
@@ -134,6 +134,7 @@ export class Products implements OnInit, OnDestroy {
     if (this.searchSubscription) {
       this.searchSubscription.unsubscribe();
     }
+    if (this.factsRefreshTimer) clearTimeout(this.factsRefreshTimer);
   }
 
   loadCategories() {
@@ -145,8 +146,9 @@ export class Products implements OnInit, OnDestroy {
     });
   }
 
-  loadProducts() {
-    this.isLoading.set(true);
+  loadProducts(silent = false) {
+    if (!silent) this.isLoading.set(true);
+    if (this.factsRefreshTimer) clearTimeout(this.factsRefreshTimer);
     const filters: ProductFilters = {
       page: this.currentPage(),
       limit: 10,
@@ -159,12 +161,32 @@ export class Products implements OnInit, OnDestroy {
     this.catalogService.getProducts(filters).subscribe({
       next: (res) => {
         this.products.set(res.data);
+        const currentProduct = res.data.find((product) => product.id === this.currentId());
+        if (currentProduct && this.isModalOpen()) {
+          this.currentFacts.set(currentProduct.supplementFacts ?? null);
+          const status = currentProduct.supplementFacts?.status;
+          if (this.syncState() === 'pending' && status !== 'PENDING' && status !== 'PROCESSING') {
+            const matched = status === 'SOURCE_MATCHED';
+            this.syncState.set(matched ? 'success' : 'error');
+            this.syncMessage.set(matched
+              ? 'Busca concluída. A fonte oficial foi confirmada.'
+              : 'A busca terminou sem uma fonte oficial exata confirmada.');
+          }
+        }
         
         this.totalPages.set(res.meta.totalPages);
         this.totalItems.set(res.meta.total);
         this.isLoading.set(false);
+        if (res.data.some((product) => ['PENDING', 'PROCESSING'].includes(product.supplementFacts?.status ?? ''))) {
+          this.factsRefreshTimer = setTimeout(() => this.loadProducts(true), 5_000);
+        }
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        this.isLoading.set(false);
+        if (this.products().some((product) => ['PENDING', 'PROCESSING'].includes(product.supplementFacts?.status ?? ''))) {
+          this.factsRefreshTimer = setTimeout(() => this.loadProducts(true), 5_000);
+        }
+      }
     });
   }
 
@@ -230,7 +252,6 @@ export class Products implements OnInit, OnDestroy {
         ncm: product.ncm ?? '',
         cfop: product.cfop ?? '',
         manufacturer: product.manufacturer ?? product.supplementFacts?.manufacturer ?? '',
-        manufacturerDomain: product.manufacturerDomain ?? product.supplementFacts?.manufacturerDomain ?? '',
         isActive: product.isActive,
       });
 
@@ -240,7 +261,7 @@ export class Products implements OnInit, OnDestroy {
       this.productForm.reset({
         name: '', description: '', isActive: true, unit: 'UN', price: 0, cost_price: 0,
         price_wholesale: 0, stock_qty: 0, stock_min: 0, category_ids: [], ncm: '', cfop: '',
-        manufacturer: '', manufacturerDomain: '',
+        manufacturer: '',
       });
     }
     this.isModalOpen.set(true);
@@ -312,7 +333,6 @@ executeDelete(product: CatalogProduct) {
       ncm: formValues.ncm,
       cfop: formValues.cfop,
       ...(formValues.manufacturer.trim() && { manufacturer: formValues.manufacturer.trim() }),
-      ...(formValues.manufacturerDomain.trim() && { manufacturerDomain: formValues.manufacturerDomain.trim() }),
       isActive: formValues.isActive,
       category_ids: formValues.category_ids && formValues.category_ids.length > 0 ? formValues.category_ids : undefined
     };
@@ -439,10 +459,13 @@ onFileSelected(event: Event) {
     this.catalogService.importPdf(file).subscribe({
       next: (res) => {
         this.isImportingPdf.set(false);
-        const { criados, atualizados, semClassificacao, erros } = res.resumo;
+        const { criados, atualizados, semClassificacao, erros, enriquecimentosEnfileirados } = res.resumo;
+        const enrichmentSummary = enriquecimentosEnfileirados === undefined
+          ? ''
+          : `, ${enriquecimentosEnfileirados} enviados para busca automática`;
         
         this.showToast(
-          `Importação concluída: ${criados} criados, ${atualizados} atualizados, ${semClassificacao} sem classificação e ${erros} erros.`,
+          `Importação concluída: ${criados} criados, ${atualizados} atualizados${enrichmentSummary}, ${semClassificacao} sem classificação e ${erros} erros.`,
           erros > 0 || semClassificacao > 0,
         );
         
@@ -467,19 +490,22 @@ onFileSelected(event: Event) {
     if (!productId || this.syncState() === 'loading') return;
 
     this.syncState.set('loading');
-    this.syncMessage.set('Buscando a fonte oficial do fabricante...');
+    this.syncMessage.set('Iniciando uma nova busca automática...');
     this.catalogService.syncProductLabel(productId).subscribe({
       next: (facts) => {
         this.currentFacts.set(facts);
-        this.syncState.set('success');
-        this.syncMessage.set(facts
-          ? 'Busca concluída. Confira abaixo o status e a fonte encontrada.'
-          : 'Busca concluída, mas nenhuma informação oficial foi retornada.');
-        this.loadProducts();
+        const isPending = facts?.status === 'PENDING' || facts?.status === 'PROCESSING';
+        this.syncState.set(isPending ? 'pending' : 'success');
+        this.syncMessage.set(isPending
+          ? 'A busca automática continua em segundo plano.'
+          : facts
+            ? 'Busca concluída. Confira abaixo o status e a fonte encontrada.'
+            : 'Busca concluída, mas nenhuma informação oficial foi retornada.');
+        this.loadProducts(true);
       },
       error: () => {
         this.syncState.set('error');
-        this.syncMessage.set('Não foi possível buscar os dados oficiais. Verifique fabricante e domínio e tente novamente.');
+        this.syncMessage.set('Não foi possível buscar os dados oficiais agora. Tente novamente mais tarde.');
       },
     });
   }
@@ -487,6 +513,7 @@ onFileSelected(event: Event) {
   factsStatusLabel(status: string | null | undefined): string {
     const labels: Record<string, string> = {
       SOURCE_MATCHED: 'Fonte oficial confirmada',
+      PROCESSING: 'Buscando fonte oficial',
       NOT_FOUND: 'Fonte oficial não encontrada',
       FAILED: 'Falha na busca',
       SOURCE_NOT_FOUND: 'Fonte oficial não encontrada',
@@ -495,6 +522,18 @@ onFileSelected(event: Event) {
       ERROR: 'Falha na busca',
     };
     return status ? labels[status] ?? status : 'Ainda não sincronizado';
+  }
+
+  canRetryFacts(): boolean {
+    const status = this.currentFacts()?.status;
+    return status === 'NOT_FOUND' || status === 'FAILED' || status === 'SOURCE_NOT_FOUND'
+      || status === 'SOURCE_MISMATCH' || status === 'ERROR';
+  }
+
+  factsStatusClass(status: string | null | undefined): string {
+    if (status === 'SOURCE_MATCHED') return 'badge--active';
+    if (!status || status === 'PENDING' || status === 'PROCESSING') return 'badge--inactive';
+    return 'badge--warning';
   }
 
   isLowStock(product: CatalogProduct): boolean {
