@@ -16,7 +16,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/bio-links/bio-links').then(m => m.BioLinksComponent)
   },
   {
-    path: 'checkout',
+    path: 'loja',
     title: 'Havoc | Comprar Suplementos',
     loadComponent: () => import('./pages/checkout/checkout').then(m => m.CheckoutComponent)
   },

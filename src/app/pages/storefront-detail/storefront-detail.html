@@ -1,11 +1,11 @@
 <div class="detail-page">
   <header class="detail-header">
     <div class="detail-header-container">
-      <a class="brand-area" routerLink="/checkout">
+      <a class="brand-area" routerLink="/loja">
         <img src="/HavocV1.png" alt="Havoc Suplementos">
         <div><strong>HAVOC</strong><span>LOJA OFICIAL</span></div>
       </a>
-      <a class="cart-link" routerLink="/checkout" [queryParams]="{ cart: 'open' }" aria-label="Abrir carrinho">
+      <a class="cart-link" routerLink="/loja" [queryParams]="{ cart: 'open' }" aria-label="Abrir carrinho">
         <span class="cart-icon-wrap">
           <lucide-icon name="shopping-bag"></lucide-icon>
           @if (cart.count() > 0) { <b>{{ cart.count() }}</b> }
@@ -20,7 +20,7 @@
 
   <main>
     <nav class="breadcrumb" aria-label="Navegação estrutural">
-      <a routerLink="/checkout"><lucide-icon name="chevron-left"></lucide-icon> Voltar ao catálogo</a>
+      <a routerLink="/loja"><lucide-icon name="chevron-left"></lucide-icon> Voltar ao catálogo</a>
       @if (item(); as currentItem) { <span>/</span><span>{{ currentItem.type === 'kit' ? 'Kits' : 'Produtos' }}</span><span>/</span><span>{{ currentItem.name }}</span> }
     </nav>
 
@@ -31,7 +31,7 @@
         <lucide-icon name="alert-triangle"></lucide-icon>
         <h1>Item não encontrado</h1>
         <p>O item pode ter sido removido ou está temporariamente indisponível.</p>
-        <div><button class="primary-button" (click)="load()">Tentar novamente</button><a class="secondary-button" routerLink="/checkout">Ver catálogo</a></div>
+        <div><button class="primary-button" (click)="load()">Tentar novamente</button><a class="secondary-button" routerLink="/loja">Ver catálogo</a></div>
       </div>
     } @else if (item(); as currentItem) {
       <article class="product-detail">

@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, ApplicationConfig, LOCALE_ID, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, LOCALE_ID, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import { provideRouter } from '@angular/router';
@@ -68,6 +68,7 @@ import {
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
+import { ChunkLoadErrorHandler } from './errors/chunk-load-error.handler';
 
 registerLocaleData(localePt);
 
@@ -82,6 +83,7 @@ export function initializeApp(authService: AuthService) {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: ChunkLoadErrorHandler },
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor])),
