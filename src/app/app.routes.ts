@@ -33,13 +33,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/storefront-detail/storefront-detail').then(m => m.StorefrontDetailComponent)
   },
   {
-    path: 'comprar',
-    redirectTo: 'checkout',
+    path: 'checkout',
+    redirectTo: 'loja',
     pathMatch: 'full'
   },
   {
-    path: 'loja',
-    redirectTo: 'checkout',
+    path: 'comprar',
+    redirectTo: 'loja',
     pathMatch: 'full'
   },
 
@@ -111,3 +111,4 @@ export const routes: Routes = [
     redirectTo: 'dashboard' // Manda pro dashboard (Se não estiver logado, o authGuard chuta pro login)
   }
 ];
+
