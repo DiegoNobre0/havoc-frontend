@@ -1,4 +1,19 @@
 :host {
+  --ui-primary: #F2B90F;
+  --ui-primary-hover: #D9A40D;
+  --ui-primary-subtle: rgba(242, 185, 15, 0.14);
+  --ui-surface: #141414;
+  --ui-surface-2: #1F1F1F;
+  --ui-surface-3: #2A2A2A;
+  --ui-text-primary: #F3F4F6;
+  --ui-text-secondary: #9CA3AF;
+  --ui-text-muted: #6B7280;
+  --ui-border: rgba(255, 255, 255, 0.1);
+  --ui-border-hover: rgba(255, 255, 255, 0.2);
+  --ui-danger: #EF4444;
+  --ui-danger-bg: rgba(239, 68, 68, 0.12);
+  --ui-danger-border: rgba(239, 68, 68, 0.35);
+
   position: relative;
   z-index: 900;
   font-family: var(--ui-font);
