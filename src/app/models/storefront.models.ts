@@ -23,6 +23,10 @@ interface StorefrontItemBase {
 
 export interface StorefrontProduct extends StorefrontItemBase {
   type: 'product';
+  brand?: string | null;
+  sizeLabel?: string | null;
+  flavor?: string | null;
+  compareAtPrice?: number | null;
   unit?: string;
   stock?: number;
   sku?: string | null;

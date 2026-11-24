@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   // ----------------------------------------------------
@@ -8,39 +9,45 @@ export const routes: Routes = [
   {
     path: 'login',
     title: 'Havoc | Login',
-    loadComponent: () => import('./pages/login/login').then(m => m.Login) // Ajuste para LoginComponent se necessário
+    loadComponent: () => import('./pages/login/login').then((m) => m.Login), // Ajuste para LoginComponent se necessário
   },
   {
-    path:'bio-links',
+    path: 'bio-links',
     title: 'Havoc | Links',
-    loadComponent: () => import('./pages/bio-links/bio-links').then(m => m.BioLinksComponent)
+    loadComponent: () => import('./pages/bio-links/bio-links').then((m) => m.BioLinksComponent),
   },
   {
     path: 'loja',
     title: 'Havoc | Comprar Suplementos',
-    loadComponent: () => import('./pages/checkout/checkout').then(m => m.CheckoutComponent)
+    loadComponent: () => import('./pages/checkout/checkout').then((m) => m.CheckoutComponent),
   },
   {
     path: 'produto/:slug',
     title: 'Havoc | Produto',
     data: { type: 'product' },
-    loadComponent: () => import('./pages/storefront-detail/storefront-detail').then(m => m.StorefrontDetailComponent)
+    loadComponent: () =>
+      import('./pages/storefront-detail/storefront-detail').then(
+        (m) => m.StorefrontDetailComponent,
+      ),
   },
   {
     path: 'kit/:slug',
     title: 'Havoc | Kit',
     data: { type: 'kit' },
-    loadComponent: () => import('./pages/storefront-detail/storefront-detail').then(m => m.StorefrontDetailComponent)
+    loadComponent: () =>
+      import('./pages/storefront-detail/storefront-detail').then(
+        (m) => m.StorefrontDetailComponent,
+      ),
   },
   {
     path: 'checkout',
     redirectTo: 'loja',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'comprar',
     redirectTo: 'loja',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
 
   // ----------------------------------------------------
@@ -49,58 +56,77 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard], // O Guardião fica na porta principal e protege tudo lá dentro!
-    loadComponent: () => import('./components/main-layout/main-layout').then(m => m.MainLayout),
+    loadComponent: () => import('./components/main-layout/main-layout').then((m) => m.MainLayout),
     children: [
       // Se acessar apenas a raiz ('/'), joga direto pro dashboard
       {
         path: '',
         redirectTo: 'dashboard',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'dashboard',
         title: 'Havoc | Painel Geral',
-        loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
+        loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'whatsapp',
         title: 'Havoc | Atendimento IA',
-        loadComponent: () => import('./pages/chat/chat').then(m => m.Chat),
+        loadComponent: () => import('./pages/chat/chat').then((m) => m.Chat),
         children: [
           {
             // O :id captura a sessão da URL (ex: /whatsapp/session-123) e renderiza o chat na direita
             path: ':id',
             title: 'Havoc | Chat',
-            loadComponent: () => import('./pages/detalhes-atendimento/detalhes-atendimento').then(m => m.DetalhesAtendimento)
-          }
-        ]
+            loadComponent: () =>
+              import('./pages/detalhes-atendimento/detalhes-atendimento').then(
+                (m) => m.DetalhesAtendimento,
+              ),
+          },
+        ],
       },
       {
         path: 'catalog/products',
         title: 'Havoc | Produtos',
-        loadComponent: () => import('./pages/catalog/products/products').then(m => m.Products)
+        loadComponent: () => import('./pages/catalog/products/products').then((m) => m.Products),
       },
       {
         path: 'catalog/categories',
         title: 'Havoc | Categorias',
-        loadComponent: () => import('./pages/catalog/categories/categories').then(m => m.Categories)
+        loadComponent: () =>
+          import('./pages/catalog/categories/categories').then((m) => m.Categories),
       },
       {
         path: 'catalog/kits',
         title: 'Havoc | Kits',
-        loadComponent: () => import('./pages/catalog/kits/kits').then(m => m.Kits)
+        loadComponent: () => import('./pages/catalog/kits/kits').then((m) => m.Kits),
       },
       {
         path: 'orders',
         title: 'Havoc | Pedidos',
-        loadComponent: () => import('./pages/orders/orders').then(m => m.Orders)
+        loadComponent: () => import('./pages/orders/orders').then((m) => m.Orders),
+      },
+      {
+        path: 'pos',
+        title: 'Havoc | PDV / Caixa',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'OPERADOR'] },
+        loadComponent: () => import('./pages/pos/pos').then((m) => m.Pos),
+      },
+      {
+        path: 'fiscal/documents',
+        title: 'Havoc | Documentos Fiscais',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'OPERADOR'] },
+        loadComponent: () =>
+          import('./pages/fiscal-documents/fiscal-documents').then((m) => m.FiscalDocuments),
       },
       {
         path: 'settings',
         title: 'Havoc | Configurações',
-        loadComponent: () => import('./pages/settings/settings').then(m => m.Settings)
-      }
-    ]
+        loadComponent: () => import('./pages/settings/settings').then((m) => m.Settings),
+      },
+    ],
   },
 
   // ----------------------------------------------------
@@ -108,7 +134,6 @@ export const routes: Routes = [
   // ----------------------------------------------------
   {
     path: '**',
-    redirectTo: 'dashboard' // Manda pro dashboard (Se não estiver logado, o authGuard chuta pro login)
-  }
+    redirectTo: 'dashboard', // Manda pro dashboard (Se não estiver logado, o authGuard chuta pro login)
+  },
 ];
-

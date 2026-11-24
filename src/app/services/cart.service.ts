@@ -7,6 +7,9 @@ export interface CartItem {
   slug: string;
   name: string;
   price: number;
+  compareAtPrice?: number | null;
+  sizeLabel?: string | null;
+  flavor?: string | null;
   quantity: number;
   imageUrl: string | null;
   unit?: string;
@@ -46,6 +49,12 @@ export class CartService {
           slug: item.slug,
           name: item.name,
           price: item.price,
+          compareAtPrice:
+            item.type === 'product'
+              ? (item.compareAtPrice ?? null)
+              : (item.originalPrice ?? null),
+          sizeLabel: item.type === 'product' ? (item.sizeLabel ?? null) : null,
+          flavor: item.type === 'product' ? (item.flavor ?? null) : null,
           quantity,
           imageUrl: item.imageUrl,
           unit: item.type === 'product' ? item.unit : undefined,

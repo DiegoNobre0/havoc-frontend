@@ -1,0 +1,392 @@
+<main class="fiscal-page">
+  <header class="fiscal-hero">
+    <div>
+      <span class="fiscal-hero__eyebrow"
+        ><lucide-icon name="circle-gauge"></lucide-icon> Central fiscal</span
+      >
+      <h1>Documentos fiscais</h1>
+      <p>Acompanhe autorizações, pendências e eventos da NFC-e em uma visão operacional.</p>
+    </div>
+    <button type="button" class="ui-btn ui-btn--secondary" (click)="refresh()">
+      <lucide-icon name="refresh-cw"></lucide-icon> Atualizar
+    </button>
+  </header>
+
+  <section class="summary-grid" aria-label="Resumo fiscal">
+    <article class="summary-card summary-card--total">
+      <span class="summary-card__icon"><lucide-icon name="file-text"></lucide-icon></span>
+      <div>
+        <span>Total de documentos</span><strong>{{ summary().totalDocuments }}</strong>
+      </div>
+    </article>
+    <article class="summary-card summary-card--success">
+      <span class="summary-card__icon"><lucide-icon name="check-circle-2"></lucide-icon></span>
+      <div>
+        <span>Autorizadas</span><strong>{{ authorizedCount() }}</strong
+        ><small>{{ formatCurrency(summary().authorizedGrossAmount) }}</small>
+      </div>
+    </article>
+    <article class="summary-card summary-card--warning">
+      <span class="summary-card__icon"><lucide-icon name="alert-triangle"></lucide-icon></span>
+      <div>
+        <span>Pedem atenção</span><strong>{{ attentionCount() }}</strong>
+      </div>
+    </article>
+    <article class="summary-card summary-card--danger">
+      <span class="summary-card__icon"><lucide-icon name="ban"></lucide-icon></span>
+      <div>
+        <span>Canceladas</span><strong>{{ cancelledCount() }}</strong
+        ><small>{{ formatCurrency(summary().cancelledGrossAmount) }}</small>
+      </div>
+    </article>
+  </section>
+
+  <form class="filter-panel" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <label class="filter-field filter-field--search">
+      <span>Busca</span>
+      <div class="input-icon">
+        <lucide-icon name="search"></lucide-icon
+        ><input
+          class="ui-input"
+          formControlName="search"
+          placeholder="Pedido, cliente, CPF ou chave"
+        />
+      </div>
+    </label>
+    <label class="filter-field">
+      <span>Status</span>
+      <select class="ui-select" formControlName="status" (change)="applyFilters()">
+        <option value="">Todos</option>
+        <option value="AUTHORIZED">Autorizada</option>
+        <option value="PROCESSING">Processando</option>
+        <option value="PENDING">Pendente</option>
+        <option value="REJECTED">Rejeitada</option>
+        <option value="CANCELLED">Cancelada</option>
+        <option value="UNKNOWN">Atenção</option>
+        <option value="ERROR">Erro</option>
+      </select>
+    </label>
+    <label class="filter-field">
+      <span>Ambiente</span>
+      <select class="ui-select" formControlName="environment" (change)="applyFilters()">
+        <option value="">Todos</option>
+        <option value="PRODUCAO">Produção</option>
+        <option value="HOMOLOGACAO">Homologação</option>
+      </select>
+    </label>
+    <label class="filter-field"
+      ><span>De</span
+      ><input class="ui-input" type="date" formControlName="startDate" (change)="applyFilters()"
+    /></label>
+    <label class="filter-field"
+      ><span>Até</span
+      ><input class="ui-input" type="date" formControlName="endDate" (change)="applyFilters()"
+    /></label>
+    <button type="button" class="ui-btn ui-btn--ghost filter-clear" (click)="clearFilters()">
+      <lucide-icon name="filter-x"></lucide-icon> Limpar
+    </button>
+  </form>
+
+  <section class="documents-panel">
+    <header class="documents-panel__header">
+      <div>
+        <h2>Movimento fiscal</h2>
+        <p>{{ totalItems() }} documento(s) encontrado(s)</p>
+      </div>
+      @if (isLoading()) {
+        <span class="loading-label"
+          ><lucide-icon name="loader-circle" class="spin"></lucide-icon> Consultando</span
+        >
+      }
+    </header>
+
+    @if (!isLoading() && documents().length === 0) {
+      <div class="empty-state">
+        <span><lucide-icon name="receipt-text"></lucide-icon></span>
+        <h3>Nenhum documento neste recorte</h3>
+        <p>Ajuste os filtros ou aguarde a próxima emissão fiscal.</p>
+      </div>
+    } @else {
+      <div class="desktop-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido / cliente</th>
+              <th>Documento</th>
+              <th>Status</th>
+              <th>Ambiente</th>
+              <th class="align-right">Valor</th>
+              <th class="align-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (document of documents(); track document.id) {
+              <tr>
+                <td>
+                  <button class="order-link" type="button" (click)="openOrder(document)">
+                    {{ document.order.code }}
+                    <lucide-icon name="external-link"></lucide-icon></button
+                  ><span class="cell-secondary"
+                    >{{ document.order.customerName || 'Cliente não informado' }} ·
+                    {{ formatDate(document.order.createdAt) }}</span
+                  >
+                </td>
+                <td>
+                  <strong>NFC-e {{ document.number || 'sem número' }}</strong
+                  ><span class="cell-secondary">Série {{ document.series || '—' }}</span>
+                </td>
+                <td>
+                  <span class="status-chip" [attr.data-tone]="statusTone(document.status)">{{
+                    statusLabel(document.status)
+                  }}</span>
+                </td>
+                <td>
+                  <span
+                    class="environment-tag"
+                    [class.environment-tag--test]="!isProductionEnvironment(document.environment)"
+                    >{{ environmentLabel(document.environment) }}</span
+                  >
+                </td>
+                <td class="align-right value-cell">{{ formatCurrency(document.order.total) }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="action-button"
+                      title="Ver histórico de emissão"
+                      (click)="openHistory(document)"
+                    >
+                      <lucide-icon name="history"></lucide-icon>
+                    </button>
+                    @if (canRetry(document)) {
+                      <button
+                        type="button"
+                        class="action-button action-button--retry"
+                        title="Reemitir NFC-e"
+                        (click)="requestRetry(document)"
+                        [disabled]="activeOrderId() !== null"
+                      >
+                        <lucide-icon
+                          [name]="
+                            activeOrderId() === document.order.id ? 'loader-circle' : 'rotate-ccw'
+                          "
+                          [class.spin]="activeOrderId() === document.order.id"
+                        ></lucide-icon>
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="action-button"
+                      title="Reconciliar com a SEFAZ"
+                      (click)="reconcile(document)"
+                      [disabled]="activeOrderId() !== null"
+                    >
+                      <lucide-icon
+                        [name]="
+                          activeOrderId() === document.order.id ? 'loader-circle' : 'refresh-cw'
+                        "
+                        [class.spin]="activeOrderId() === document.order.id"
+                      ></lucide-icon>
+                    </button>
+                    @if (document.pdfAvailable) {
+                      <button
+                        type="button"
+                        class="action-button"
+                        title="Baixar DANFC-e"
+                        (click)="download(document, 'pdf')"
+                        [disabled]="downloading() !== null"
+                      >
+                        <lucide-icon name="file-down"></lucide-icon>
+                      </button>
+                    }
+                    @if (document.xmlAvailable) {
+                      <button
+                        type="button"
+                        class="action-button"
+                        title="Baixar XML"
+                        (click)="download(document, 'xml')"
+                        [disabled]="downloading() !== null"
+                      >
+                        <lucide-icon name="file-code-2"></lucide-icon>
+                      </button>
+                    }
+                    @if (document.cancellationPdfAvailable) {
+                      <button
+                        type="button"
+                        class="action-button action-button--event"
+                        title="Baixar PDF do evento"
+                        (click)="download(document, 'cancellation-pdf')"
+                        [disabled]="downloading() !== null"
+                      >
+                        <lucide-icon name="file-down"></lucide-icon>
+                      </button>
+                    }
+                    @if (document.cancellationXmlAvailable) {
+                      <button
+                        type="button"
+                        class="action-button action-button--event"
+                        title="Baixar XML do evento"
+                        (click)="download(document, 'cancellation-xml')"
+                        [disabled]="downloading() !== null"
+                      >
+                        <lucide-icon name="file-code-2"></lucide-icon>
+                      </button>
+                    }
+                    @if (canCancel(document)) {
+                      <button
+                        type="button"
+                        class="action-button action-button--danger"
+                        title="Cancelar NFC-e"
+                        (click)="requestCancellation(document)"
+                        [disabled]="activeOrderId() !== null"
+                      >
+                        <lucide-icon name="ban"></lucide-icon>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mobile-list">
+        @for (document of documents(); track document.id) {
+          <article class="document-card">
+            <header>
+              <div>
+                <button class="order-link" type="button" (click)="openOrder(document)">
+                  {{ document.order.code }} <lucide-icon name="external-link"></lucide-icon></button
+                ><span>{{ document.order.customerName || 'Cliente não informado' }}</span>
+              </div>
+              <span class="status-chip" [attr.data-tone]="statusTone(document.status)">{{
+                statusLabel(document.status)
+              }}</span>
+            </header>
+            <dl>
+              <div>
+                <dt>Documento</dt>
+                <dd>NFC-e {{ document.number || '—' }} / {{ document.series || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Ambiente</dt>
+                <dd>{{ environmentLabel(document.environment) }}</dd>
+              </div>
+              <div>
+                <dt>Emissão</dt>
+                <dd>{{ formatDate(document.order.createdAt) }}</dd>
+              </div>
+              <div>
+                <dt>Valor</dt>
+                <dd class="document-card__amount">{{ formatCurrency(document.order.total) }}</dd>
+              </div>
+            </dl>
+            <div class="mobile-actions">
+              <button
+                type="button"
+                class="ui-btn ui-btn--secondary ui-btn--sm"
+                (click)="openHistory(document)"
+              >
+                <lucide-icon name="history"></lucide-icon> Histórico
+              </button>
+              @if (canRetry(document)) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--secondary ui-btn--sm"
+                  (click)="requestRetry(document)"
+                  [disabled]="activeOrderId() !== null"
+                >
+                  <lucide-icon name="rotate-ccw"></lucide-icon> Reemitir
+                </button>
+              }
+              <button
+                type="button"
+                class="ui-btn ui-btn--secondary ui-btn--sm"
+                (click)="reconcile(document)"
+                [disabled]="activeOrderId() !== null"
+              >
+                <lucide-icon name="refresh-cw"></lucide-icon> Reconciliar
+              </button>
+              @if (document.pdfAvailable) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--secondary ui-btn--sm"
+                  (click)="download(document, 'pdf')"
+                  [disabled]="downloading() !== null"
+                >
+                  <lucide-icon name="file-down"></lucide-icon> DANFC-e
+                </button>
+              }
+              @if (document.xmlAvailable) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--secondary ui-btn--sm"
+                  (click)="download(document, 'xml')"
+                  [disabled]="downloading() !== null"
+                >
+                  <lucide-icon name="file-code-2"></lucide-icon> XML
+                </button>
+              }
+              @if (document.cancellationPdfAvailable) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--secondary ui-btn--sm"
+                  (click)="download(document, 'cancellation-pdf')"
+                  [disabled]="downloading() !== null"
+                >
+                  PDF evento
+                </button>
+              }
+              @if (document.cancellationXmlAvailable) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--secondary ui-btn--sm"
+                  (click)="download(document, 'cancellation-xml')"
+                  [disabled]="downloading() !== null"
+                >
+                  XML evento
+                </button>
+              }
+              @if (canCancel(document)) {
+                <button
+                  type="button"
+                  class="ui-btn ui-btn--danger ui-btn--sm"
+                  (click)="requestCancellation(document)"
+                  [disabled]="activeOrderId() !== null"
+                >
+                  <lucide-icon name="ban"></lucide-icon> Cancelar
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+    @if (totalPages() > 1) {
+      <footer class="pagination">
+        <span
+          >Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong></span
+        >
+        <div>
+          <button
+            type="button"
+            class="ui-btn ui-btn--secondary ui-btn--sm"
+            [disabled]="currentPage() === 1"
+            (click)="changePage(currentPage() - 1)"
+          >
+            <lucide-icon name="chevron-left"></lucide-icon> Anterior</button
+          ><button
+            type="button"
+            class="ui-btn ui-btn--secondary ui-btn--sm"
+            [disabled]="currentPage() === totalPages()"
+            (click)="changePage(currentPage() + 1)"
+          >
+            Próxima <lucide-icon name="chevron-right"></lucide-icon>
+          </button>
+        </div>
+      </footer>
+    }
+  </section>
+</main>

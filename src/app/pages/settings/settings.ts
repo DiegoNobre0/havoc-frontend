@@ -1,4 +1,4 @@
-import { Component, inject, signal, TemplateRef, ViewChild } from '@angular/core';
+import { Component, computed, inject, signal, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -6,25 +6,34 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; //
 import { SettingsService } from '../../services/settings.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog';
+import { AuthService } from '../../services/auth.service';
+import {
+  FiscalService,
+  FiscalSettings,
+  SaveFiscalSettingsRequest,
+} from '../../services/fiscal.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, LucideAngularModule, MatSnackBarModule], // 👈 ADICIONADO AQUI
   templateUrl: './settings.html',
-  styleUrls: ['./settings.scss']
+  styleUrls: ['./settings.scss'],
 })
 export class Settings {
   private fb = inject(FormBuilder);
   private settingsService = inject(SettingsService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
+  private fiscalService = inject(FiscalService);
 
   @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<any>;
 
   // Controle das Abas
-  activeTab = signal<'users' | 'shipping' | 'chatbot'>('users');
+  activeTab = signal<'users' | 'shipping' | 'chatbot' | 'fiscal'>('users');
   isSaving = signal(false);
+  isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
 
   // ==========================================
   // ESTADOS: USUÁRIOS
@@ -46,6 +55,11 @@ export class Settings {
   // ESTADOS: CHATBOT
   // ==========================================
   chatbotForm: FormGroup;
+  fiscalForm: FormGroup;
+  fiscalSettings = signal<FiscalSettings | null>(null);
+  isLoadingFiscal = signal(false);
+  certificateFile = signal<File | null>(null);
+  certificateError = signal('');
 
   constructor() {
     this.userForm = this.fb.group({
@@ -53,7 +67,7 @@ export class Settings {
       email: ['', [Validators.required, Validators.email]],
       password: [''],
       role: ['OPERADOR', Validators.required],
-      isActive: [true]
+      isActive: [true],
     });
 
     // No constructor, ajuste o shippingForm:
@@ -63,23 +77,151 @@ export class Settings {
       region: ['', Validators.required], // Aqui vai o nome do Bairro ou Cidade
       price: [0, [Validators.required, Validators.min(0)]],
 
-      isActive: [true]
+      isActive: [true],
     });
 
     this.chatbotForm = this.fb.group({
       systemPrompt: ['', Validators.required],
       temperature: [0.7, Validators.required],
       fallbackMessage: [''],
-      isActive: [true]
+      isActive: [true],
+    });
+
+    this.fiscalForm = this.fb.group({
+      razao_social: ['', Validators.required],
+      nome_fantasia: [''],
+      cnpj: ['', [Validators.required, Validators.pattern(/^(?:\D*\d){14}\D*$/)]],
+      inscricao_estadual: [''],
+      crt: [1, Validators.required],
+      logradouro: ['', Validators.required],
+      numero: ['', Validators.required],
+      complemento: [''],
+      bairro: ['', Validators.required],
+      cep: ['', [Validators.required, Validators.pattern(/^(?:\D*\d){8}\D*$/)]],
+      nome_municipio: ['', Validators.required],
+      codigo_municipio: ['', [Validators.required, Validators.pattern(/^\d{7}$/)]],
+      uf: ['BA', [Validators.required, Validators.pattern(/^[A-Z]{2}$/)]],
+      telefone: [''],
+      ambiente: [2, Validators.required],
+      csc_id: [''],
+      csc_token: [''],
+      serie_nfce: [1, [Validators.required, Validators.min(1)]],
+      numero_nfce: [1, [Validators.required, Validators.min(1)]],
+      serie_nfce_homologacao: [1, [Validators.required, Validators.min(1)]],
+      numero_nfce_homologacao: [1, [Validators.required, Validators.min(1)]],
+      certificado_senha: [''],
     });
 
     this.loadData();
+    if (this.isAdmin()) this.loadFiscalSettings();
+  }
+
+  loadFiscalSettings() {
+    this.isLoadingFiscal.set(true);
+    this.fiscalService.getSettings().subscribe({
+      next: (settings) => {
+        this.fiscalSettings.set(settings);
+        if (settings) {
+          const company = settings.empresa;
+          this.fiscalForm.patchValue({
+            ...company,
+            ambiente: settings.ambiente,
+            csc_token: '',
+            certificado_senha: '',
+            serie_nfce: company.serie_nfce ?? 1,
+            numero_nfce: company.numero_nfce ?? 1,
+            serie_nfce_homologacao: company.serie_nfce_homologacao ?? 1,
+            numero_nfce_homologacao: company.numero_nfce_homologacao ?? 1,
+          });
+        }
+        this.isLoadingFiscal.set(false);
+      },
+      error: (error) => {
+        this.isLoadingFiscal.set(false);
+        this.showToast(this.backendMessage(error, 'Erro ao carregar a configuração fiscal.'), true);
+      },
+    });
+  }
+
+  selectCertificate(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.certificateError.set('');
+    this.certificateFile.set(null);
+    if (!file) return;
+    if (!/\.(pfx|p12)$/i.test(file.name)) {
+      this.certificateError.set('Selecione um certificado A1 no formato .pfx ou .p12.');
+    } else if (file.size > 5 * 1024 * 1024) {
+      this.certificateError.set('O certificado deve ter no máximo 5MB.');
+    } else {
+      this.certificateFile.set(file);
+    }
+    if (this.certificateError()) input.value = '';
+  }
+
+  saveFiscalSettings() {
+    const firstConfiguration = !this.fiscalSettings();
+    const password = String(this.fiscalForm.controls['certificado_senha'].value ?? '').trim();
+    if (firstConfiguration && (!this.certificateFile() || !password)) {
+      this.certificateError.set('Na primeira configuração, informe o certificado e a senha.');
+    }
+    if (
+      this.fiscalForm.invalid ||
+      this.certificateError() ||
+      (this.certificateFile() && !password)
+    ) {
+      if (this.certificateFile() && !password) {
+        this.certificateError.set('Informe a senha do novo certificado.');
+      }
+      this.fiscalForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.fiscalForm.getRawValue();
+    const digits = (input: unknown) => String(input ?? '').replace(/\D/g, '');
+    const payload: SaveFiscalSettingsRequest = {
+      ...value,
+      ambiente: Number(value.ambiente) as 1 | 2,
+      crt: Number(value.crt),
+      cnpj: digits(value.cnpj),
+      cep: digits(value.cep),
+      telefone: digits(value.telefone) || undefined,
+      serie_nfce: Number(value.serie_nfce),
+      numero_nfce: Number(value.numero_nfce),
+      serie_nfce_homologacao: Number(value.serie_nfce_homologacao),
+      numero_nfce_homologacao: Number(value.numero_nfce_homologacao),
+      ...(this.certificateFile() ? { certificado: this.certificateFile()! } : {}),
+      ...(password ? { certificado_senha: password } : {}),
+      ...(String(value.csc_token ?? '').trim()
+        ? { csc_token: String(value.csc_token).trim() }
+        : {}),
+    };
+    this.isSaving.set(true);
+    this.fiscalService.saveSettings(payload).subscribe({
+      next: (settings) => {
+        this.fiscalSettings.set(settings);
+        this.certificateFile.set(null);
+        this.certificateError.set('');
+        this.fiscalForm.patchValue({ csc_token: '', certificado_senha: '' });
+        this.isSaving.set(false);
+        this.showToast('Configuração fiscal salva com sucesso!');
+      },
+      error: (error) => {
+        this.isSaving.set(false);
+        this.showToast(this.backendMessage(error, 'Erro ao salvar a configuração fiscal.'), true);
+      },
+    });
+  }
+
+  private backendMessage(error: unknown, fallback: string): string {
+    const message = (error as { error?: { message?: string | string[] } })?.error?.message;
+    return Array.isArray(message) ? message.join(' ') : message || fallback;
   }
 
   loadData() {
-    this.settingsService.getUsers().subscribe(res => this.users.set(res));
-    this.settingsService.getShippingRules().subscribe(res => this.shippingRules.set(res));
-    this.settingsService.getChatbotConfig().subscribe(res => {
+    this.settingsService.getUsers().subscribe((res) => this.users.set(res));
+    this.settingsService.getShippingRules().subscribe((res) => this.shippingRules.set(res));
+    this.settingsService.getChatbotConfig().subscribe((res) => {
       if (res) {
         this.chatbotForm.patchValue(res);
       }
@@ -92,7 +234,7 @@ export class Settings {
       duration: 3000,
       horizontalPosition: 'right',
       verticalPosition: 'top',
-      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success']
+      panelClass: isError ? ['havoc-snackbar-error'] : ['havoc-snackbar-success'],
     });
   }
 
@@ -139,7 +281,7 @@ export class Settings {
         console.error(err);
         this.isSaving.set(false);
         this.showToast(err.error?.message || 'Erro ao salvar usuário.', true);
-      }
+      },
     });
   }
 
@@ -152,8 +294,8 @@ export class Settings {
         title: 'Excluir Usuário',
         message: `Deseja realmente excluir o usuário <strong>${user.name}</strong>?<br>Esta ação não pode ser desfeita.`,
         confirmText: 'Sim, Excluir',
-        isDanger: true // Ativa as cores vermelhas de alerta!
-      }
+        isDanger: true, // Ativa as cores vermelhas de alerta!
+      },
     });
 
     dialogRef.afterClosed().subscribe((confirmado: boolean) => {
@@ -164,7 +306,6 @@ export class Settings {
   }
 
   deleteUser(id: string) {
-
     this.settingsService.deleteUser(id).subscribe({
       next: () => {
         this.loadData();
@@ -173,9 +314,8 @@ export class Settings {
       error: (err) => {
         console.error(err);
         this.showToast('Erro ao excluir usuário.', true);
-      }
+      },
     });
-
   }
 
   // ==========================================
@@ -218,10 +358,9 @@ export class Settings {
         console.error(err);
         this.isSaving.set(false);
         this.showToast(err.error?.message || 'Erro ao salvar regra de frete.', true);
-      }
+      },
     });
   }
-
 
   openDeleteConfirmShipping(shipping: any) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
@@ -232,8 +371,8 @@ export class Settings {
         title: 'Excluir Regra de Frete',
         message: `Deseja realmente excluir a regra de frete <strong>${shipping.name}</strong>?<br>Esta ação não pode ser desfeita.`,
         confirmText: 'Sim, Excluir',
-        isDanger: true // Ativa as cores vermelhas de alerta!
-      }
+        isDanger: true, // Ativa as cores vermelhas de alerta!
+      },
     });
 
     dialogRef.afterClosed().subscribe((confirmado: boolean) => {
@@ -244,7 +383,6 @@ export class Settings {
   }
 
   deleteShipping(id: string) {
-
     this.settingsService.deleteShippingRule(id).subscribe({
       next: () => {
         this.loadData();
@@ -253,9 +391,8 @@ export class Settings {
       error: (err) => {
         console.error(err);
         this.showToast('Erro ao excluir regra.', true);
-      }
+      },
     });
-
   }
 
   // ==========================================
@@ -274,7 +411,7 @@ export class Settings {
         console.error(err);
         this.isSaving.set(false);
         this.showToast('Erro ao atualizar IA.', true);
-      }
+      },
     });
   }
 }

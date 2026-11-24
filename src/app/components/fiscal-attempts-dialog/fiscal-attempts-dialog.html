@@ -1,0 +1,83 @@
+<section class="attempts-dialog">
+  <header class="dialog-header">
+    <div>
+      <span class="dialog-eyebrow"
+        ><lucide-icon name="history"></lucide-icon> Histórico fiscal</span
+      >
+      <h2>Tentativas de emissão</h2>
+      @if (data.orderCode) {
+        <p>Pedido {{ data.orderCode }}</p>
+      }
+    </div>
+    <button type="button" class="close-button" (click)="close()" aria-label="Fechar histórico">
+      <lucide-icon name="x"></lucide-icon>
+    </button>
+  </header>
+
+  <div class="dialog-content">
+    @if (isLoading()) {
+      <div class="state-message">
+        <lucide-icon name="loader-circle" class="spin"></lucide-icon>
+        Carregando tentativas...
+      </div>
+    } @else if (errorMessage()) {
+      <div class="state-message state-message--error">
+        <lucide-icon name="circle-alert"></lucide-icon>
+        {{ errorMessage() }}
+      </div>
+    } @else if (attempts().length === 0) {
+      <div class="state-message">
+        <lucide-icon name="file-clock"></lucide-icon>
+        Nenhuma tentativa de emissão registrada.
+      </div>
+    } @else {
+      <div class="attempt-list">
+        @for (attempt of attempts(); track attempt.id) {
+          <article class="attempt-card">
+            <header>
+              <div>
+                <strong>Tentativa {{ attempt.sequence }}</strong>
+                <span>{{ environmentLabel(attempt.environment) }}</span>
+              </div>
+              <span class="status-chip" [attr.data-tone]="statusTone(attempt.status)">
+                {{ statusLabel(attempt.status) }}
+              </span>
+            </header>
+            <dl>
+              <div>
+                <dt>Número / Série</dt>
+                <dd>{{ attempt.number || '—' }} / {{ attempt.series || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Status SEFAZ</dt>
+                <dd>{{ attempt.sefazStatus || 'Não informado' }}</dd>
+              </div>
+              <div class="wide">
+                <dt>Retorno</dt>
+                <dd>
+                  {{ attempt.sefazReason || attempt.errorMessage || 'Sem retorno adicional' }}
+                </dd>
+              </div>
+              <div>
+                <dt>Solicitada em</dt>
+                <dd>{{ formatDate(attempt.createdAt) }}</dd>
+              </div>
+              <div>
+                <dt>Concluída em</dt>
+                <dd>{{ formatDate(attempt.completedAt) }}</dd>
+              </div>
+              <div class="wide">
+                <dt>Solicitada por</dt>
+                <dd>{{ attempt.requestedBy?.name || 'Sistema' }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+    }
+  </div>
+
+  <footer>
+    <button type="button" class="ui-btn ui-btn--secondary" (click)="close()">Fechar</button>
+  </footer>
+</section>

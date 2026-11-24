@@ -1,0 +1,103 @@
+:host {
+  display: block;
+}
+
+.fiscal-cancel-dialog {
+  width: min(520px, 100%);
+  padding: var(--ui-space-6);
+  color: var(--ui-text-primary);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-lg);
+}
+
+.dialog-header {
+  display: flex;
+  gap: var(--ui-space-3);
+  align-items: center;
+  margin-bottom: var(--ui-space-5);
+
+  h2,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    margin-top: 3px;
+    color: var(--ui-text-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+.dialog-icon {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: var(--ui-danger);
+  background: var(--ui-danger-bg);
+  border-radius: 50%;
+}
+
+form,
+label {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: var(--ui-space-2);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.field-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  min-height: 2.5rem;
+  padding-top: var(--ui-space-2);
+  color: var(--ui-danger);
+  font-size: 0.75rem;
+
+  small {
+    flex: none;
+    margin-left: auto;
+    color: var(--ui-text-muted);
+  }
+
+  .limit-reached {
+    color: var(--ui-danger);
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ui-space-3);
+  margin-top: var(--ui-space-4);
+}
+
+@media (max-width: 480px) {
+  .fiscal-cancel-dialog {
+    padding: var(--ui-space-5);
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}

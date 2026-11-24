@@ -1,34 +1,38 @@
 <div class="checkout-page">
 
+  <!-- ─── 0. FAIXA PROMOCIONAL SUPERIOR ──────────────────────── -->
+  <div class="top-promo-bar">
+    <span class="top-promo-badge">FRETE GRÁTIS</span>
+    <span class="top-promo-text">Acima de R$ 300 em Camaçari Sede (frete até R$ 15) · Entrega Expressa</span>
+  </div>
+
   <!-- ─── 1. NAVBAR / HEADER SUPERIOR DA LOJA ─────────────────── -->
   <header class="store-header">
     <div class="header-container">
-      
+
+      <div class="header-left">
+        <button type="button" class="icon-nav-btn" (click)="toggleMenuDrawer()" aria-label="Abrir menu">
+          <lucide-icon name="menu"></lucide-icon>
+        </button>
+        @if (currentStep() === 1 && !isOrderCompleted()) {
+          <button type="button" class="icon-nav-btn" (click)="toggleSearchBar()" aria-label="Buscar produtos">
+            <lucide-icon name="search"></lucide-icon>
+          </button>
+        }
+      </div>
+
       <!-- Logo da Loja -->
       <div class="brand-area" routerLink="/loja" (click)="goToStep(1)">
         <img src="/HavocV1.png" alt="Havoc Suplementos" class="brand-logo">
         <div class="brand-text">
           <span class="brand-name">HAVOC</span>
-          <span class="brand-tag">LOJA OFICIAL</span>
-        </div>
-      </div>
-
-      <!-- Trust Badges (Desktop) -->
-      <div class="trust-bar d-none-mobile">
-        <div class="trust-item">
-          <lucide-icon name="truck" class="trust-icon"></lucide-icon>
-          <span>Entrega Expressa Camaçari</span>
-        </div>
-        <div class="trust-divider"></div>
-        <div class="trust-item">
-          <lucide-icon name="shield-check" class="trust-icon"></lucide-icon>
-          <span>Compra 100% Segura</span>
+          <span class="brand-tag">SUPLEMENTOS</span>
         </div>
       </div>
 
       <!-- Botão do Carrinho -->
       <div class="header-actions">
-        <button class="cart-pill-btn" (click)="toggleCartDrawer()">
+        <button type="button" class="cart-pill-btn" (click)="toggleCartDrawer()" aria-label="Abrir carrinho">
           <div class="cart-icon-wrap">
             <lucide-icon name="shopping-bag"></lucide-icon>
             @if (cartCount() > 0) {
@@ -36,14 +40,103 @@
             }
           </div>
           <div class="cart-info d-none-mobile">
-            <span class="cart-label">Meu Pedido</span>
+            <span class="cart-label">Sacola</span>
             <span class="cart-val">R${{ grandTotal() | number:'1.2-2' }}</span>
           </div>
         </button>
       </div>
 
     </div>
+
+    @if (isSearchBarOpen() && currentStep() === 1 && !isOrderCompleted()) {
+      <div class="header-search-bar">
+        <div class="header-search-inner">
+          <lucide-icon name="search" class="search-icon"></lucide-icon>
+          <input
+            type="text"
+            class="header-search-input"
+            placeholder="Buscar Whey, Creatina, Pré-Treino, marca ou sabor..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearch($event)"
+          >
+          @if (searchQuery()) {
+            <button type="button" class="clear-search" (click)="clearSearch()" aria-label="Limpar busca">
+              <lucide-icon name="x"></lucide-icon>
+            </button>
+          }
+        </div>
+      </div>
+    }
   </header>
+
+  <!-- ─── MENU LATERAL (DRAWER ESTILO ALPHA CO) ────────────────── -->
+  @if (isMenuDrawerOpen()) {
+    <div class="menu-drawer-overlay" (click)="closeMenuDrawer()">
+      <aside class="menu-drawer-container" (click)="$event.stopPropagation()" aria-label="Menu de categorias">
+        <div class="menu-drawer-top">
+          <button type="button" class="menu-close-btn" (click)="closeMenuDrawer()" aria-label="Fechar menu">
+            <lucide-icon name="x"></lucide-icon>
+          </button>
+          <span class="menu-brand-label">HAVOC STORE</span>
+        </div>
+
+        <div class="menu-highlights-section">
+          <span class="menu-section-kicker">DESTAQUES</span>
+          <div class="menu-highlights-track">
+            <button type="button" class="menu-highlight-card is-light" (click)="selectFromMenu('', 'kit')">
+              <span class="mh-eyebrow">— COMBOS HAVOC</span>
+              <strong>KITS PROMOCIONAIS</strong>
+              <span class="mh-offer">ATÉ <b>25%</b> OFF</span>
+              <span class="mh-cta">
+                <span>VER KITS</span>
+                <span class="mh-arrow-red"><lucide-icon name="arrow-right"></lucide-icon></span>
+              </span>
+            </button>
+
+            <button type="button" class="menu-highlight-card is-dark" (click)="selectFromMenu('', 'product')">
+              <span class="mh-eyebrow">— MAIS PROCURADOS</span>
+              <strong>WHEY &amp; CREATINA</strong>
+              <span class="mh-offer">FRETE GRÁTIS <b>R$300</b></span>
+              <span class="mh-cta">
+                <span>COMPRAR</span>
+                <span class="mh-arrow-light"><lucide-icon name="arrow-right"></lucide-icon></span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <nav class="menu-categories-nav">
+          <button type="button" class="menu-nav-item" (click)="selectFromMenu('', 'all')">
+            <span>TODOS OS PRODUTOS</span>
+            <lucide-icon name="chevron-right"></lucide-icon>
+          </button>
+
+          <button type="button" class="menu-nav-item" (click)="selectFromMenu('', 'kit')">
+            <span class="menu-nav-label-wrap">
+              <span>KITS &amp; COMBOS</span>
+              <span class="menu-red-pill">OFERTAS</span>
+            </span>
+            <lucide-icon name="chevron-right"></lucide-icon>
+          </button>
+
+          <button type="button" class="menu-nav-item" (click)="selectFromMenu('', 'product')">
+            <span class="menu-nav-label-wrap">
+              <span>SUPLEMENTOS AVULSOS</span>
+              <span class="menu-red-pill">CATÁLOGO</span>
+            </span>
+            <lucide-icon name="chevron-right"></lucide-icon>
+          </button>
+
+          @for (cat of categories(); track cat.id) {
+            <button type="button" class="menu-nav-item" (click)="selectFromMenu(cat.id, 'all')">
+              <span>{{ cat.name | uppercase }}</span>
+              <lucide-icon name="chevron-right"></lucide-icon>
+            </button>
+          }
+        </nav>
+      </aside>
+    </div>
+  }
 
   <!-- ─── 2. PROGRESS STEPPER (INDICADOR DE ETAPAS) ────────────── -->
   @if (!isOrderCompleted()) {
@@ -114,7 +207,48 @@
       <!-- ETAPA 1: CATÁLOGO DE PRODUTOS E KITS                     -->
       <!-- ======================================================== -->
       @if (currentStep() === 1 && !isOrderCompleted()) {
-        
+
+        <section class="store-hero">
+          <div class="hero-content">
+            <span class="hero-kicker-pill">HAVOC PERFORMANCE · CAMAÇARI - BA</span>
+            <h1 class="hero-headline">SUPLEMENTOS ORIGINAIS PARA RESULTADO REAL</h1>
+            <p class="hero-subcopy">
+              Frete grátis acima de <strong>R$ 300</strong> em Camaçari Sede (frete até R$ 15) ou retirada grátis na loja em 30 min.
+            </p>
+          </div>
+
+          <div class="hero-benefits-grid">
+            <div class="hero-benefit">
+              <lucide-icon name="truck"></lucide-icon>
+              <div>
+                <strong>FRETE GRÁTIS R$ 300</strong>
+                <span>Camaçari Sede (até R$ 15)</span>
+              </div>
+            </div>
+            <div class="hero-benefit">
+              <lucide-icon name="store"></lucide-icon>
+              <div>
+                <strong>RETIRADA NA LOJA</strong>
+                <span>Pronto em até 30 min</span>
+              </div>
+            </div>
+            <div class="hero-benefit">
+              <lucide-icon name="qr-code"></lucide-icon>
+              <div>
+                <strong>PAGAMENTO RÁPIDO</strong>
+                <span>PIX, Cartão ou Dinheiro</span>
+              </div>
+            </div>
+            <div class="hero-benefit">
+              <lucide-icon name="shield-check"></lucide-icon>
+              <div>
+                <strong>100% PROCEDÊNCIA</strong>
+                <span>Produtos com nota fiscal</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         @if (bestSellers().length > 0) {
           <section
             class="mobile-featured"
@@ -127,7 +261,7 @@
             (touchend)="setFeaturedPaused(false)"
           >
             <div class="mobile-featured-head">
-              <div><span>DESTAQUES HAVOC</span><h1>Mais vendidos</h1></div>
+              <div><span>ESCOLHAS DA SEMANA</span><h2>MAIS VENDIDOS</h2></div>
               <span class="featured-position">{{ featuredIndex() + 1 }}/{{ bestSellers().length }}</span>
             </div>
 
@@ -135,7 +269,7 @@
               @for (item of bestSellers(); track item.type + item.id; let index = $index) {
                 <article class="featured-slide" [attr.data-featured-index]="index">
                   <a class="featured-image" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
-                    <span class="featured-badge">Mais vendido</span>
+                    <span class="featured-badge">{{ discountPercent(item) ? ('-' + discountPercent(item) + '%') : 'TOP VENDA' }}</span>
                     @if (item.imageUrl) {
                       <img [src]="item.imageUrl" [alt]="item.name" loading="eager">
                     } @else {
@@ -143,13 +277,18 @@
                     }
                   </a>
                   <div class="featured-copy">
-                    <span class="featured-type">{{ item.type === 'kit' ? 'KIT HAVOC' : (item.categories[0]?.name || 'PRODUTO') }}</span>
-                    <h2>{{ item.name }}</h2>
-                    <div class="featured-price"><small>R$</small>{{ item.price | number:'1.2-2' }}</div>
+                    <span class="featured-type">{{ itemSubtitle(item) || (item.type === 'kit' ? 'KIT HAVOC' : 'PRODUTO') }}</span>
+                    <h3>{{ item.name }}</h3>
+                    <div class="featured-price">
+                      @if (itemCompareAtPrice(item); as oldPrice) {
+                        <del>R$ {{ oldPrice | number:'1.2-2' }}</del>
+                      }
+                      <span>R$ {{ item.price | number:'1.2-2' }}</span>
+                    </div>
                     <div class="featured-actions">
                       <a [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Ver detalhes</a>
-                      <button (click)="addToCart(item)" [disabled]="!item.available">
-                        <lucide-icon name="shopping-bag"></lucide-icon>
+                      <button type="button" (click)="addToCart(item)" [disabled]="!item.available">
+                        <lucide-icon name="plus"></lucide-icon>
                         {{ item.available ? 'Adicionar' : 'Indisponível' }}
                       </button>
                     </div>
@@ -160,13 +299,13 @@
 
             @if (bestSellers().length > 1) {
               <div class="featured-controls">
-                <button class="featured-arrow" (click)="goToFeatured(featuredIndex() - 1)" aria-label="Destaque anterior"><lucide-icon name="chevron-left"></lucide-icon></button>
+                <button type="button" class="featured-arrow" (click)="goToFeatured(featuredIndex() - 1)" aria-label="Destaque anterior"><lucide-icon name="chevron-left"></lucide-icon></button>
                 <div class="featured-dots">
                   @for (item of bestSellers(); track item.type + item.id; let index = $index) {
-                    <button [class.active]="featuredIndex() === index" (click)="goToFeatured(index)" [attr.aria-label]="'Ir para destaque ' + (index + 1)"></button>
+                    <button type="button" [class.active]="featuredIndex() === index" (click)="goToFeatured(index)" [attr.aria-label]="'Ir para destaque ' + (index + 1)"></button>
                   }
                 </div>
-                <button class="featured-arrow" (click)="goToFeatured(featuredIndex() + 1)" aria-label="Próximo destaque"><lucide-icon name="chevron-right"></lucide-icon></button>
+                <button type="button" class="featured-arrow" (click)="goToFeatured(featuredIndex() + 1)" aria-label="Próximo destaque"><lucide-icon name="chevron-right"></lucide-icon></button>
               </div>
             }
           </section>
@@ -175,26 +314,45 @@
         @if (bestSellers().length > 0) {
           <section class="best-sellers-section desktop-best-sellers" aria-labelledby="best-sellers-title">
             <div class="catalog-heading">
-              <div><span class="section-kicker">ESCOLHAS DA COMUNIDADE</span><h2 id="best-sellers-title">Mais vendidos</h2></div>
+              <div><span class="section-kicker">ESCOLHAS DA COMUNIDADE</span><h2 id="best-sellers-title">MAIS VENDIDOS</h2></div>
               <span class="section-count">Top {{ bestSellers().length }} dos últimos 90 dias</span>
             </div>
             <div class="best-sellers-scroll">
               @for (item of bestSellers(); track item.type + item.id) {
                 <article class="product-card best-seller-card" [class.is-kit-card]="item.type === 'kit'">
-                  <div class="card-badge badge-best">Mais vendido</div>
-                  <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
-                    @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
-                    @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
-                  </a>
-                  <div class="card-body">
-                    <span class="card-category">{{ item.type === 'kit' ? 'KIT HAVOC' : (item.categories[0]?.name || 'PRODUTO') }}</span>
-                    <h3 class="card-title">{{ item.name }}</h3>
-                    <div class="price-container"><div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div></div>
-                    <div class="card-actions">
-                      <a class="btn-details" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Detalhes</a>
-                      <button class="btn-add-cart" (click)="addToCart(item)" [disabled]="!item.available">{{ item.available ? 'Adicionar' : 'Indisponível' }}</button>
-                    </div>
+                  <div class="card-img-stage">
+                    <span class="card-discount-badge">
+                      {{ discountPercent(item) ? ('-' + discountPercent(item) + '%') : 'TOP VENDA' }}
+                    </span>
+                    @if (item.type === 'kit') {
+                      <span class="card-variant-tag">KIT</span>
+                    } @else if (item.sizeLabel) {
+                      <span class="card-variant-tag">{{ item.sizeLabel }}</span>
+                    }
+                    <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                      @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
+                      @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
+                    </a>
+                    <button
+                      type="button"
+                      class="quick-add-fab"
+                      (click)="addToCart(item)"
+                      [disabled]="!item.available"
+                      [attr.aria-label]="item.available ? 'Adicionar ' + item.name : item.name + ' indisponível'"
+                    >
+                      <lucide-icon name="plus"></lucide-icon>
+                    </button>
                   </div>
+                  <a class="card-body" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                    <span class="card-category">{{ itemSubtitle(item) || 'SUPLEMENTO' }}</span>
+                    <h3 class="card-title">{{ item.name }}</h3>
+                    <div class="price-container">
+                      @if (itemCompareAtPrice(item); as oldPrice) {
+                        <del class="old-price">R$ {{ oldPrice | number:'1.2-2' }}</del>
+                      }
+                      <div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div>
+                    </div>
+                  </a>
                 </article>
               }
             </div>
@@ -203,58 +361,88 @@
 
         <div class="catalog-filters-bar">
           <div class="type-filter-group">
-            <button class="type-btn" [class.active]="activeCatalogType() === 'all'" (click)="setCatalogType('all')">Todos</button>
-            <button class="type-btn" [class.active]="activeCatalogType() === 'product'" (click)="setCatalogType('product')"><lucide-icon name="package" class="btn-icon-xs"></lucide-icon>Produtos</button>
-            <button class="type-btn" [class.active]="activeCatalogType() === 'kit'" (click)="setCatalogType('kit')"><lucide-icon name="gift" class="btn-icon-xs text-yellow"></lucide-icon>Kits & Combos</button>
+            <button type="button" class="type-btn" [class.active]="activeCatalogType() === 'all'" (click)="setCatalogType('all')">TODOS</button>
+            <button type="button" class="type-btn" [class.active]="activeCatalogType() === 'product'" (click)="setCatalogType('product')">PRODUTOS</button>
+            <button type="button" class="type-btn" [class.active]="activeCatalogType() === 'kit'" (click)="setCatalogType('kit')">KITS &amp; COMBOS</button>
           </div>
           <div class="search-input-wrap">
             <lucide-icon name="search" class="search-icon"></lucide-icon>
-            <input type="text" class="catalog-search" placeholder="Buscar por Whey, Creatina, Pré-Treino..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
-            @if (searchQuery()) { <button class="clear-search" (click)="clearSearch()" aria-label="Limpar busca"><lucide-icon name="x"></lucide-icon></button> }
+            <input type="text" class="catalog-search" placeholder="Buscar Whey, Creatina, marca, sabor..." [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+            @if (searchQuery()) { <button type="button" class="clear-search" (click)="clearSearch()" aria-label="Limpar busca"><lucide-icon name="x"></lucide-icon></button> }
           </div>
         </div>
 
         <div class="categories-scroll-wrapper">
           <div class="categories-list">
-            <button class="category-pill" [class.active]="selectedCategoryId() === ''" (click)="setCategory('')">Todas as Categorias</button>
-            @for (cat of categories(); track cat.id) { <button class="category-pill" [class.active]="selectedCategoryId() === cat.id" (click)="setCategory(cat.id)">{{ cat.name }}</button> }
+            <button type="button" class="category-pill" [class.active]="selectedCategoryId() === ''" (click)="setCategory('')">TODAS</button>
+            @for (cat of categories(); track cat.id) { <button type="button" class="category-pill" [class.active]="selectedCategoryId() === cat.id" (click)="setCategory(cat.id)">{{ cat.name | uppercase }}</button> }
           </div>
         </div>
 
         <div class="catalog-grid-wrapper" #catalogSection>
           <div class="catalog-heading">
-            <div><span class="section-kicker">CATÁLOGO HAVOC</span><h2>{{ activeCatalogType() === 'kit' ? 'Kits e combos' : activeCatalogType() === 'product' ? 'Produtos' : 'Todos os produtos' }}</h2></div>
-            @if (!isLoadingCatalog() && !catalogError()) { <span class="section-count">{{ meta().total }} {{ meta().total === 1 ? 'item encontrado' : 'itens encontrados' }}</span> }
+            <div><span class="section-kicker">CATÁLOGO HAVOC</span><h2>{{ activeCatalogType() === 'kit' ? 'KITS E COMBOS' : activeCatalogType() === 'product' ? 'PRODUTOS' : 'TODOS OS PRODUTOS' }}</h2></div>
+            @if (!isLoadingCatalog() && !catalogError()) { <span class="section-count">{{ meta().total }} {{ meta().total === 1 ? 'item' : 'itens' }}</span> }
           </div>
           @if (isLoadingCatalog()) {
             <div class="catalog-grid">
-              @for (i of [1,2,3,4,5,6]; track i) { <div class="product-skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-text-lg"></div><div class="skeleton-text-sm"></div><div class="skeleton-price"></div><div class="skeleton-btn"></div></div></div> }
+              @for (i of [1,2,3,4,5,6]; track i) { <div class="product-skeleton-card"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-text-lg"></div><div class="skeleton-text-sm"></div><div class="skeleton-price"></div></div></div> }
             </div>
           } @else if (catalogError()) {
-            <div class="empty-catalog error-state"><div class="empty-icon-wrap"><lucide-icon name="alert-triangle"></lucide-icon></div><h3>Não foi possível carregar o catálogo</h3><p>Verifique sua conexão e tente novamente.</p><button class="ui-btn ui-btn--primary" (click)="retryCatalog()">Tentar novamente</button></div>
+            <div class="empty-catalog error-state"><div class="empty-icon-wrap"><lucide-icon name="alert-triangle"></lucide-icon></div><h3>Não foi possível carregar o catálogo</h3><p>Verifique sua conexão e tente novamente.</p><button type="button" class="ui-btn ui-btn--primary" (click)="retryCatalog()">Tentar novamente</button></div>
           } @else if (catalog().length === 0) {
-            <div class="empty-catalog"><div class="empty-icon-wrap"><lucide-icon name="search"></lucide-icon></div><h3>Nenhum item encontrado</h3><p>Tente ajustar a busca ou limpar os filtros de categoria.</p><button class="ui-btn ui-btn--primary" (click)="clearSearch(); setCategory('')">Ver Todos os Produtos</button></div>
+            <div class="empty-catalog"><div class="empty-icon-wrap"><lucide-icon name="search"></lucide-icon></div><h3>Nenhum item encontrado</h3><p>Tente ajustar a busca ou limpar os filtros de categoria.</p><button type="button" class="ui-btn ui-btn--primary" (click)="clearSearch(); setCategory('')">Ver Todos os Produtos</button></div>
           } @else {
             <div class="catalog-grid">
               @for (item of catalog(); track item.type + item.id) {
                 <article class="product-card" [class.is-kit-card]="item.type === 'kit'" [class.is-unavailable]="!item.available">
-                  <div class="card-badge" [class.badge-kit]="item.type === 'kit'" [class.badge-unavailable]="!item.available">{{ !item.available ? 'Indisponível' : item.type === 'kit' ? 'Kit especial' : 'Disponível' }}</div>
-                  <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
-                    @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
-                    @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
-                  </a>
-                  <div class="card-body">
-                    <span class="card-category">{{ item.type === 'kit' ? 'COMBO PROMOCIONAL' : (item.categories[0]?.name || 'PRODUTO') }}</span>
-                    <h3 class="card-title" [title]="item.name">{{ item.name }}</h3>
-                    @if (item.description) { <p class="card-desc">{{ item.description }}</p> }
-                    <div class="price-container"><div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div></div>
-                    <div class="card-actions"><a class="btn-details" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">Ver detalhes</a><button class="btn-add-cart" (click)="addToCart(item)" [disabled]="!item.available" [attr.aria-label]="item.available ? 'Adicionar ' + item.name + ' ao carrinho' : item.name + ' indisponível'"><lucide-icon name="plus" class="btn-icon-xs"></lucide-icon><span>{{ item.available ? 'Adicionar' : 'Indisponível' }}</span></button></div>
+                  <div class="card-img-stage">
+                    @if (!item.available) {
+                      <span class="card-discount-badge is-unavailable">ESGOTADO</span>
+                    } @else if (discountPercent(item); as pct) {
+                      <span class="card-discount-badge">-{{ pct }}%</span>
+                    } @else if (item.type === 'kit') {
+                      <span class="card-discount-badge">COMBO</span>
+                    }
+
+                    @if (item.type === 'kit') {
+                      <span class="card-variant-tag">KIT</span>
+                    } @else if (item.sizeLabel) {
+                      <span class="card-variant-tag">{{ item.sizeLabel }}</span>
+                    }
+
+                    <a class="card-img-wrap" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                      @if (item.imageUrl) { <img [src]="item.imageUrl" [alt]="item.name" class="product-img" loading="lazy"> }
+                      @else { <div class="product-placeholder-img"><lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'" class="placeholder-icon"></lucide-icon></div> }
+                    </a>
+
+                    <button
+                      type="button"
+                      class="quick-add-fab"
+                      (click)="addToCart(item)"
+                      [disabled]="!item.available"
+                      [attr.aria-label]="item.available ? 'Adicionar ' + item.name + ' ao carrinho' : item.name + ' indisponível'"
+                    >
+                      <lucide-icon name="plus"></lucide-icon>
+                    </button>
                   </div>
+
+                  <a class="card-body" [routerLink]="['/', item.type === 'kit' ? 'kit' : 'produto', item.slug]">
+                    <span class="card-category">{{ itemSubtitle(item) || 'PRODUTO' }}</span>
+                    <h3 class="card-title" [title]="item.name">{{ item.name }}</h3>
+                    <div class="price-container">
+                      @if (itemCompareAtPrice(item); as oldPrice) {
+                        <del class="old-price">R$ {{ oldPrice | number:'1.2-2' }}</del>
+                      }
+                      <div class="current-price"><span class="currency">R$</span><span class="amount">{{ item.price | number:'1.2-2' }}</span></div>
+                    </div>
+                    <span class="card-pay-note">PIX ou cartão · {{ item.available ? 'Pronta entrega' : 'Indisponível' }}</span>
+                  </a>
                 </article>
               }
             </div>
             @if (meta().totalPages > 1) {
-              <nav class="catalog-pagination" aria-label="Paginação do catálogo"><button (click)="goToPage(page() - 1)" [disabled]="page() === 1"><lucide-icon name="chevron-left"></lucide-icon><span>Anterior</span></button><div class="page-numbers">@for (pageNumber of pageNumbers(); track pageNumber) { <button (click)="goToPage(pageNumber)" [class.active]="pageNumber === page()" [attr.aria-current]="pageNumber === page() ? 'page' : null">{{ pageNumber }}</button> }</div><span class="mobile-page-status">Página {{ page() }} de {{ meta().totalPages }}</span><button (click)="goToPage(page() + 1)" [disabled]="page() === meta().totalPages"><span>Próximo</span><lucide-icon name="chevron-right"></lucide-icon></button></nav>
+              <nav class="catalog-pagination" aria-label="Paginação do catálogo"><button type="button" (click)="goToPage(page() - 1)" [disabled]="page() === 1"><lucide-icon name="chevron-left"></lucide-icon><span>Anterior</span></button><div class="page-numbers">@for (pageNumber of pageNumbers(); track pageNumber) { <button type="button" (click)="goToPage(pageNumber)" [class.active]="pageNumber === page()" [attr.aria-current]="pageNumber === page() ? 'page' : null">{{ pageNumber }}</button> }</div><span class="mobile-page-status">Página {{ page() }} de {{ meta().totalPages }}</span><button type="button" (click)="goToPage(page() + 1)" [disabled]="page() === meta().totalPages"><span>Próximo</span><lucide-icon name="chevron-right"></lucide-icon></button></nav>
             }
           }
         </div>
@@ -376,7 +564,11 @@
                     <span>Receba em casa com envio rápido</span>
                     <span class="shipping-tag">
                       @if (selectedShippingRegion(); as rule) {
-                        R${{ rule.price | number:'1.2-2' }} • {{ rule.region }}
+                        @if (hasFreeShipping() && isFreeShippingEligibleRegion()) {
+                          GRÁTIS (Sede ≥ R$300) • {{ rule.region }}
+                        } @else {
+                          R${{ rule.price | number:'1.2-2' }} • {{ rule.region }}
+                        }
                       } @else {
                         Selecione seu bairro
                       }
@@ -785,7 +977,11 @@
           @if (deliveryMethod() === 'PICKUP') {
             <span class="text-success font-bold">GRÁTIS</span>
           } @else if (selectedShippingRegion() || isCustomNeighborhood()) {
-            <span>R${{ effectiveShipping() | number:'1.2-2' }}</span>
+            @if (hasFreeShipping() && isFreeShippingEligibleRegion()) {
+              <span class="text-success font-bold">GRÁTIS (Camaçari Sede)</span>
+            } @else {
+              <span>R${{ effectiveShipping() | number:'1.2-2' }}</span>
+            }
           } @else {
             <span>A calcular</span>
           }
@@ -841,15 +1037,34 @@
   @if (isCartDrawerOpen()) {
     <div class="drawer-overlay" (click)="toggleCartDrawer()">
       <div class="drawer-container" (click)="$event.stopPropagation()">
-        
+
         <div class="drawer-header">
           <div class="drawer-title-wrap">
-            <lucide-icon name="shopping-bag" class="text-yellow"></lucide-icon>
-            <h3>Seu Pedido ({{ cartCount() }})</h3>
+            <h3>CARRINHO</h3>
+            <span class="drawer-count-pill">{{ cartCount() }}</span>
           </div>
-          <button class="btn-close-drawer" (click)="toggleCartDrawer()">
+          <button type="button" class="btn-close-drawer" (click)="toggleCartDrawer()" aria-label="Fechar carrinho">
             <lucide-icon name="x"></lucide-icon>
           </button>
+        </div>
+
+        <div class="drawer-free-shipping-box">
+          <div class="fs-copy">
+            @if (hasFreeShipping()) {
+              <strong>VOCÊ GANHOU <span class="fs-accent">FRETE GRÁTIS</span> EM CAMAÇARI SEDE!</strong>
+            } @else {
+              <span>FALTAM <strong class="fs-accent">R$ {{ freeShippingRemaining() | number:'1.2-2' }}</strong> PARA O <strong class="fs-accent">FRETE GRÁTIS</strong></span>
+            }
+          </div>
+          <div class="fs-progress-row">
+            <div class="fs-track">
+              <div class="fs-fill" [style.width.%]="freeShippingProgress()"></div>
+            </div>
+            <span class="fs-milestone" [class.reached]="hasFreeShipping()">
+              <lucide-icon name="truck"></lucide-icon>
+            </span>
+          </div>
+          <span class="fs-caption">CAMAÇARI SEDE (FRETE ATÉ R$ 15) · PEDIDOS A PARTIR DE R$ 300</span>
         </div>
 
         <div class="drawer-body">
@@ -858,7 +1073,7 @@
               <lucide-icon name="shopping-cart" class="empty-drawer-icon"></lucide-icon>
               <h4>Seu carrinho está vazio</h4>
               <p>Adicione suplementos ou kits para iniciar seu pedido.</p>
-              <button class="ui-btn ui-btn--primary" (click)="toggleCartDrawer()">
+              <button type="button" class="ui-btn ui-btn--primary" (click)="toggleCartDrawer()">
                 Explorar Catálogo
               </button>
             </div>
@@ -866,7 +1081,7 @@
             <div class="cart-items-list">
               @for (item of cart(); track item.type + item.id) {
                 <div class="cart-item-card">
-                  
+
                   <div class="cart-item-img-wrap">
                     @if (item.imageUrl) {
                       <img [src]="item.imageUrl" [alt]="item.name">
@@ -876,25 +1091,32 @@
                   </div>
 
                   <div class="cart-item-info">
-                    <h4 class="cart-item-title">{{ item.name }}</h4>
-                    <span class="cart-item-unit-price">R${{ item.price | number:'1.2-2' }} cada</span>
-                    
+                    <div class="cart-item-top-row">
+                      <h4 class="cart-item-title">{{ item.name }}</h4>
+                      <span class="cart-item-total">R$ {{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+                    </div>
+                    @if (cartItemSubtitle(item); as subtitle) {
+                      <span class="cart-item-meta">{{ subtitle | uppercase }}</span>
+                    }
+                    <div class="cart-item-prices-row">
+                      <span class="cart-item-unit-price">R$ {{ item.price | number:'1.2-2' }}</span>
+                      @if (item.compareAtPrice && item.compareAtPrice > item.price) {
+                        <del class="cart-item-old-price">R$ {{ item.compareAtPrice | number:'1.2-2' }}</del>
+                      }
+                    </div>
+
                     <div class="cart-stepper-wrap">
                       <div class="stepper">
-                        <button (click)="updateQuantity(item.id, item.type, item.quantity - 1)" [disabled]="item.quantity <= 1">
+                        <button type="button" (click)="updateQuantity(item.id, item.type, item.quantity - 1)" [disabled]="item.quantity <= 1" aria-label="Diminuir">
                           <lucide-icon name="minus"></lucide-icon>
                         </button>
                         <span>{{ item.quantity }}</span>
-                        <button (click)="updateQuantity(item.id, item.type, item.quantity + 1)">
+                        <button type="button" (click)="updateQuantity(item.id, item.type, item.quantity + 1)" aria-label="Aumentar">
                           <lucide-icon name="plus"></lucide-icon>
                         </button>
                       </div>
 
-                      <span class="cart-item-total">
-                        R${{ (item.price * item.quantity) | number:'1.2-2' }}
-                      </span>
-
-                      <button class="btn-remove-item" (click)="removeFromCart(item.id, item.type)" title="Remover">
+                      <button type="button" class="btn-remove-item" (click)="removeFromCart(item.id, item.type)" title="Remover">
                         <lucide-icon name="trash-2"></lucide-icon>
                       </button>
                     </div>
@@ -903,22 +1125,55 @@
                 </div>
               }
             </div>
+
+            @if (crossSellItems().length > 0) {
+              <div class="drawer-cross-sell">
+                <div class="cross-sell-head">
+                  <span class="cross-sell-dash"></span>
+                  <span>LEVE JUNTO</span>
+                </div>
+                <div class="cross-sell-track">
+                  @for (extra of crossSellItems(); track extra.type + extra.id) {
+                    <article class="cross-sell-card">
+                      <div class="cross-sell-img">
+                        @if (discountPercent(extra); as pct) {
+                          <span class="cross-sell-badge">-{{ pct }}%</span>
+                        }
+                        @if (extra.imageUrl) {
+                          <img [src]="extra.imageUrl" [alt]="extra.name">
+                        } @else {
+                          <lucide-icon [name]="extra.type === 'kit' ? 'gift' : 'package'"></lucide-icon>
+                        }
+                        <button type="button" class="cross-sell-add" (click)="addToCart(extra)" [attr.aria-label]="'Adicionar ' + extra.name">
+                          <lucide-icon name="plus"></lucide-icon>
+                        </button>
+                      </div>
+                      <h5 class="cross-sell-title">{{ extra.name }}</h5>
+                      <span class="cross-sell-price">R$ {{ extra.price | number:'1.2-2' }}</span>
+                    </article>
+                  }
+                </div>
+              </div>
+            }
           }
         </div>
 
         @if (cart().length > 0) {
           <div class="drawer-footer">
             <div class="drawer-subtotal-row">
-              <span>Subtotal:</span>
-              <strong>R${{ subtotal() | number:'1.2-2' }}</strong>
+              <div>
+                <span>Total estimado</span>
+                <small>Frete grátis a partir de R$ 300 em Camaçari Sede</small>
+              </div>
+              <strong>R$ {{ subtotal() | number:'1.2-2' }}</strong>
             </div>
 
-            <button 
-              class="btn-checkout-drawer" 
+            <button
+              type="button"
+              class="btn-checkout-drawer"
               (click)="toggleCartDrawer(); goToStep(2)"
             >
-              <span>Continuar Pedido</span>
-              <lucide-icon name="arrow-right" class="btn-icon-xs"></lucide-icon>
+              <span>FINALIZAR COMPRA</span>
             </button>
           </div>
         }

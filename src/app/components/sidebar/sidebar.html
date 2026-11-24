@@ -1,96 +1,129 @@
 <aside class="sidebar" [class.collapsed]="isCollapsed()" [class.mobile-open]="isMobileOpen()">
+  <div class="brand">
+    @if (isCollapsed()) {
+      <img src="/HavocV1.png" class="brand-icon" alt="Ícone Havoc" />
+    } @else {
+      <img src="/HavocV1.png" class="brand-full" alt="Logo Havoc" />
+    }
+  </div>
 
-    <div class="brand">
-        @if (isCollapsed()) {
-        <img src="/HavocV1.png" class="brand-icon" alt="Ícone Havoc">
-        } @else {
-        <img src="/HavocV1.png" class="brand-full" alt="Logo Havoc">
-        }
-    </div>
-
-    <div class="menu-section">
-        @if (!isCollapsed()) { <span class="section-title">Visão Geral</span> }
-        <nav class="nav-group">
-            <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
-                <lucide-icon name="layout-dashboard" class="sidebar-icon"></lucide-icon>
-                @if (!isCollapsed()) { <span class="label">Dashboard</span> }
-            </a>
-        </nav>
-    </div>
-
-    <div class="menu-section">
-        @if (!isCollapsed()) { <span class="section-title">Operação</span> }
-        <nav class="nav-group">
-
-
-
-            <a routerLink="/loja" target="_blank" class="menu-item highlight-store">
-                <lucide-icon name="shopping-bag" class="sidebar-icon text-yellow"></lucide-icon>
-                @if (!isCollapsed()) { <span class="label">Loja & Checkout</span> }
-            </a>
-
-            <a routerLink="/orders" routerLinkActive="active" class="menu-item">
-                <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
-                @if (!isCollapsed()) { <span class="label">Fila de Pedidos</span> }
-            </a>
-
-            <div class="menu-group">
-                <a class="menu-item cursor-pointer" [class.active]="isCatalogRoute()" (click)="toggleCatalog()">
-                    <lucide-icon name="package" class="sidebar-icon"></lucide-icon>
-                    @if (!isCollapsed()) {
-                    <span class="label" style="flex: 1;">Catálogo</span>
-                    <lucide-icon [name]="isCatalogOpen() ? 'chevron-down' : 'chevron-right'"
-                        class="w-4 h-4"></lucide-icon>
-                    }
-                </a>
-
-                @if (!isCollapsed() && (isCatalogOpen() || isCatalogRoute())) {
-                <div class="submenu">
-                    <a routerLink="/catalog/products" routerLinkActive="active" class="submenu-item">
-                        Produtos
-                    </a>
-
-                    <a routerLink="/catalog/categories" routerLinkActive="active" class="submenu-item">
-                        Categorias
-                    </a>
-
-                    <a routerLink="/catalog/kits" routerLinkActive="active" class="submenu-item">
-                        Kits
-                    </a>
-                </div>
-                }
-            </div>
-
-
-            <a routerLink="/whatsapp" routerLinkActive="active" class="menu-item">
-                <lucide-icon name="message-square" class="sidebar-icon"></lucide-icon>
-                @if (!isCollapsed()) { <span class="label">Atendimento IA</span> }
-            </a>
-        </nav>
-    </div>
-
-    <div class="menu-section">
-        @if (!isCollapsed()) { <span class="section-title">Sistema</span> }
-        <nav class="nav-group">
-            <a routerLink="/settings" routerLinkActive="active" class="menu-item">
-                <lucide-icon name="settings" class="sidebar-icon"></lucide-icon>
-                @if (!isCollapsed()) { <span class="label">Configurações</span> }
-            </a>
-        </nav>
-    </div>
-
-    <div class="spacer"></div>
-
-    <div class="sidebar-footer">
-        <div class="user-badge">{{ getInitials() }}</div>
+  <div class="menu-section">
+    @if (!isCollapsed()) {
+      <span class="section-title">Visão Geral</span>
+    }
+    <nav class="nav-group">
+      <a routerLink="/dashboard" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="layout-dashboard" class="sidebar-icon"></lucide-icon>
         @if (!isCollapsed()) {
-        <div class="user-info">
-            <span class="user-name">{{ authService.currentUser()?.name || 'Administrador' }}</span>
-            <span class="user-role">{{ authService.currentUser()?.role || 'Admin' }}</span>
-        </div>
-        <button class="btn-logout" title="Sair do sistema" (click)="fazerLogout()">
-            <lucide-icon name="log-out" [size]="18"></lucide-icon>
-        </button>
+          <span class="label">Dashboard</span>
         }
-    </div>
+      </a>
+    </nav>
+  </div>
+
+  <div class="menu-section">
+    @if (!isCollapsed()) {
+      <span class="section-title">Operação</span>
+    }
+    <nav class="nav-group">
+      @if (authService.currentUser()?.role !== 'VISUALIZADOR') {
+        <a routerLink="/pos" routerLinkActive="active" class="menu-item highlight-pos">
+          <lucide-icon name="shopping-cart" class="sidebar-icon"></lucide-icon>
+          @if (!isCollapsed()) {
+            <span class="label">PDV / Caixa</span>
+          }
+        </a>
+      }
+
+      <a routerLink="/loja" target="_blank" class="menu-item highlight-store">
+        <lucide-icon name="shopping-bag" class="sidebar-icon text-yellow"></lucide-icon>
+        @if (!isCollapsed()) {
+          <span class="label">Loja & Checkout</span>
+        }
+      </a>
+
+      <a routerLink="/orders" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="trello" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) {
+          <span class="label">Fila de Pedidos</span>
+        }
+      </a>
+
+      @if (authService.currentUser()?.role !== 'VISUALIZADOR') {
+        <a routerLink="/fiscal/documents" routerLinkActive="active" class="menu-item">
+          <lucide-icon name="file-text" class="sidebar-icon"></lucide-icon>
+          @if (!isCollapsed()) {
+            <span class="label">Documentos Fiscais</span>
+          }
+        </a>
+      }
+
+      <div class="menu-group">
+        <a
+          class="menu-item cursor-pointer"
+          [class.active]="isCatalogRoute()"
+          (click)="toggleCatalog()"
+        >
+          <lucide-icon name="package" class="sidebar-icon"></lucide-icon>
+          @if (!isCollapsed()) {
+            <span class="label" style="flex: 1">Catálogo</span>
+            <lucide-icon
+              [name]="isCatalogOpen() ? 'chevron-down' : 'chevron-right'"
+              class="w-4 h-4"
+            ></lucide-icon>
+          }
+        </a>
+
+        @if (!isCollapsed() && (isCatalogOpen() || isCatalogRoute())) {
+          <div class="submenu">
+            <a routerLink="/catalog/products" routerLinkActive="active" class="submenu-item">
+              Produtos
+            </a>
+
+            <a routerLink="/catalog/categories" routerLinkActive="active" class="submenu-item">
+              Categorias
+            </a>
+
+            <a routerLink="/catalog/kits" routerLinkActive="active" class="submenu-item"> Kits </a>
+          </div>
+        }
+      </div>
+
+      <a routerLink="/whatsapp" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="message-square" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) {
+          <span class="label">Atendimento IA</span>
+        }
+      </a>
+    </nav>
+  </div>
+
+  <div class="menu-section">
+    @if (!isCollapsed()) {
+      <span class="section-title">Sistema</span>
+    }
+    <nav class="nav-group">
+      <a routerLink="/settings" routerLinkActive="active" class="menu-item">
+        <lucide-icon name="settings" class="sidebar-icon"></lucide-icon>
+        @if (!isCollapsed()) {
+          <span class="label">Configurações</span>
+        }
+      </a>
+    </nav>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="sidebar-footer">
+    <div class="user-badge">{{ getInitials() }}</div>
+    @if (!isCollapsed()) {
+      <div class="user-info">
+        <span class="user-name">{{ authService.currentUser()?.name || 'Administrador' }}</span>
+        <span class="user-role">{{ authService.currentUser()?.role || 'Admin' }}</span>
+      </div>
+      <button class="btn-logout" title="Sair do sistema" (click)="fazerLogout()">
+        <lucide-icon name="log-out" [size]="18"></lucide-icon>
+      </button>
+    }
+  </div>
 </aside>

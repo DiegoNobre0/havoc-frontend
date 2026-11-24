@@ -10,7 +10,9 @@ describe('CatalogService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(CatalogService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -30,12 +32,23 @@ describe('CatalogService', () => {
       unit: 'UN',
       ncm: '',
       cfop: '',
+      cest: '',
+      origin: 0,
+      csosn: '102',
+      pisCst: '99',
+      cofinsCst: '99',
+      taxableUnit: 'UN',
       isActive: true,
       manufacturer: 'Marca',
+      sku: 'CREATINA-300',
+      barcodes: ['7891234567895'],
+      controlsBatch: false,
     };
 
     let status: string | null | undefined;
-    service.createProduct(payload).subscribe((product) => status = product.supplementFacts?.status);
+    service
+      .createProduct(payload)
+      .subscribe((product) => (status = product.supplementFacts?.status));
 
     const request = http.expectOne((candidate) => candidate.url.endsWith('/catalog/products'));
     expect(request.request.method).toBe('POST');
@@ -55,5 +68,32 @@ describe('CatalogService', () => {
     });
 
     expect(status).toBe('PENDING');
+  });
+
+  it('sends the low-stock filter and integrates stock endpoints', () => {
+    service.getProducts({ lowStock: true }).subscribe();
+    const productsRequest = http.expectOne((candidate) =>
+      candidate.url.endsWith('/catalog/products'),
+    );
+    expect(productsRequest.request.params.get('lowStock')).toBe('true');
+    productsRequest.flush({
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 1, lowStockCount: 4 },
+    });
+
+    service.createStockMovement('product-1', { operation: 'ADJUST', quantity: 7 }).subscribe();
+    const movementRequest = http.expectOne((candidate) =>
+      candidate.url.endsWith('/products/product-1/stock-movements'),
+    );
+    expect(movementRequest.request.method).toBe('POST');
+    expect(movementRequest.request.body).toEqual({ operation: 'ADJUST', quantity: 7 });
+    movementRequest.flush({ id: 'movement-1', operation: 'ADJUST', quantity: 7 });
+
+    service.getStockSummary().subscribe();
+    const summaryRequest = http.expectOne((candidate) =>
+      candidate.url.endsWith('/catalog/stock/summary'),
+    );
+    expect(summaryRequest.request.method).toBe('GET');
+    summaryRequest.flush({ lowStockCount: 4, expiredBatchCount: 1, expiringBatchCount: 2 });
   });
 });

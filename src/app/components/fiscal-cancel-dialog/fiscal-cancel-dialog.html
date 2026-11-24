@@ -1,0 +1,36 @@
+<section class="fiscal-cancel-dialog">
+  <header class="dialog-header">
+    <span class="dialog-icon"><lucide-icon name="file-x-2"></lucide-icon></span>
+    <div>
+      <h2>Cancelar NFC-e</h2>
+      <p>Informe a justificativa que será enviada à SEFAZ.</p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label for="fiscal-cancel-justification">Justificativa</label>
+    <textarea
+      id="fiscal-cancel-justification"
+      class="ui-textarea"
+      formControlName="justification"
+      maxlength="255"
+      rows="5"
+      placeholder="Descreva o motivo do cancelamento"
+    ></textarea>
+    <div class="field-meta">
+      <span>
+        @if (justification.touched && justification.hasError('trimmedMinlength')) {
+          A justificativa deve ter entre 15 e 255 caracteres, sem contar espaços nas extremidades.
+        } @else if (justification.touched && justification.hasError('maxlength')) {
+          A justificativa deve ter no máximo 255 caracteres.
+        }
+      </span>
+      <small [class.limit-reached]="characterCount >= 255">{{ characterCount }}/255</small>
+    </div>
+
+    <div class="dialog-actions">
+      <button type="button" class="ui-btn ui-btn--secondary" (click)="cancel()">Voltar</button>
+      <button type="submit" class="ui-btn ui-btn--danger">Continuar</button>
+    </div>
+  </form>
+</section>

@@ -95,7 +95,38 @@ export class CheckoutComponent implements OnInit {
   readonly cart = this.cartService.items;
   readonly cartCount = this.cartService.count;
   readonly subtotal = this.cartService.subtotal;
+  readonly FREE_SHIPPING_THRESHOLD = 300;
+  readonly FREE_SHIPPING_MAX_REGION_COST = 15;
   isCartDrawerOpen = signal<boolean>(false);
+  isMenuDrawerOpen = signal<boolean>(false);
+  isSearchBarOpen = signal<boolean>(false);
+
+  hasFreeShipping = computed(() => this.subtotal() >= this.FREE_SHIPPING_THRESHOLD);
+  freeShippingRemaining = computed(() => Math.max(0, this.FREE_SHIPPING_THRESHOLD - this.subtotal()));
+  freeShippingProgress = computed(() =>
+    Math.min(100, (this.subtotal() / this.FREE_SHIPPING_THRESHOLD) * 100),
+  );
+  isFreeShippingEligibleRegion = computed(() => {
+    const region = this.selectedShippingRegion();
+    return Boolean(
+      region &&
+        !this.isCustomNeighborhood() &&
+        Number(region.price) <= this.FREE_SHIPPING_MAX_REGION_COST,
+    );
+  });
+  crossSellItems = computed<StorefrontItem[]>(() => {
+    const inCartKeys = new Set(this.cart().map((entry) => `${entry.type}:${entry.id}`));
+    const seen = new Set<string>();
+    const combined: StorefrontItem[] = [];
+    for (const candidate of [...this.bestSellers(), ...this.catalog()]) {
+      const key = `${candidate.type}:${candidate.id}`;
+      if (!candidate.available || inCartKeys.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      combined.push(candidate);
+      if (combined.length >= 6) break;
+    }
+    return combined;
+  });
 
   // ─── ENTREGA E PAGAMENTO ────────────────────────────────────
   deliveryMethod = signal<DeliveryMethod>('DELIVERY');
@@ -162,6 +193,7 @@ export class CheckoutComponent implements OnInit {
 
   effectiveShipping = computed(() => {
     if (this.deliveryMethod() === 'PICKUP') return 0;
+    if (this.hasFreeShipping() && this.isFreeShippingEligibleRegion()) return 0;
     return this.shippingCost();
   });
 
@@ -373,7 +405,69 @@ export class CheckoutComponent implements OnInit {
   }
 
   toggleCartDrawer(): void {
+    this.isMenuDrawerOpen.set(false);
     this.isCartDrawerOpen.update(v => !v);
+  }
+
+  toggleMenuDrawer(): void {
+    this.isCartDrawerOpen.set(false);
+    this.isMenuDrawerOpen.update(v => !v);
+  }
+
+  closeMenuDrawer(): void {
+    this.isMenuDrawerOpen.set(false);
+  }
+
+  toggleSearchBar(): void {
+    this.isSearchBarOpen.update(v => !v);
+  }
+
+  selectFromMenu(categoryId: string, type: 'all' | StorefrontItemType = 'all'): void {
+    this.activeCatalogType.set(type);
+    this.selectedCategoryId.set(categoryId);
+    this.page.set(1);
+    this.isMenuDrawerOpen.set(false);
+    this.currentStep.set(1);
+    this.catalogRequests.next();
+    setTimeout(() =>
+      this.catalogSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    );
+  }
+
+  itemCompareAtPrice(item: StorefrontItem): number | null {
+    const compareAt = item.type === 'product' ? item.compareAtPrice : item.originalPrice;
+    if (typeof compareAt !== 'number' || !Number.isFinite(compareAt) || compareAt <= item.price) {
+      return null;
+    }
+    return compareAt;
+  }
+
+  discountPercent(item: StorefrontItem): number | null {
+    const compareAt = this.itemCompareAtPrice(item);
+    if (!compareAt) return null;
+    const pct = Math.round(((compareAt - item.price) / compareAt) * 100);
+    return pct >= 1 ? pct : null;
+  }
+
+  itemSubtitle(item: StorefrontItem): string | null {
+    if (item.type === 'kit') return 'COMBO PROMOCIONAL';
+    const parts = [item.brand, item.flavor, item.sizeLabel].filter(
+      (part): part is string => typeof part === 'string' && part.trim().length > 0,
+    );
+    if (parts.length > 0) return parts.join(' · ');
+    return item.categories[0]?.name ?? null;
+  }
+
+  cartItemSubtitle(item: {
+    type: 'product' | 'kit';
+    sizeLabel?: string | null;
+    flavor?: string | null;
+  }): string | null {
+    if (item.type === 'kit') return 'KIT PROMOCIONAL';
+    const parts = [item.flavor, item.sizeLabel].filter(
+      (part): part is string => typeof part === 'string' && part.trim().length > 0,
+    );
+    return parts.length > 0 ? parts.join(' · ') : null;
   }
 
   selectShippingRegion(ruleId: string): void {

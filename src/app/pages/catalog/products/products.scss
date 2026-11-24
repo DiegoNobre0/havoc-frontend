@@ -44,12 +44,30 @@
 }
 
 // ─── Alerta de Estoque Baixo ──────────────────────────────────
+.stock-alerts {
+  display: flex;
+  gap: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+
 .alert {
   display: flex;
   align-items: center;
   gap: var(--ui-space-3);
   padding: var(--ui-space-3) var(--ui-space-4);
   border-radius: var(--ui-radius-md);
+  flex: 1 1 300px;
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-size: 0.875rem;
+    margin: 0;
+  }
 
   &--warning {
     background: var(--ui-warning-bg);
@@ -85,6 +103,12 @@
         color: var(--ui-primary-hover);
       }
     }
+  }
+
+  &--batches {
+    background: var(--ui-danger-bg);
+    border: 1px solid var(--ui-danger-border);
+    color: var(--ui-danger);
   }
 }
 
@@ -152,13 +176,21 @@
   &__head th {
     white-space: nowrap;
 
-    &--center { text-align: center; }
-    &--right { text-align: right; }
+    &--center {
+      text-align: center;
+    }
+    &--right {
+      text-align: right;
+    }
   }
 
   &__td {
-    &--center { text-align: center; }
-    &--right { text-align: right; }
+    &--center {
+      text-align: center;
+    }
+    &--right {
+      text-align: right;
+    }
 
     &:last-child {
       width: 1%;
@@ -345,8 +377,13 @@
 .modal-card {
   @include ui-modal-card;
 
-  &--sm { max-width: 28rem; }
-  &--lg { max-width: 660px; max-height: 90vh; }
+  &--sm {
+    max-width: 28rem;
+  }
+  &--lg {
+    max-width: 660px;
+    max-height: 90vh;
+  }
 }
 
 .modal-header {
@@ -551,6 +588,30 @@
   }
 }
 
+.barcode-lookup-row {
+  display: flex;
+  gap: var(--ui-space-2);
+  align-items: center;
+}
+
+.barcode-lookup-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.barcode-source-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.14);
+  font-size: 0.75rem;
+}
+
+.barcode-facts-wide {
+  grid-column: 1 / -1;
+}
+
 .sync-feedback {
   display: flex;
   align-items: center;
@@ -626,7 +687,9 @@
   border-radius: var(--ui-radius-md);
   overflow: hidden;
   height: 44px;
-  transition: border-color var(--ui-transition), box-shadow var(--ui-transition);
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
 
   &:focus-within {
     border-color: var(--ui-primary);
@@ -901,7 +964,7 @@
 
 .op-selector {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: var(--ui-space-2);
 
   &__btn {
@@ -928,6 +991,32 @@
   }
 }
 
+.stock-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-space-2);
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface-2);
+  color: var(--ui-text-secondary);
+  font-size: 0.8125rem;
+
+  &__icon {
+    width: 17px;
+    height: 17px;
+    color: var(--ui-primary);
+    flex-shrink: 0;
+  }
+}
+
+.batch-fields {
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-warning-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-warning-bg);
+}
+
 .modal-actions {
   display: flex;
   gap: var(--ui-space-3);
@@ -948,8 +1037,12 @@
     border-radius: var(--ui-radius-md);
   }
 
-  &--text-md { width: 8rem; }
-  &--text-xs { height: 0.75rem; }
+  &--text-md {
+    width: 8rem;
+  }
+  &--text-xs {
+    height: 0.75rem;
+  }
   &--text-sm {
     width: 2.5rem;
     margin: 0 auto;
@@ -966,7 +1059,9 @@
     margin-left: auto;
     height: 1.25rem;
   }
-  &--centered { margin: 0 auto; }
+  &--centered {
+    margin: 0 auto;
+  }
 }
 
 .skeleton-row {
@@ -985,7 +1080,9 @@
   display: flex !important;
   align-items: center !important;
   font-family: var(--ui-font) !important;
-  transition: border-color var(--ui-transition), box-shadow var(--ui-transition);
+  transition:
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
 
   &:focus,
   &.mat-mdc-select-focused {
@@ -1006,6 +1103,24 @@
 }
 
 @media (max-width: 560px) {
+  .page-header__actions,
+  .page-header__actions button {
+    width: 100%;
+  }
+
+  .modal-card {
+    max-height: 96vh;
+  }
+
+  .modal-form,
+  .product-form {
+    padding: var(--ui-space-4);
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
   .official-data__heading {
     flex-direction: column;
   }

@@ -1,4 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import {
+  ArrowRight,
+  ExternalLink,
+  LucideAngularModule,
+  MapPin,
+  ShoppingBag,
+  User,
+} from 'lucide-angular';
 
 import { BioLinksComponent } from './bio-links';
 
@@ -8,9 +17,12 @@ describe('BioLinks', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BioLinksComponent]
-    })
-    .compileComponents();
+      imports: [
+        BioLinksComponent,
+        LucideAngularModule.pick({ ArrowRight, ExternalLink, MapPin, ShoppingBag, User }),
+      ],
+      providers: [provideRouter([])],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BioLinksComponent);
     component = fixture.componentInstance;

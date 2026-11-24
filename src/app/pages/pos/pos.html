@@ -1,0 +1,741 @@
+<div class="pos-page">
+  <header class="pos-titlebar">
+    <div>
+      <div class="title-row">
+        <span class="title-icon"><lucide-icon name="scan-barcode"></lucide-icon></span>
+        <div>
+          <h1 class="ui-heading-xl">PDV / Caixa</h1>
+          <p class="ui-body-sm">Venda rápida de produtos e kits no balcão.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  @if (isLoadingSession()) {
+    <section class="session-loading ui-card">
+      <lucide-icon name="loader-circle" class="spin"></lucide-icon>
+      <span>Consultando sessão de caixa...</span>
+    </section>
+  } @else if (session(); as currentSession) {
+    <section class="session-card ui-card ui-card--success">
+      <div class="session-main">
+        <div class="session-status">
+          <span class="status-pulse"></span>
+          <div>
+            <span class="ui-badge ui-badge--success">Caixa aberto</span>
+            <strong>{{ operatorName() }}</strong>
+          </div>
+        </div>
+        <div class="session-stat">
+          <span>Aberto em</span>
+          <strong>{{ formatDate(currentSession.openedAt) }}</strong>
+        </div>
+        <div class="session-stat">
+          <span>Saldo inicial</span>
+          <strong>{{ formatCurrency(currentSession.openingBalance) }}</strong>
+        </div>
+        <div class="session-stat expected-stat">
+          <span>Saldo esperado</span>
+          <strong>{{ formatCurrency(expectedBalance()) }}</strong>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button
+          type="button"
+          class="ui-btn ui-btn--secondary ui-btn--sm"
+          (click)="openModal('supply')"
+        >
+          <lucide-icon name="arrow-down-to-line"></lucide-icon>
+          Suprimento
+        </button>
+        <button
+          type="button"
+          class="ui-btn ui-btn--secondary ui-btn--sm"
+          (click)="openModal('withdrawal')"
+        >
+          <lucide-icon name="arrow-up-from-line"></lucide-icon>
+          Sangria
+        </button>
+        <button type="button" class="ui-btn ui-btn--danger ui-btn--sm" (click)="openModal('close')">
+          <lucide-icon name="lock"></lucide-icon>
+          Fechar caixa
+        </button>
+      </div>
+    </section>
+
+    <form class="scanner-bar" [formGroup]="scannerForm" (ngSubmit)="submitScanner()">
+      <lucide-icon name="scan-barcode"></lucide-icon>
+      <input
+        #scannerInput
+        class="scanner-input"
+        type="text"
+        formControlName="code"
+        autocomplete="off"
+        placeholder="Leia o código de barras ou digite e pressione Enter"
+        aria-label="Código do scanner"
+      />
+      @if (isResolvingScanner()) {
+        <lucide-icon name="loader-circle" class="spin scanner-loading"></lucide-icon>
+      } @else {
+        <span class="enter-hint">Enter</span>
+      }
+    </form>
+
+    @if (lastSaleNumber(); as saleNumber) {
+      <div class="sale-success" role="status">
+        <span class="success-check"><lucide-icon name="check"></lucide-icon></span>
+        <div class="sale-success__info">
+          <strong>Venda {{ saleNumber }} concluída</strong>
+          @if (fiscalDocument(); as document) {
+            @if (isIssuingFiscal()) {
+              <span
+                ><lucide-icon name="loader-circle" class="spin"></lucide-icon> Processando
+                NFC-e...</span
+              >
+            } @else if (isFiscalCancelled(document)) {
+              <span class="fiscal-cancelled">NFC-e cancelada pela SEFAZ.</span>
+            } @else if (document.cancellationStatus === 'UNKNOWN') {
+              <span class="fiscal-unknown"
+                >Situação do cancelamento desconhecida. Consulte a SEFAZ.</span
+              >
+            } @else if (isFiscalAuthorized(document)) {
+              <span class="fiscal-authorized"
+                >NFC-e autorizada{{ document.number ? ' · Número ' + document.number : '' }}</span
+              >
+              @if (document.accessKey) {
+                <small>Chave: {{ document.accessKey }}</small>
+              }
+            } @else if (isFiscalRejected(document)) {
+              <span class="fiscal-rejected"
+                >NFC-e rejeitada: {{ document.sefazReason || 'Consulte o retorno da SEFAZ.' }}</span
+              >
+            } @else {
+              <span>NFC-e em processamento.</span>
+            }
+          } @else {
+            <span>O caixa está pronto para a próxima venda.</span>
+          }
+        </div>
+        <div class="sale-success__actions">
+          @if (canReconcileFiscal(fiscalDocument())) {
+            <button
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
+              (click)="reconcileFiscal()"
+              [disabled]="isReconcilingFiscal() || isIssuingFiscal() || isRetryingFiscal()"
+            >
+              <lucide-icon
+                [name]="isReconcilingFiscal() ? 'loader-circle' : 'refresh-cw'"
+                [class.spin]="isReconcilingFiscal()"
+              ></lucide-icon>
+              {{ isReconcilingFiscal() ? 'Consultando...' : 'Consultar SEFAZ' }}
+            </button>
+          }
+          @if (!fiscalDocument() && !lastSaleHasKit()) {
+            <button
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
+              (click)="issueNfce()"
+              [disabled]="isIssuingFiscal()"
+            >
+              <lucide-icon name="receipt-text"></lucide-icon> Emitir NFC-e
+            </button>
+          }
+          @if (
+            isFiscalRejected(fiscalDocument()) && fiscalDocument()?.canRetry && !lastSaleHasKit()
+          ) {
+            <button
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
+              (click)="requestFiscalRetry()"
+              [disabled]="isRetryingFiscal() || isIssuingFiscal()"
+            >
+              <lucide-icon
+                [name]="isRetryingFiscal() ? 'loader-circle' : 'rotate-ccw'"
+                [class.spin]="isRetryingFiscal()"
+              ></lucide-icon>
+              {{ isRetryingFiscal() ? 'Reemitindo...' : 'Reemitir NFC-e' }}
+            </button>
+          }
+          @if (isFiscalAuthorized(fiscalDocument()) && !isFiscalCancelled(fiscalDocument())) {
+            <button
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
+              (click)="downloadFiscal('pdf')"
+              [disabled]="!fiscalDocument()?.pdfAvailable || downloadingDocument() !== null"
+            >
+              <lucide-icon name="file-down"></lucide-icon> Baixar DANFC-e
+            </button>
+            <button
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
+              (click)="downloadFiscal('xml')"
+              [disabled]="!fiscalDocument()?.xmlAvailable || downloadingDocument() !== null"
+            >
+              <lucide-icon name="file-code-2"></lucide-icon> Baixar XML
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <main class="pos-grid">
+      <section class="catalog-panel ui-card">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">Catálogo</span>
+            <h2 class="ui-heading-md">Localizar itens</h2>
+          </div>
+        </div>
+
+        <div class="search-box">
+          <lucide-icon name="search"></lucide-icon>
+          <input
+            type="search"
+            class="ui-input"
+            [formControl]="searchControl"
+            placeholder="Buscar por nome, SKU ou código..."
+          />
+          @if (isSearching()) {
+            <lucide-icon name="loader-circle" class="spin"></lucide-icon>
+          }
+        </div>
+
+        @if (searchControl.value.trim().length >= 2) {
+          <div class="results-section">
+            <div class="section-label">
+              <span>Produtos encontrados</span>
+              <span>{{ searchResults().length }}</span>
+            </div>
+            @if (!isSearching() && searchResults().length === 0) {
+              <div class="empty-compact">Nenhum produto encontrado.</div>
+            } @else {
+              <div class="product-results">
+                @for (product of searchResults(); track product.id) {
+                  <button type="button" class="catalog-row" (click)="addProduct(product)">
+                    <span class="item-avatar">
+                      @if (product.imageUrl) {
+                        <img [src]="product.imageUrl" [alt]="product.name" />
+                      } @else {
+                        <lucide-icon name="package"></lucide-icon>
+                      }
+                    </span>
+                    <span class="catalog-info">
+                      <strong>{{ product.name }}</strong>
+                      <small>
+                        {{ product.sku || 'Sem SKU' }}
+                        @if (productStock(product) !== null) {
+                          · Estoque {{ productStock(product) }}
+                        }
+                      </small>
+                    </span>
+                    <strong class="catalog-price">{{ formatCurrency(product.price) }}</strong>
+                    <span class="add-circle"><lucide-icon name="plus"></lucide-icon></span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="search-idle">
+            <lucide-icon name="search"></lucide-icon>
+            <strong>Busca manual</strong>
+            <span>Digite pelo menos 2 caracteres para consultar produtos.</span>
+          </div>
+        }
+
+        <div class="kits-section">
+          <div class="section-label">
+            <span><lucide-icon name="gift"></lucide-icon> Kits disponíveis</span>
+            <span>{{ kits().length }}</span>
+          </div>
+          @if (isLoadingKits()) {
+            <div class="empty-compact">
+              <lucide-icon name="loader-circle" class="spin"></lucide-icon> Carregando kits...
+            </div>
+          } @else if (kits().length === 0) {
+            <div class="empty-compact">Nenhum kit ativo disponível.</div>
+          } @else {
+            <div class="kits-grid">
+              @for (kit of kits(); track kit.id) {
+                <button type="button" class="kit-card" (click)="addKit(kit)">
+                  <span class="kit-icon"><lucide-icon name="gift"></lucide-icon></span>
+                  <span class="kit-info">
+                    <strong>{{ kit.name }}</strong>
+                    <small>
+                      @for (item of kit.items?.slice(0, 2); track $index) {
+                        {{ item.quantity }}x {{ item.product?.name }}{{ !$last ? ' · ' : '' }}
+                      }
+                    </small>
+                  </span>
+                  <strong>{{ formatCurrency(kit.finalPrice) }}</strong>
+                  <lucide-icon name="plus"></lucide-icon>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="cart-panel ui-card">
+        <div class="panel-heading cart-heading">
+          <div>
+            <span class="eyebrow">Venda atual</span>
+            <h2 class="ui-heading-md">
+              Carrinho <span class="item-count">{{ totalItems() }} un.</span>
+            </h2>
+          </div>
+          @if (cart().length) {
+            <button type="button" class="clear-cart" (click)="clearCart()">Limpar</button>
+          }
+        </div>
+
+        <button
+          type="button"
+          class="customer-toggle"
+          (click)="customerExpanded.update((value) => !value)"
+        >
+          <span><lucide-icon name="user"></lucide-icon> Cliente opcional</span>
+          <span>{{ customerExpanded() ? 'Recolher' : 'Informar dados' }}</span>
+        </button>
+        @if (customerExpanded()) {
+          <form class="customer-form" [formGroup]="customerForm">
+            <label>
+              <span>Nome</span>
+              <input
+                type="text"
+                class="ui-input"
+                formControlName="name"
+                placeholder="Consumidor final"
+              />
+            </label>
+            <label>
+              <span>CPF</span>
+              <input
+                type="text"
+                class="ui-input"
+                formControlName="cpf"
+                inputmode="numeric"
+                placeholder="000.000.000-00"
+              />
+            </label>
+            <label>
+              <span>Telefone</span>
+              <input
+                type="tel"
+                class="ui-input"
+                formControlName="phone"
+                placeholder="(00) 00000-0000"
+              />
+            </label>
+          </form>
+        }
+
+        <div class="cart-list">
+          @if (cart().length === 0) {
+            <div class="cart-empty">
+              <span><lucide-icon name="shopping-cart"></lucide-icon></span>
+              <strong>Carrinho vazio</strong>
+              <p>Use o scanner ou selecione itens do catálogo.</p>
+            </div>
+          } @else {
+            @for (item of cart(); track item.type + item.id) {
+              <article class="cart-item">
+                <span class="item-avatar cart-avatar">
+                  @if (item.imageUrl) {
+                    <img [src]="item.imageUrl" [alt]="item.name" />
+                  } @else {
+                    <lucide-icon [name]="item.type === 'kit' ? 'gift' : 'package'"></lucide-icon>
+                  }
+                </span>
+                <div class="cart-item-main">
+                  <div class="cart-item-title">
+                    <div>
+                      <span class="type-pill">{{ item.type === 'kit' ? 'Kit' : 'Produto' }}</span>
+                      <strong>{{ item.name }}</strong>
+                      <small>{{ formatCurrency(item.unitPrice) }} un.</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="remove-button"
+                      (click)="removeItem(item)"
+                      aria-label="Remover item"
+                    >
+                      <lucide-icon name="trash-2"></lucide-icon>
+                    </button>
+                  </div>
+                  <div class="cart-item-bottom">
+                    <div class="quantity-control">
+                      <button
+                        type="button"
+                        (click)="changeQuantity(item, -1)"
+                        aria-label="Diminuir quantidade"
+                      >
+                        <lucide-icon name="minus"></lucide-icon>
+                      </button>
+                      <strong>{{ item.quantity }}</strong>
+                      <button
+                        type="button"
+                        (click)="changeQuantity(item, 1)"
+                        [disabled]="item.stock !== null && item.quantity >= item.stock"
+                        aria-label="Aumentar quantidade"
+                      >
+                        <lucide-icon name="plus"></lucide-icon>
+                      </button>
+                    </div>
+                    <strong class="line-total">{{
+                      formatCurrency(item.unitPrice * item.quantity)
+                    }}</strong>
+                  </div>
+                </div>
+              </article>
+            }
+          }
+        </div>
+
+        <form class="sale-summary" [formGroup]="saleForm">
+          <div class="summary-line">
+            <span>Subtotal</span>
+            <strong>{{ formatCurrency(subtotal()) }}</strong>
+          </div>
+          <label class="discount-row">
+            <span>Desconto (R$)</span>
+            <input type="number" class="ui-input" formControlName="discount" min="0" step="0.01" />
+          </label>
+          @if (saleForm.controls.discount.value > subtotal()) {
+            <small class="form-warning">O desconto será limitado ao subtotal.</small>
+          }
+          <label class="notes-row">
+            <span>Observação</span>
+            <input type="text" class="ui-input" formControlName="notes" placeholder="Opcional" />
+          </label>
+          <div class="grand-total">
+            <span>Total</span>
+            <strong>{{ formatCurrency(total()) }}</strong>
+          </div>
+        </form>
+
+        <button
+          type="button"
+          class="ui-btn ui-btn--primary ui-btn--lg ui-btn--full checkout-button"
+          [disabled]="cart().length === 0 || total() <= 0"
+          (click)="openModal('payment')"
+        >
+          <lucide-icon name="wallet-cards"></lucide-icon>
+          Finalizar venda
+          <strong>{{ formatCurrency(total()) }}</strong>
+        </button>
+      </section>
+    </main>
+  } @else {
+    <section class="closed-state ui-card">
+      <span class="closed-icon"><lucide-icon name="store"></lucide-icon></span>
+      <span class="ui-badge ui-badge--warning">Caixa fechado</span>
+      <h2 class="ui-heading-lg">Abra o caixa para iniciar as vendas</h2>
+      <p>Informe o fundo inicial da gaveta. O scanner e o catálogo serão liberados em seguida.</p>
+      <button type="button" class="ui-btn ui-btn--primary ui-btn--lg" (click)="openModal('open')">
+        <lucide-icon name="store"></lucide-icon>
+        Abrir caixa
+      </button>
+    </section>
+  }
+
+  @if (activeModal(); as modal) {
+    <div class="ui-modal-overlay pos-modal-overlay" (click)="closeModal()">
+      <section class="pos-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        @if (modal === 'open') {
+          <header class="modal-header">
+            <div>
+              <span class="modal-icon"><lucide-icon name="store"></lucide-icon></span>
+              <div>
+                <h2>Abrir caixa</h2>
+                <p>Informe o fundo inicial disponível na gaveta.</p>
+              </div>
+            </div>
+            <button type="button" (click)="closeModal()" aria-label="Fechar">
+              <lucide-icon name="x"></lucide-icon>
+            </button>
+          </header>
+          <form [formGroup]="openForm" (ngSubmit)="submitOpenSession()" class="modal-form">
+            <label
+              ><span>Saldo inicial</span
+              ><input
+                type="number"
+                class="ui-input"
+                formControlName="openingBalance"
+                min="0"
+                step="0.01"
+            /></label>
+            <label
+              ><span>Observação</span
+              ><textarea
+                class="ui-textarea"
+                formControlName="notes"
+                placeholder="Opcional"
+              ></textarea>
+            </label>
+            <div class="modal-actions">
+              <button type="button" class="ui-btn ui-btn--secondary" (click)="closeModal()">
+                Cancelar</button
+              ><button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSubmitting()">
+                {{ isSubmitting() ? 'Abrindo...' : 'Abrir caixa' }}
+              </button>
+            </div>
+          </form>
+        } @else if (modal === 'supply' || modal === 'withdrawal') {
+          <header class="modal-header">
+            <div>
+              <span class="modal-icon"
+                ><lucide-icon
+                  [name]="modal === 'supply' ? 'arrow-down-to-line' : 'arrow-up-from-line'"
+                ></lucide-icon
+              ></span>
+              <div>
+                <h2>{{ modal === 'supply' ? 'Registrar suprimento' : 'Registrar sangria' }}</h2>
+                <p>
+                  {{
+                    modal === 'supply'
+                      ? 'Entrada de dinheiro na gaveta.'
+                      : 'Retirada de dinheiro da gaveta.'
+                  }}
+                </p>
+              </div>
+            </div>
+            <button type="button" (click)="closeModal()" aria-label="Fechar">
+              <lucide-icon name="x"></lucide-icon>
+            </button>
+          </header>
+          <form [formGroup]="movementForm" (ngSubmit)="submitMovement()" class="modal-form">
+            <label
+              ><span>Valor</span
+              ><input
+                type="number"
+                class="ui-input"
+                formControlName="amount"
+                min="0.01"
+                step="0.01"
+            /></label>
+            <label
+              ><span>Descrição</span
+              ><textarea
+                class="ui-textarea"
+                formControlName="description"
+                placeholder="Motivo da movimentação"
+              ></textarea>
+            </label>
+            <div class="modal-actions">
+              <button type="button" class="ui-btn ui-btn--secondary" (click)="closeModal()">
+                Cancelar</button
+              ><button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSubmitting()">
+                {{ isSubmitting() ? 'Registrando...' : 'Confirmar' }}
+              </button>
+            </div>
+          </form>
+        } @else if (modal === 'close') {
+          <header class="modal-header">
+            <div>
+              <span class="modal-icon danger"><lucide-icon name="lock"></lucide-icon></span>
+              <div>
+                <h2>Fechar caixa</h2>
+                <p>Confira o dinheiro físico antes de encerrar.</p>
+              </div>
+            </div>
+            <button type="button" (click)="closeModal()" aria-label="Fechar">
+              <lucide-icon name="x"></lucide-icon>
+            </button>
+          </header>
+          <form [formGroup]="closeForm" (ngSubmit)="submitCloseSession()" class="modal-form">
+            <div class="expected-box">
+              <span>Saldo esperado</span><strong>{{ formatCurrency(expectedBalance()) }}</strong>
+            </div>
+            <label
+              ><span>Saldo contado</span
+              ><input
+                type="number"
+                class="ui-input counted-input"
+                formControlName="countedBalance"
+                min="0"
+                step="0.01"
+            /></label>
+            <div
+              class="difference-box"
+              [class.positive]="closeDifference() > 0"
+              [class.negative]="closeDifference() < 0"
+            >
+              <span>Diferença</span><strong>{{ formatCurrency(closeDifference()) }}</strong>
+            </div>
+            <label
+              ><span>Observação</span
+              ><textarea
+                class="ui-textarea"
+                formControlName="notes"
+                placeholder="Opcional"
+              ></textarea>
+            </label>
+            <div class="modal-actions">
+              <button type="button" class="ui-btn ui-btn--secondary" (click)="closeModal()">
+                Cancelar</button
+              ><button type="submit" class="ui-btn ui-btn--danger" [disabled]="isSubmitting()">
+                {{ isSubmitting() ? 'Fechando...' : 'Fechar caixa' }}
+              </button>
+            </div>
+          </form>
+        } @else if (modal === 'payment') {
+          <header class="modal-header payment-header">
+            <div>
+              <span class="modal-icon"><lucide-icon name="wallet-cards"></lucide-icon></span>
+              <div>
+                <h2>Finalizar venda</h2>
+                <p>Pagamento simples ou dividido em até 10 formas.</p>
+              </div>
+            </div>
+            <button type="button" (click)="closeModal()" aria-label="Fechar">
+              <lucide-icon name="x"></lucide-icon>
+            </button>
+          </header>
+          <form [formGroup]="paymentForm" (ngSubmit)="submitSale()" class="payment-form">
+            <div class="payment-total">
+              <span>Total da venda</span><strong>{{ formatCurrency(total()) }}</strong>
+            </div>
+            <div formArrayName="payments" class="payment-list">
+              @for (payment of payments.controls; track payment; let index = $index) {
+                <article class="payment-card" [formGroupName]="index">
+                  <div class="payment-card-head">
+                    <strong>Pagamento {{ index + 1 }}</strong
+                    ><button
+                      type="button"
+                      [disabled]="payments.length === 1"
+                      (click)="removePayment(index)"
+                      aria-label="Remover pagamento"
+                    >
+                      <lucide-icon name="trash-2"></lucide-icon>
+                    </button>
+                  </div>
+                  <div class="payment-grid">
+                    <label
+                      ><span>Forma</span
+                      ><select
+                        class="ui-select"
+                        formControlName="method"
+                        (change)="paymentMethodChanged(index)"
+                      >
+                        @for (method of paymentMethods; track method.value) {
+                          <option [value]="method.value">{{ method.label }}</option>
+                        }
+                      </select></label
+                    >
+                    <label
+                      ><span>Valor</span
+                      ><input
+                        type="number"
+                        class="ui-input"
+                        formControlName="amount"
+                        min="0.01"
+                        step="0.01"
+                    /></label>
+                    @if (payment.controls.method.value === 'CASH') {
+                      <label
+                        ><span>Valor entregue</span
+                        ><input
+                          type="number"
+                          class="ui-input"
+                          formControlName="amountTendered"
+                          min="0"
+                          step="0.01"
+                      /></label>
+                    }
+                    @if (payment.controls.method.value === 'CREDIT_CARD') {
+                      <label
+                        ><span>Parcelas</span
+                        ><select class="ui-select" formControlName="installments">
+                          @for (installment of installments; track installment) {
+                            <option [value]="installment">{{ installment }}x</option>
+                          }
+                        </select></label
+                      >
+                    }
+                    @if (
+                      payment.controls.method.value === 'CREDIT_CARD' ||
+                      payment.controls.method.value === 'DEBIT_CARD'
+                    ) {
+                      <label class="authorization-field"
+                        ><span>Autorização</span
+                        ><input
+                          type="text"
+                          class="ui-input"
+                          formControlName="authorizationCode"
+                          placeholder="Opcional"
+                      /></label>
+                    }
+                  </div>
+                  @if (paymentRemaining() !== 0) {
+                    <button
+                      type="button"
+                      class="complete-button"
+                      (click)="completeRemaining(index)"
+                    >
+                      Completar restante neste pagamento
+                    </button>
+                  }
+                </article>
+              }
+            </div>
+            <button
+              type="button"
+              class="add-payment"
+              [disabled]="payments.length >= 10"
+              (click)="addPayment()"
+            >
+              <lucide-icon name="plus"></lucide-icon> Adicionar forma de pagamento
+            </button>
+            <div
+              class="payment-balance"
+              [class.balanced]="paymentRemaining() === 0"
+              [class.unbalanced]="paymentRemaining() !== 0"
+            >
+              <div>
+                <span>Pago</span><strong>{{ formatCurrency(paymentTotal()) }}</strong>
+              </div>
+              <div>
+                <span>{{ paymentRemaining() >= 0 ? 'Restante' : 'Excedente' }}</span><strong>{{
+                  formatCurrency(paymentRemaining() >= 0 ? paymentRemaining() : -paymentRemaining())
+                }}</strong>
+              </div>
+              @if (changeDue() > 0) {
+                <div class="change-row">
+                  <span>Troco</span><strong>{{ formatCurrency(changeDue()) }}</strong>
+                </div>
+              }
+            </div>
+            <label class="issue-nfce-option">
+              <input type="checkbox" formControlName="issueNfce" [disabled]="hasKit()" />
+              <span
+                ><strong>Emitir NFC-e após concluir</strong
+                ><small>{{
+                  hasKit()
+                    ? 'Vendas com kit ainda não podem emitir NFC-e.'
+                    : 'Desmarcado por padrão. A venda será concluída mesmo se a emissão fiscal falhar.'
+                }}</small></span
+              >
+            </label>
+            <div class="modal-actions payment-actions">
+              <button type="button" class="ui-btn ui-btn--secondary" (click)="closeModal()">
+                Voltar</button
+              ><button
+                type="submit"
+                class="ui-btn ui-btn--primary ui-btn--lg"
+                [disabled]="!paymentIsValid() || isSubmitting()"
+              >
+                @if (isSubmitting()) {
+                  <lucide-icon name="loader-circle" class="spin"></lucide-icon> Processando...
+                } @else {
+                  <lucide-icon name="check"></lucide-icon> Confirmar {{ formatCurrency(total()) }}
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    </div>
+  }
+</div>

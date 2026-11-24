@@ -15,7 +15,9 @@ $sidebar-collapsed: 85px;
   border-right: 1px solid var(--ui-border);
   display: flex;
   flex-direction: column;
-  transition: width var(--ui-transition-slow), transform var(--ui-transition-slow);
+  transition:
+    width var(--ui-transition-slow),
+    transform var(--ui-transition-slow);
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -193,6 +195,16 @@ $sidebar-collapsed: 85px;
         .sidebar-icon {
           color: var(--ui-text-on-primary);
         }
+      }
+    }
+
+    .highlight-pos:not(.active) {
+      color: var(--ui-primary);
+      background: var(--ui-primary-subtle);
+      border: 1px solid rgba(242, 185, 15, 0.18);
+
+      &:hover {
+        border-color: rgba(242, 185, 15, 0.4);
       }
     }
   }

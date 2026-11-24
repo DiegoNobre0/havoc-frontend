@@ -36,6 +36,23 @@ export class StorefrontDetailComponent implements OnInit {
     const facts = item.supplementFacts;
     return isPublicSupplementFacts(facts) ? facts : null;
   });
+  readonly compareAtPrice = computed<number | null>(() => {
+    const current = this.item();
+    if (!current) return null;
+    const candidate =
+      current.type === 'product' ? current.compareAtPrice : current.originalPrice;
+    if (typeof candidate !== 'number' || !Number.isFinite(candidate) || candidate <= current.price) {
+      return null;
+    }
+    return candidate;
+  });
+  readonly discountPercent = computed<number | null>(() => {
+    const current = this.item();
+    const oldPrice = this.compareAtPrice();
+    if (!current || !oldPrice) return null;
+    const pct = Math.round(((oldPrice - current.price) / oldPrice) * 100);
+    return pct >= 1 ? pct : null;
+  });
   readonly consultantContext = computed(() => {
     const item = this.item();
     return item ? {

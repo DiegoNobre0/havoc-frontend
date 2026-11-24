@@ -1,15 +1,20 @@
 <div class="products-page">
-
   <div class="page-header">
     <div class="page-header__info">
       <h1 class="page-header__title">Catálogo de Produtos</h1>
       <p class="page-header__subtitle">Gerencie estoque, preços e disponibilidade.</p>
     </div>
-    
+
     <div class="page-header__actions">
       <!-- Input de Arquivo Oculto -->
-      <input type="file" #pdfInput accept="application/pdf" style="display: none" (change)="onPdfSelected($event)">
-      
+      <input
+        type="file"
+        #pdfInput
+        accept="application/pdf"
+        style="display: none"
+        (change)="onPdfSelected($event)"
+      />
+
       <!-- Botão de Importar -->
       <button (click)="pdfInput.click()" class="btn-secondary" [disabled]="isImportingPdf()">
         @if (isImportingPdf()) {
@@ -29,36 +34,64 @@
     </div>
   </div>
 
-  @if (lowStockCount() > 0) {
-  <div class="alert alert--warning">
-    <lucide-icon name="alert-triangle" class="alert__icon"></lucide-icon>
-    <p class="alert__text">
-      <strong>{{ lowStockCount() }} produto(s)</strong> com estoque abaixo do mínimo.
-      <button (click)="filterByLowStock()" class="alert__cta">Ver agora</button>
-    </p>
-  </div>
+  @if (lowStockCount() > 0 || expiredBatchCount() > 0 || expiringBatchCount() > 0) {
+    <div class="stock-alerts">
+      @if (lowStockCount() > 0) {
+        <div class="alert alert--warning">
+          <lucide-icon name="alert-triangle" class="alert__icon"></lucide-icon>
+          <p class="alert__text">
+            <strong>{{ lowStockCount() }} produto(s)</strong> com estoque baixo.
+            <button (click)="filterByLowStock()" class="alert__cta">
+              {{ lowStockOnly() ? 'Mostrar todos' : 'Ver agora' }}
+            </button>
+          </p>
+        </div>
+      }
+      @if (expiredBatchCount() > 0 || expiringBatchCount() > 0) {
+        <div class="alert alert--batches">
+          <lucide-icon name="calendar-clock" class="alert__icon"></lucide-icon>
+          <p class="alert__text">
+            <strong>{{ expiredBatchCount() }}</strong> lote(s) vencido(s) e
+            <strong>{{ expiringBatchCount() }}</strong> a vencer.
+          </p>
+        </div>
+      }
+    </div>
   }
 
   <div class="toolbar">
     <div class="toolbar__item toolbar__item--search">
       <lucide-icon name="search" class="toolbar__search-icon"></lucide-icon>
-      <input type="text" [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"
-        placeholder="Buscar por nome ou código..." class="nexora-input toolbar__search-input">
+      <input
+        type="text"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="onSearchChange($event)"
+        placeholder="Buscar por nome ou código..."
+        class="nexora-input toolbar__search-input"
+      />
     </div>
 
     <div class="toolbar__item toolbar__item--category">
-      <mat-select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event); onSearch()"
-        class="havoc-mat-select w-full" placeholder="Todas as categorias">
+      <mat-select
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event); onSearch()"
+        class="havoc-mat-select w-full"
+        placeholder="Todas as categorias"
+      >
         <mat-option value="">Todas as categorias</mat-option>
         @for (cat of categories(); track cat.id) {
-        <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+          <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
         }
       </mat-select>
     </div>
 
     <div class="toolbar__item toolbar__item--status">
-      <mat-select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event); onSearch()"
-        class="havoc-mat-select w-full" placeholder="Todos os Status">
+      <mat-select
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event); onSearch()"
+        class="havoc-mat-select w-full"
+        placeholder="Todos os Status"
+      >
         <mat-option value="">Todos os Status</mat-option>
         <mat-option value="true">Ativos</mat-option>
         <mat-option value="false">Pausados</mat-option>
@@ -76,500 +109,1068 @@
             <th class="data-table__th data-table__th--right">Preço</th>
             <th class="data-table__th data-table__th--center">Estoque</th>
             <th class="data-table__th data-table__th--center">Status</th>
-            <th class="data-table__th data-table__th--center data-table__official">Dados oficiais</th>
+            <th class="data-table__th data-table__th--center data-table__official">
+              Dados oficiais
+            </th>
             <th class="data-table__th data-table__th--right">Ações</th>
           </tr>
         </thead>
 
         <tbody>
           @if (isLoading()) {
-          @for (i of [1,2,3,4,5]; track i) {
-          <tr class="data-table__row">
-            <td class="data-table__td">
-              <div class="skeleton-row">
-                <div class="skeleton skeleton--product-img"></div>
-                <div>
-                  <div class="skeleton skeleton--text-md"></div>
-                  <div class="skeleton skeleton--text-xs" style="margin-top: 6px; width: 3rem;"></div>
-                </div>
-              </div>
-            </td>
-            <td class="data-table__td">
-              <div class="skeleton skeleton--text-sm"></div>
-            </td>
-            <td class="data-table__td data-table__td--right">
-              <div class="skeleton skeleton--text-sm skeleton--right"></div>
-            </td>
-            <td class="data-table__td data-table__td--center">
-              <div class="skeleton skeleton--text-sm skeleton--centered"></div>
-            </td>
-            <td class="data-table__td data-table__td--center">
-              <div class="skeleton skeleton--badge skeleton--centered"></div>
-            </td>
-            <td class="data-table__td data-table__td--center data-table__official">
-              <div class="skeleton skeleton--badge skeleton--centered"></div>
-            </td>
-            <td class="data-table__td"></td>
-          </tr>
-          }
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <tr class="data-table__row">
+                <td class="data-table__td">
+                  <div class="skeleton-row">
+                    <div class="skeleton skeleton--product-img"></div>
+                    <div>
+                      <div class="skeleton skeleton--text-md"></div>
+                      <div
+                        class="skeleton skeleton--text-xs"
+                        style="margin-top: 6px; width: 3rem"
+                      ></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="data-table__td">
+                  <div class="skeleton skeleton--text-sm"></div>
+                </td>
+                <td class="data-table__td data-table__td--right">
+                  <div class="skeleton skeleton--text-sm skeleton--right"></div>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <div class="skeleton skeleton--text-sm skeleton--centered"></div>
+                </td>
+                <td class="data-table__td data-table__td--center">
+                  <div class="skeleton skeleton--badge skeleton--centered"></div>
+                </td>
+                <td class="data-table__td data-table__td--center data-table__official">
+                  <div class="skeleton skeleton--badge skeleton--centered"></div>
+                </td>
+                <td class="data-table__td"></td>
+              </tr>
+            }
           } @else {
-          @for (product of products(); track product.id) {
-          <tr class="data-table__row data-table__row--hoverable">
+            @for (product of products(); track product.id) {
+              <tr class="data-table__row data-table__row--hoverable">
+                <td class="data-table__td">
+                  <div class="product-cell">
+                    <div class="product-cell__thumb">
+                      @if (product.imageUrl) {
+                        <img
+                          [src]="product.imageUrl"
+                          class="product-cell__img"
+                          [alt]="product.name"
+                        />
+                      } @else {
+                        <lucide-icon
+                          name="package"
+                          class="product-cell__placeholder-icon"
+                        ></lucide-icon>
+                      }
+                    </div>
+                    <div class="product-cell__info">
+                      <span class="product-cell__name">{{ product.name }}</span>
+                      <span class="product-cell__unit"
+                        >{{ product.sku ? 'SKU ' + product.sku + ' · ' : ''
+                        }}{{ product.unit }}</span
+                      >
+                    </div>
+                  </div>
+                </td>
 
-            <td class="data-table__td">
-              <div class="product-cell">
-                <div class="product-cell__thumb">
-                  @if (product.imageUrl) {
-                  <img [src]="product.imageUrl" class="product-cell__img" [alt]="product.name">
+                <td class="data-table__td">
+                  @if (product.categories && product.categories.length > 0) {
+                    <div class="category-badges">
+                      @for (cat of product.categories; track cat.id) {
+                        <span class="category-badge">
+                          {{ cat.name }}
+                        </span>
+                      }
+                    </div>
                   } @else {
-                  <lucide-icon name="package" class="product-cell__placeholder-icon"></lucide-icon>
+                    <span class="data-table__secondary">—</span>
                   }
-                </div>
-                <div class="product-cell__info">
-                  <span class="product-cell__name">{{ product.name }}</span>
-                  <span class="product-cell__unit">{{ product.unit }}</span>
-                </div>
-              </div>
-            </td>
+                </td>
 
-            <td class="data-table__td">
-              @if (product.categories && product.categories.length > 0) {
-              <div class="category-badges">
-                @for (cat of product.categories; track cat.id) {
-                <span class="category-badge">
-                  {{ cat.name }}
-                </span>
-                }
-              </div>
-              } @else {
-              <span class="data-table__secondary">—</span>
-              }
-            </td>
+                <td class="data-table__td data-table__td--right">
+                  <span class="data-table__value">R${{ product.price | number: '1.2-2' }}</span>
+                </td>
 
-            <td class="data-table__td data-table__td--right">
-              <span class="data-table__value">R${{ product.price | number:'1.2-2' }}</span>
-            </td>
+                <td class="data-table__td data-table__td--center">
+                  <div class="stock-cell">
+                    <span
+                      class="stock-cell__qty"
+                      [class.stock-cell__qty--low]="isLowStock(product)"
+                    >
+                      {{ product.stock_qty ?? product.stock ?? 0 }}
+                    </span>
+                  </div>
+                </td>
 
-            <td class="data-table__td data-table__td--center">
-              <div class="stock-cell">
-                <span class="stock-cell__qty" [class.stock-cell__qty--low]="isLowStock(product)">
-                  {{ product.stock_qty ?? product.stock ?? 0 }}
-                </span>
-              </div>
-            </td>
+                <td class="data-table__td data-table__td--center">
+                  <span
+                    class="badge"
+                    [ngClass]="product.isActive ? 'badge--active' : 'badge--inactive'"
+                  >
+                    {{ product.isActive ? 'Ativo' : 'Pausado' }}
+                  </span>
+                </td>
 
-            <td class="data-table__td data-table__td--center">
-              <span class="badge" [ngClass]="product.isActive ? 'badge--active' : 'badge--inactive'">
-                {{ product.isActive ? 'Ativo' : 'Pausado' }}
-              </span>
-            </td>
+                <td class="data-table__td data-table__td--center data-table__official">
+                  <span class="badge" [ngClass]="factsStatusClass(product.supplementFacts?.status)">
+                    {{ factsStatusLabel(product.supplementFacts?.status) }}
+                  </span>
+                </td>
 
-            <td class="data-table__td data-table__td--center data-table__official">
-              <span class="badge" [ngClass]="factsStatusClass(product.supplementFacts?.status)">
-                {{ factsStatusLabel(product.supplementFacts?.status) }}
-              </span>
-            </td>
-
-            <td class="data-table__td data-table__td--right">
-              <div class="row-actions">
-                <button (click)="openStockModal(product)" class="action-btn action-btn--primary"
-                  title="Movimentar estoque">
-                  <lucide-icon name="package-plus" class="action-btn__icon"></lucide-icon>
-                </button>
-                <button (click)="openModal(product)" class="action-btn action-btn--primary" title="Editar">
-                  <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
-                </button>
-                <button (click)="toggleProduct(product)" class="action-btn action-btn--primary"
-                  [title]="product.isActive ? 'Pausar' : 'Reativar'">
-                  <lucide-icon [name]="product.isActive ? 'eye-off' : 'eye'" class="action-btn__icon"></lucide-icon>
-                </button>
-                <button (click)="openDeleteConfirm(product)" class="action-btn action-btn--danger" title="Excluir">
-                  <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
-                </button>
-              </div>
-            </td>
-
-          </tr>
-          } @empty {
-          <tr>
-            <td colspan="7" class="data-table__empty">
-              <div class="empty-state">
-                <div class="empty-state__icon-wrap">
-                  <lucide-icon name="package" class="empty-state__icon"></lucide-icon>
-                </div>
-                <p class="empty-state__text">Nenhum produto encontrado</p>
-                <button  (click)="openModal()" class="btn-primary">
-                  Cadastrar primeiro produto
-                </button>
-              </div>
-            </td>
-          </tr>
-          }
+                <td class="data-table__td data-table__td--right">
+                  <div class="row-actions">
+                    <button
+                      (click)="openStockModal(product)"
+                      class="action-btn action-btn--primary"
+                      title="Movimentar estoque"
+                    >
+                      <lucide-icon name="package-plus" class="action-btn__icon"></lucide-icon>
+                    </button>
+                    <button
+                      (click)="openModal(product)"
+                      class="action-btn action-btn--primary"
+                      title="Editar"
+                    >
+                      <lucide-icon name="pencil" class="action-btn__icon"></lucide-icon>
+                    </button>
+                    <button
+                      (click)="toggleProduct(product)"
+                      class="action-btn action-btn--primary"
+                      [title]="product.isActive ? 'Pausar' : 'Reativar'"
+                    >
+                      <lucide-icon
+                        [name]="product.isActive ? 'eye-off' : 'eye'"
+                        class="action-btn__icon"
+                      ></lucide-icon>
+                    </button>
+                    <button
+                      (click)="openDeleteConfirm(product)"
+                      class="action-btn action-btn--danger"
+                      title="Excluir"
+                    >
+                      <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="data-table__empty">
+                  <div class="empty-state">
+                    <div class="empty-state__icon-wrap">
+                      <lucide-icon name="package" class="empty-state__icon"></lucide-icon>
+                    </div>
+                    <p class="empty-state__text">Nenhum produto encontrado</p>
+                    <button (click)="openModal()" class="btn-primary">
+                      Cadastrar primeiro produto
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
     </div>
 
     @if (totalPages() > 1) {
-    <div class="pagination">
-      <span class="pagination__info">
-        Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong>
-        · <strong>{{ totalItems() }}</strong> produtos
-      </span>
-      <div class="pagination__controls">
-        <button [disabled]="currentPage() === 1" (click)="changePage(currentPage() - 1)" class="pagination__btn">
-          ← Anterior
-        </button>
-        <button [disabled]="currentPage() === totalPages()" (click)="changePage(currentPage() + 1)"
-          class="pagination__btn">
-          Próxima →
-        </button>
+      <div class="pagination">
+        <span class="pagination__info">
+          Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong> ·
+          <strong>{{ totalItems() }}</strong> produtos
+        </span>
+        <div class="pagination__controls">
+          <button
+            [disabled]="currentPage() === 1"
+            (click)="changePage(currentPage() - 1)"
+            class="pagination__btn"
+          >
+            ← Anterior
+          </button>
+          <button
+            [disabled]="currentPage() === totalPages()"
+            (click)="changePage(currentPage() + 1)"
+            class="pagination__btn"
+          >
+            Próxima →
+          </button>
+        </div>
       </div>
-    </div>
     }
   </div>
 
   @if (isStockModalOpen()) {
-  <div class="modal-overlay" (click)="closeStockModal()">
-    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
-
-      <div class="modal-header">
-        <h2 class="modal-header__title">Movimentar Estoque</h2>
-        <button (click)="closeStockModal()" class="modal-header__close">
-          <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
-        </button>
-      </div>
-
-      <div class="modal-form">
-        <div class="product-summary-card">
-          <p class="product-summary-card__label">Produto</p>
-          <p class="product-summary-card__name">{{ selectedProduct()?.name }}</p>
-          <p class="product-summary-card__stock">
-            Estoque atual:
-            <strong>{{ selectedProduct()?.stock_qty ?? selectedProduct()?.stock ?? 0 }} {{ selectedProduct()?.unit }}</strong>
-          </p>
+    <div class="modal-overlay" (click)="closeStockModal()">
+      <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-header__title">Movimentar Estoque</h2>
+          <button (click)="closeStockModal()" class="modal-header__close">
+            <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+          </button>
         </div>
 
-        <form [formGroup]="stockForm" (ngSubmit)="onStockSubmit()" class="stock-form">
+        <div class="modal-form">
+          <div class="product-summary-card">
+            <p class="product-summary-card__label">Produto</p>
+            <p class="product-summary-card__name">{{ selectedProduct()?.name }}</p>
+            <p class="product-summary-card__stock">
+              Estoque atual:
+              <strong
+                >{{ selectedProduct()?.stock_qty ?? selectedProduct()?.stock ?? 0 }}
+                {{ selectedProduct()?.unit }}</strong
+              >
+            </p>
+          </div>
 
-          <div class="form-field">
-            <label class="form-label">Operação</label>
-            <div class="op-selector">
-              @for (op of stockOperations; track op.value) {
-              <button type="button" (click)="stockForm.patchValue({operation: op.value})" class="op-selector__btn"
-                [class.op-selector__btn--active]="stockForm.value.operation === op.value">
-                {{ op.label }}
-              </button>
+          <form [formGroup]="stockForm" (ngSubmit)="onStockSubmit()" class="stock-form">
+            <div class="form-field">
+              <label class="form-label">Operação</label>
+              <div class="op-selector">
+                @for (op of availableStockOperations(); track op.value) {
+                  <button
+                    type="button"
+                    (click)="selectStockOperation(op.value)"
+                    class="op-selector__btn"
+                    [class.op-selector__btn--active]="stockForm.value.operation === op.value"
+                  >
+                    {{ op.label }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">
+                {{ stockForm.value.operation === 'ADJUST' ? 'Novo saldo' : 'Quantidade' }}
+              </label>
+              <input
+                type="number"
+                formControlName="quantity"
+                min="0"
+                step="1"
+                class="nexora-input nexora-input--center nexora-input--lg"
+                placeholder="0"
+              />
+              @if (stockForm.value.operation === 'ADJUST') {
+                <p class="form-hint">No balanço, informe o saldo final do produto.</p>
               }
             </div>
-          </div>
 
-          <div class="form-field">
-            <label class="form-label">Quantidade</label>
-            <input type="number" formControlName="quantity" min="1"
-              class="nexora-input nexora-input--center nexora-input--lg" placeholder="0">
-          </div>
+            @if (selectedProduct()?.controlsBatch && stockForm.value.operation === 'IN') {
+              <div class="product-form__row">
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Código do lote <span class="form-label--required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="batchCode"
+                    class="nexora-input"
+                    placeholder="Ex: LOTE-2026-01"
+                  />
+                  @if (
+                    stockForm.controls.batchCode.invalid && stockForm.controls.batchCode.touched
+                  ) {
+                    <p class="form-error">Informe o código do lote.</p>
+                  }
+                </div>
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Validade <span class="form-label--required">*</span></label
+                  >
+                  <input type="date" formControlName="expirationDate" class="nexora-input" />
+                  @if (
+                    stockForm.controls.expirationDate.invalid &&
+                    stockForm.controls.expirationDate.touched
+                  ) {
+                    <p class="form-error">Informe a validade do lote.</p>
+                  }
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label"
+                  >Custo unitário <span class="form-label--optional">(opcional)</span></label
+                >
+                <input
+                  type="number"
+                  formControlName="unitCost"
+                  min="0"
+                  step="0.01"
+                  class="nexora-input"
+                  placeholder="0,00"
+                />
+              </div>
+            }
 
-          <div class="form-field">
-            <label class="form-label">Motivo <span class="form-label__optional"></span></label>
-            <input type="text" formControlName="reason" class="nexora-input"
-              placeholder="Ex: Compra fornecedor, Perda, Inventário">
-          </div>
+            @if (selectedProduct()?.controlsBatch && stockForm.value.operation === 'OUT') {
+              <div class="stock-note">
+                <lucide-icon name="info" class="stock-note__icon"></lucide-icon>
+                A saída consumirá automaticamente os lotes com validade mais próxima (FEFO).
+              </div>
+            }
 
-          <div class="modal-actions">
-            <button type="button" (click)="closeStockModal()" class="btn-cancel">Cancelar</button>
-            <button type="submit" [disabled]="stockForm.invalid || isSaving()" class="btn-primary">
-              @if (isSaving()) {
-              <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
-              }
-              Confirmar
-            </button>
-          </div>
+            <div class="form-field">
+              <label class="form-label">Motivo <span class="form-label__optional"></span></label>
+              <input
+                type="text"
+                formControlName="reason"
+                class="nexora-input"
+                placeholder="Ex: Compra fornecedor, Perda, Inventário"
+              />
+            </div>
 
-        </form>
+            <div class="modal-actions">
+              <button type="button" (click)="closeStockModal()" class="btn-cancel">Cancelar</button>
+              <button
+                type="submit"
+                [disabled]="stockForm.invalid || isSaving()"
+                class="btn-primary"
+              >
+                @if (isSaving()) {
+                  <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                }
+                Confirmar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-
     </div>
-  </div>
   }
 
   @if (isModalOpen()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
-
-      <div class="modal-header">
-        <div class="modal-header__info">
-          <h2 class="modal-header__title">
-            {{ isEditing() ? 'Editar Produto' : 'Novo Produto' }}
-          </h2>
-          <p class="modal-header__subtitle">
-            {{ isEditing() ? 'Atualize as informações do produto.' : 'Preencha os dados para cadastrar no catálogo.' }}
-          </p>
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-header__info">
+            <h2 class="modal-header__title">
+              {{ isEditing() ? 'Editar Produto' : 'Novo Produto' }}
+            </h2>
+            <p class="modal-header__subtitle">
+              {{
+                isEditing()
+                  ? 'Atualize as informações do produto.'
+                  : 'Preencha os dados para cadastrar no catálogo.'
+              }}
+            </p>
+          </div>
+          <button (click)="closeModal()" class="modal-header__close">
+            <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
+          </button>
         </div>
-        <button (click)="closeModal()" class="modal-header__close">
-          <lucide-icon name="x" class="action-btn__icon"></lucide-icon>
-        </button>
-      </div>
-      @if (isModalOpen()) {
-      <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form">
+        @if (isModalOpen()) {
+          <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form">
+            <div class="product-form__section">
+              <p class="product-form__section-label">Identificação</p>
 
-        <div class="product-form__section">
-          <p class="product-form__section-label">Identificação</p>
+              <div class="product-form__row">
+                <div class="form-field product-form__col--grow">
+                  <label class="form-label"
+                    >Nome do Produto <span class="form-label--required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="name"
+                    class="nexora-input"
+                    placeholder="Ex: Arroz Branco Tipo 1 - 5kg"
+                  />
+                  @if (productForm.get('name')?.invalid && productForm.get('name')?.touched) {
+                    <p class="form-error">Nome é obrigatório (mínimo 2 caracteres).</p>
+                  }
+                </div>
 
-          <div class="product-form__row">
-            <div class="form-field product-form__col--grow">
-              <label class="form-label">Nome do Produto <span class="form-label--required">*</span></label>
-              <input type="text" formControlName="name" class="nexora-input"
-                placeholder="Ex: Arroz Branco Tipo 1 - 5kg">
-              @if (productForm.get('name')?.invalid && productForm.get('name')?.touched) {
-              <p class="form-error">Nome é obrigatório (mínimo 2 caracteres).</p>
+                <div class="form-field product-form__col--sm">
+                  <label class="form-label">Unidade</label>
+                  <mat-select formControlName="unit" class="havoc-mat-select w-full">
+                    <mat-option value="UN">UN</mat-option>
+                    <mat-option value="KG">KG</mat-option>
+                    <mat-option value="G">G</mat-option>
+                    <mat-option value="L">L</mat-option>
+                    <mat-option value="ML">ML</mat-option>
+                    <mat-option value="CX">CX</mat-option>
+                    <mat-option value="PCT">PCT</mat-option>
+                    <mat-option value="FD">FD</mat-option>
+                  </mat-select>
+                </div>
+              </div>
+
+              <div class="product-form__row">
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Marca <span class="form-label--optional">(opcional)</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="brand"
+                    class="nexora-input"
+                    placeholder="Ex: Growth, Max Titanium, Integral"
+                  />
+                </div>
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Tamanho / Peso <span class="form-label--optional">(ex: 900g)</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="sizeLabel"
+                    class="nexora-input"
+                    placeholder="Ex: 900g, 300g, 60 cápsulas"
+                  />
+                </div>
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Sabor <span class="form-label--optional">(opcional)</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="flavor"
+                    class="nexora-input"
+                    placeholder="Ex: Chocolate, Sem sabor"
+                  />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label"
+                  >Categorias <span class="form-label--optional">(Múltiplas)</span></label
+                >
+                <mat-select
+                  formControlName="category_ids"
+                  multiple
+                  class="havoc-mat-select w-full"
+                  placeholder="Selecione as categorias..."
+                >
+                  @for (cat of categories(); track cat.id) {
+                    <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+                  }
+                </mat-select>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Descrição </label>
+                <textarea
+                  formControlName="description"
+                  class="nexora-input product-form__textarea"
+                  placeholder="Descreva o produto — será usado pelo bot no WhatsApp..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="product-form__section">
+              <div class="official-data__heading">
+                <div>
+                  <p class="product-form__section-label">Dados oficiais do suplemento</p>
+                  <p class="form-hint">
+                    A fonte e o rótulo são pesquisados automaticamente após salvar.
+                  </p>
+                </div>
+                @if (isEditing() && canRetryFacts()) {
+                  <button
+                    type="button"
+                    class="btn-secondary official-data__sync"
+                    (click)="syncOfficialFacts()"
+                    [disabled]="syncState() === 'loading'"
+                  >
+                    <lucide-icon
+                      name="search"
+                      class="btn-icon"
+                      [class.btn-icon--spin]="syncState() === 'loading'"
+                    ></lucide-icon>
+                    {{ syncState() === 'loading' ? 'Buscando...' : 'Tentar novamente' }}
+                  </button>
+                }
+              </div>
+
+              <div class="product-form__row">
+                <div class="form-field product-form__col--grow">
+                  <label class="form-label" for="product-manufacturer">Fabricante</label>
+                  <input
+                    id="product-manufacturer"
+                    type="text"
+                    formControlName="manufacturer"
+                    class="nexora-input"
+                    placeholder="Opcional, ajuda a identificar o produto exato"
+                  />
+                </div>
+              </div>
+
+              <div class="product-form__row">
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >SKU <span class="form-label--optional">(opcional)</span></label
+                  >
+                  <input
+                    type="text"
+                    formControlName="sku"
+                    class="nexora-input"
+                    placeholder="Ex: WHEY-900-CHO"
+                  />
+                </div>
+                <div class="form-field product-form__col--grow">
+                  <label class="form-label"
+                    >Código de barras principal
+                    <span class="form-label--optional">(GTIN/EAN/UPC)</span></label
+                  >
+                  <div class="barcode-lookup-row">
+                    <input
+                      type="text"
+                      formControlName="barcode"
+                      inputmode="numeric"
+                      class="nexora-input"
+                      placeholder="Bipe ou digite o código (ex: 7891234567895)"
+                      maxlength="14"
+                      (keydown.enter)="lookupByBarcode($event)"
+                    />
+                    <button
+                      type="button"
+                      class="btn-secondary barcode-lookup-btn"
+                      (click)="lookupByBarcode($event)"
+                      [disabled]="isLookingUpBarcode()"
+                    >
+                      <lucide-icon
+                        [name]="isLookingUpBarcode() ? 'refresh-cw' : 'sparkles'"
+                        class="btn-icon"
+                        [class.btn-icon--spin]="isLookingUpBarcode()"
+                      ></lucide-icon>
+                      {{ isLookingUpBarcode() ? 'Buscando...' : 'Buscar com IA' }}
+                    </button>
+                  </div>
+                  @if (
+                    productForm.controls.barcode.hasError('invalidBarcode') &&
+                    productForm.controls.barcode.touched
+                  ) {
+                    <p class="form-error">
+                      Código inválido. Confira os dígitos e o checksum GTIN/EAN/UPC.
+                    </p>
+                  }
+                </div>
+              </div>
+
+              @if (barcodeLookupMessage()) {
+                <div
+                  class="sync-feedback"
+                  [class.sync-feedback--success]="!barcodeLookupError() && !isLookingUpBarcode()"
+                  [class.sync-feedback--error]="barcodeLookupError()"
+                  role="status"
+                >
+                  @if (isLookingUpBarcode()) {
+                    <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                  } @else if (barcodeLookupError()) {
+                    <lucide-icon name="alert-triangle" class="btn-icon"></lucide-icon>
+                  } @else {
+                    <lucide-icon name="check-circle" class="btn-icon"></lucide-icon>
+                  }
+                  <span>
+                    {{ barcodeLookupMessage() }}
+                    @if (barcodeLookupSourceLabel()) {
+                      <strong class="barcode-source-pill">{{ barcodeLookupSourceLabel() }}</strong>
+                    }
+                  </span>
+                </div>
+              }
+
+              @if (pendingLabelFacts(); as previewFacts) {
+                <div class="source-summary">
+                  @if (previewFacts.servingSize) {
+                    <div>
+                      <span class="source-summary__label">Porção extraída</span>
+                      <strong>{{ previewFacts.servingSize }}</strong>
+                    </div>
+                  }
+                  @if (previewFacts.nutritionFacts?.length) {
+                    <div>
+                      <span class="source-summary__label">Tabela nutricional</span>
+                      <strong>{{ previewFacts.nutritionFacts!.length }} nutrientes prontos para salvar</strong>
+                    </div>
+                  }
+                  @if (previewFacts.ingredients) {
+                    <div class="barcode-facts-wide">
+                      <span class="source-summary__label">Ingredientes</span>
+                      <span>{{ previewFacts.ingredients }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (!isEditing()) {
+                <p class="official-data__notice">
+                  A busca automática será iniciada ao salvar o produto.
+                </p>
+              }
+
+              @if (syncMessage()) {
+                <div
+                  class="sync-feedback"
+                  [class.sync-feedback--success]="syncState() === 'success'"
+                  [class.sync-feedback--error]="syncState() === 'error'"
+                  role="status"
+                >
+                  @if (syncState() === 'loading' || syncState() === 'pending') {
+                    <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                  } @else if (syncState() === 'error') {
+                    <lucide-icon name="alert-triangle" class="btn-icon"></lucide-icon>
+                  } @else {
+                    <lucide-icon name="check-circle" class="btn-icon"></lucide-icon>
+                  }
+                  <span>{{ syncMessage() }}</span>
+                </div>
+              }
+
+              @if (isEditing()) {
+                <div class="source-summary">
+                  <div>
+                    <span class="source-summary__label">Status da fonte</span>
+                    <strong>{{ factsStatusLabel(currentFacts()?.status) }}</strong>
+                  </div>
+                  @if (currentFacts()?.source?.url; as sourceUrl) {
+                    <div>
+                      <span class="source-summary__label">Fonte recuperada</span>
+                      <a [href]="sourceUrl" target="_blank" rel="noopener noreferrer">
+                        {{ currentFacts()?.source?.title || sourceUrl }}
+                        <lucide-icon name="external-link"></lucide-icon>
+                      </a>
+                    </div>
+                  }
+                  @if (currentFacts()?.source?.retrievedAt; as retrievedAt) {
+                    <div>
+                      <span class="source-summary__label">Consultada em</span>
+                      <span>{{ retrievedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                  }
+                </div>
               }
             </div>
 
-            <div class="form-field product-form__col--sm">
-              <label class="form-label">Unidade</label>
-              <mat-select formControlName="unit" class="havoc-mat-select w-full">
-                <mat-option value="UN">UN</mat-option>
-                <mat-option value="KG">KG</mat-option>
-                <mat-option value="G">G</mat-option>
-                <mat-option value="L">L</mat-option>
-                <mat-option value="ML">ML</mat-option>
-                <mat-option value="CX">CX</mat-option>
-                <mat-option value="PCT">PCT</mat-option>
-                <mat-option value="FD">FD</mat-option>
-              </mat-select>
-            </div>
-          </div>
+            <div class="product-form__section">
+              <p class="product-form__section-label">Foto do Produto</p>
 
-          <div class="form-field">
-            <label class="form-label">Categorias <span class="form-label--optional">(Múltiplas)</span></label>
-            <mat-select formControlName="category_ids" multiple class="havoc-mat-select w-full"
-              placeholder="Selecione as categorias...">
-              @for (cat of categories(); track cat.id) {
-              <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+              @if (!imagePreview()) {
+                <label class="upload-zone">
+                  <lucide-icon name="image-plus" class="upload-zone__icon"></lucide-icon>
+                  <span class="upload-zone__label">Selecionar a arte da imagem</span>
+                  <span class="upload-zone__hint"
+                    >Apenas PNG e JPG até 5MB (WEBP não suportado)</span
+                  >
+
+                  <input
+                    type="file"
+                    accept="image/jpeg, image/png, image/jpg"
+                    class="upload-zone__input"
+                    (change)="onFileSelected($event)"
+                  />
+                </label>
+              } @else {
+                <div style="display: flex; gap: 1rem">
+                  <div class="image-thumb" style="width: 120px; height: 120px">
+                    <img [src]="imagePreview()" class="image-thumb__img" alt="Preview do Produto" />
+                    <div class="image-thumb__overlay">
+                      <button type="button" (click)="removeImage()" class="image-thumb__remove">
+                        <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               }
-            </mat-select>
-          </div>
-
-          <div class="form-field">
-            <label class="form-label">Descrição </label>
-            <textarea formControlName="description" class="nexora-input product-form__textarea"
-              placeholder="Descreva o produto — será usado pelo bot no WhatsApp..."></textarea>
-          </div>
-        </div>
-
-        <div class="product-form__section">
-          <div class="official-data__heading">
-            <div>
-              <p class="product-form__section-label">Dados oficiais do suplemento</p>
-              <p class="form-hint">A fonte e o rótulo são pesquisados automaticamente após salvar.</p>
             </div>
-            @if (isEditing() && canRetryFacts()) {
-              <button type="button" class="btn-secondary official-data__sync" (click)="syncOfficialFacts()"
-                [disabled]="syncState() === 'loading'">
-                <lucide-icon name="search" class="btn-icon" [class.btn-icon--spin]="syncState() === 'loading'"></lucide-icon>
-                {{ syncState() === 'loading' ? 'Buscando...' : 'Tentar novamente' }}
+
+            <div class="product-form__section">
+              <p class="product-form__section-label">Valores</p>
+
+              <div class="product-form__row">
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Preço de Venda (R$) <span class="form-label--required">*</span></label
+                  >
+                  <div class="input-prefix">
+                    <span class="input-prefix__symbol">R$</span>
+                    <input
+                      type="text"
+                      formControlName="price"
+                      class="nexora-input input-prefix__input"
+                      currencyMask
+                      [options]="{
+                        prefix: '',
+                        thousands: '.',
+                        decimal: ',',
+                        align: 'left',
+                        allowNegative: false,
+                      }"
+                    />
+                  </div>
+                  @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {
+                    <p class="form-error">Informe um preço válido.</p>
+                  }
+                </div>
+
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Preço Anterior / De (R$)
+                    <span class="form-label--optional">(exibe % OFF)</span></label
+                  >
+                  <div class="input-prefix">
+                    <span class="input-prefix__symbol">R$</span>
+                    <input
+                      type="text"
+                      formControlName="compareAtPrice"
+                      class="nexora-input input-prefix__input"
+                      currencyMask
+                      [options]="{
+                        prefix: '',
+                        thousands: '.',
+                        decimal: ',',
+                        align: 'left',
+                        allowNegative: false,
+                      }"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Custo (R$) <span class="form-label--optional">(para margem)</span></label
+                  >
+                  <div class="input-prefix">
+                    <span class="input-prefix__symbol">R$</span>
+                    <input
+                      type="text"
+                      formControlName="cost_price"
+                      class="nexora-input input-prefix__input"
+                      currencyMask
+                      [options]="{
+                        prefix: '',
+                        thousands: '.',
+                        decimal: ',',
+                        align: 'left',
+                        allowNegative: false,
+                      }"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-field product-form__col">
+                  <label class="form-label"
+                    >Preço Atacado (R$) <span class="form-label--optional">(PJ)</span></label
+                  >
+                  <div class="input-prefix">
+                    <span class="input-prefix__symbol">R$</span>
+                    <input
+                      type="text"
+                      formControlName="price_wholesale"
+                      class="nexora-input input-prefix__input"
+                      currencyMask
+                      [options]="{
+                        prefix: '',
+                        thousands: '.',
+                        decimal: ',',
+                        align: 'left',
+                        allowNegative: false,
+                      }"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              @if (calculatedMargin() !== null) {
+                <div
+                  class="margin-indicator"
+                  [ngClass]="{
+                    'margin-indicator--danger': calculatedMargin()! < 10,
+                    'margin-indicator--warning':
+                      calculatedMargin()! >= 10 && calculatedMargin()! < 30,
+                    'margin-indicator--success': calculatedMargin()! >= 30,
+                  }"
+                >
+                  <lucide-icon name="trending-up" class="margin-indicator__icon"></lucide-icon>
+                  <span
+                    >Margem estimada:
+                    <strong>{{ calculatedMargin() | number: '1.1-1' }}%</strong></span
+                  >
+                </div>
+              }
+            </div>
+
+            <div class="product-form__section">
+              <p class="product-form__section-label">Estoque</p>
+
+              <div
+                class="toggle-field"
+                (click)="
+                  productForm.patchValue({ controlsBatch: !productForm.value.controlsBatch })
+                "
+              >
+                <div class="toggle-field__info">
+                  <p class="toggle-field__label">Controlar estoque por lote e validade</p>
+                  <p class="toggle-field__desc">
+                    Entradas exigirão a identificação e a validade do lote.
+                  </p>
+                </div>
+                <div
+                  class="toggle-switch"
+                  [class.toggle-switch--active]="productForm.value.controlsBatch"
+                ></div>
+              </div>
+
+              <div class="product-form__row">
+                <div class="form-field product-form__col">
+                  <label class="form-label">{{
+                    isEditing() ? 'Estoque atual' : 'Estoque inicial'
+                  }}</label>
+                  @if (isEditing()) {
+                    <input
+                      type="number"
+                      formControlName="stock_qty"
+                      class="nexora-input"
+                      readonly
+                    />
+                    <p class="form-hint">Use “Movimentar estoque” na lista para alterar o saldo.</p>
+                  } @else {
+                    <div class="nx-number-input">
+                      <button
+                        type="button"
+                        (click)="decrementStock('stock_qty')"
+                        class="nx-number-input__btn"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        formControlName="stock_qty"
+                        class="nx-number-input__field"
+                        min="0"
+                      />
+                      <button
+                        type="button"
+                        (click)="incrementStock('stock_qty')"
+                        class="nx-number-input__btn"
+                      >
+                        +
+                      </button>
+                    </div>
+                  }
+                </div>
+
+                <div class="form-field product-form__col">
+                  <label class="form-label">Estoque Mínimo</label>
+                  <div class="nx-number-input">
+                    <button
+                      type="button"
+                      (click)="decrementStock('stock_min')"
+                      class="nx-number-input__btn"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      formControlName="stock_min"
+                      class="nx-number-input__field"
+                      min="0"
+                    />
+                    <button
+                      type="button"
+                      (click)="incrementStock('stock_min')"
+                      class="nx-number-input__btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <p class="form-hint">Alerta disparado abaixo deste valor.</p>
+                </div>
+
+                @if (
+                  !isEditing() &&
+                  productForm.value.controlsBatch &&
+                  productForm.value.stock_qty! > 0
+                ) {
+                  <div class="product-form__row batch-fields">
+                    <div class="form-field product-form__col">
+                      <label class="form-label"
+                        >Código do lote inicial <span class="form-label--required">*</span></label
+                      >
+                      <input
+                        type="text"
+                        formControlName="initialBatchCode"
+                        class="nexora-input"
+                        placeholder="Ex: LOTE-2026-01"
+                      />
+                      @if (
+                        productForm.controls.initialBatchCode.invalid &&
+                        productForm.controls.initialBatchCode.touched
+                      ) {
+                        <p class="form-error">Informe o código do lote inicial.</p>
+                      }
+                    </div>
+                    <div class="form-field product-form__col">
+                      <label class="form-label"
+                        >Validade do lote <span class="form-label--required">*</span></label
+                      >
+                      <input
+                        type="date"
+                        formControlName="initialBatchExpirationDate"
+                        class="nexora-input"
+                      />
+                      @if (
+                        productForm.controls.initialBatchExpirationDate.invalid &&
+                        productForm.controls.initialBatchExpirationDate.touched
+                      ) {
+                        <p class="form-error">Informe a validade do lote inicial.</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="product-form__section product-form__section--collapsible">
+              <button type="button" class="product-form__collapse-btn" (click)="toggleFiscal()">
+                <div class="product-form__collapse-left">
+                  <lucide-icon name="file-text" class="product-form__collapse-icon"></lucide-icon>
+                  <span class="product-form__section-label product-form__section-label--inline">
+                    Dados Fiscais
+                  </span>
+                  <span class="form-label--optional">— NF-e / NFC-e</span>
+                </div>
+                <lucide-icon
+                  [name]="showFiscal() ? 'chevron-up' : 'chevron-down'"
+                  class="product-form__collapse-chevron"
+                >
+                </lucide-icon>
               </button>
-            }
-          </div>
 
-          <div class="product-form__row">
-            <div class="form-field product-form__col--grow">
-              <label class="form-label" for="product-manufacturer">Fabricante</label>
-              <input id="product-manufacturer" type="text" formControlName="manufacturer" class="nexora-input"
-                placeholder="Opcional, ajuda a identificar o produto exato">
-            </div>
-          </div>
-
-          @if (!isEditing()) {
-            <p class="official-data__notice">A busca automática será iniciada ao salvar o produto.</p>
-          }
-
-          @if (syncMessage()) {
-            <div class="sync-feedback" [class.sync-feedback--success]="syncState() === 'success'"
-              [class.sync-feedback--error]="syncState() === 'error'" role="status">
-               @if (syncState() === 'loading' || syncState() === 'pending') { <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon> }
-              @else if (syncState() === 'error') { <lucide-icon name="alert-triangle" class="btn-icon"></lucide-icon> }
-              @else { <lucide-icon name="check-circle" class="btn-icon"></lucide-icon> }
-              <span>{{ syncMessage() }}</span>
-            </div>
-          }
-
-          @if (isEditing()) {
-            <div class="source-summary">
-              <div>
-                <span class="source-summary__label">Status da fonte</span>
-                <strong>{{ factsStatusLabel(currentFacts()?.status) }}</strong>
-              </div>
-              @if (currentFacts()?.source?.url; as sourceUrl) {
-                <div>
-                  <span class="source-summary__label">Fonte recuperada</span>
-                  <a [href]="sourceUrl" target="_blank" rel="noopener noreferrer">
-                    {{ currentFacts()?.source?.title || sourceUrl }} <lucide-icon name="external-link"></lucide-icon>
-                  </a>
+              @if (showFiscal()) {
+                <div class="product-form__row product-form__fiscal-fields">
+                  <div class="form-field product-form__col">
+                    <label class="form-label">NCM</label>
+                    <input
+                      type="text"
+                      formControlName="ncm"
+                      class="nexora-input"
+                      placeholder="Ex: 1006.30.21"
+                      maxlength="10"
+                    />
+                    @if (productForm.controls.ncm.touched && productForm.controls.ncm.invalid) {
+                      <p class="form-error">Informe os 8 dígitos do NCM.</p>
+                    }
+                  </div>
+                  <div class="form-field product-form__col">
+                    <label class="form-label">CFOP</label>
+                    <input
+                      type="text"
+                      formControlName="cfop"
+                      class="nexora-input"
+                      placeholder="Ex: 5102"
+                      maxlength="5"
+                    />
+                    @if (productForm.controls.cfop.touched && productForm.controls.cfop.invalid) {
+                      <p class="form-error">Informe os 4 dígitos do CFOP.</p>
+                    }
+                  </div>
+                </div>
+                <div class="product-form__row product-form__fiscal-fields">
+                  <div class="form-field product-form__col">
+                    <label class="form-label"
+                      >CEST <span class="form-label--optional">(opcional)</span></label
+                    >
+                    <input
+                      type="text"
+                      formControlName="cest"
+                      class="nexora-input"
+                      placeholder="Ex: 28.038.00"
+                      maxlength="9"
+                    />
+                    @if (productForm.controls.cest.touched && productForm.controls.cest.invalid) {
+                      <p class="form-error">Informe os 7 dígitos do CEST.</p>
+                    }
+                  </div>
+                  <div class="form-field product-form__col">
+                    <label class="form-label">Origem</label>
+                    <select formControlName="origin" class="havoc-select">
+                      <option value="0">0 - Nacional</option>
+                      <option value="1">1 - Estrangeira, importação direta</option>
+                      <option value="2">2 - Estrangeira, mercado interno</option>
+                      <option value="3">3 - Nacional, conteúdo importado acima de 40%</option>
+                      <option value="4">4 - Nacional, processo produtivo básico</option>
+                      <option value="5">5 - Nacional, conteúdo importado até 40%</option>
+                      <option value="6">6 - Estrangeira, sem similar nacional</option>
+                      <option value="7">7 - Estrangeira, mercado interno sem similar</option>
+                      <option value="8">8 - Nacional, conteúdo importado acima de 70%</option>
+                    </select>
+                  </div>
+                  <div class="form-field product-form__col">
+                    <label class="form-label">CSOSN</label>
+                    <input type="text" formControlName="csosn" class="nexora-input" maxlength="3" />
+                  </div>
+                </div>
+                <div class="product-form__row product-form__fiscal-fields">
+                  <div class="form-field product-form__col">
+                    <label class="form-label">CST PIS</label>
+                    <input
+                      type="text"
+                      formControlName="pisCst"
+                      class="nexora-input"
+                      maxlength="2"
+                    />
+                  </div>
+                  <div class="form-field product-form__col">
+                    <label class="form-label">CST COFINS</label>
+                    <input
+                      type="text"
+                      formControlName="cofinsCst"
+                      class="nexora-input"
+                      maxlength="2"
+                    />
+                  </div>
+                  <div class="form-field product-form__col">
+                    <label class="form-label">Unidade tributável</label>
+                    <input
+                      type="text"
+                      formControlName="taxableUnit"
+                      class="nexora-input"
+                      maxlength="6"
+                    />
+                  </div>
                 </div>
               }
-              @if (currentFacts()?.source?.retrievedAt; as retrievedAt) {
-                <div>
-                  <span class="source-summary__label">Consultada em</span>
-                  <span>{{ retrievedAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-              }
             </div>
-          }
-        </div>
 
-        <div class="product-form__section">
-          <p class="product-form__section-label">Foto do Produto</p>
-
-          @if (!imagePreview()) {
-          <label class="upload-zone">
-            <lucide-icon name="image-plus" class="upload-zone__icon"></lucide-icon>
-            <span class="upload-zone__label">Selecionar a arte da imagem</span>
-            <span class="upload-zone__hint">Apenas PNG e JPG até 5MB (WEBP não suportado)</span>
-
-            <input type="file" accept="image/jpeg, image/png, image/jpg" class="upload-zone__input"
-              (change)="onFileSelected($event)">
-          </label>
-          } @else {
-          <div style="display: flex; gap: 1rem;">
-            <div class="image-thumb" style="width: 120px; height: 120px;">
-              <img [src]="imagePreview()" class="image-thumb__img" alt="Preview do Produto">
-              <div class="image-thumb__overlay">
-                <button type="button" (click)="removeImage()" class="image-thumb__remove">
-                  <lucide-icon name="trash-2" class="action-btn__icon"></lucide-icon>
-                </button>
+            <div
+              class="toggle-field"
+              (click)="productForm.patchValue({ isActive: !productForm.value.isActive })"
+            >
+              <div class="toggle-field__info">
+                <p class="toggle-field__label">Produto disponível para venda</p>
+                <p class="toggle-field__desc">O bot e o catálogo irão exibir este produto.</p>
               </div>
-            </div>
-          </div>
-          }
-        </div>
-
-        <div class="product-form__section">
-          <p class="product-form__section-label">Valores</p>
-
-          <div class="product-form__row">
-            <div class="form-field product-form__col">
-              <label class="form-label">Preço de Venda (R$) <span class="form-label--required">*</span></label>
-              <div class="input-prefix">
-                <span class="input-prefix__symbol">R$</span>
-                <input type="text" formControlName="price" class="nexora-input input-prefix__input" currencyMask
-                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
-              </div>
-              @if (productForm.get('price')?.invalid && productForm.get('price')?.touched) {
-              <p class="form-error">Informe um preço válido.</p>
-              }
+              <div
+                class="toggle-switch"
+                [class.toggle-switch--active]="productForm.value.isActive"
+              ></div>
             </div>
 
-            <div class="form-field product-form__col">
-              <label class="form-label">Custo (R$) <span class="form-label--optional">(para margem)</span></label>
-              <div class="input-prefix">
-                <span class="input-prefix__symbol">R$</span>
-                <input type="text" formControlName="cost_price" class="nexora-input input-prefix__input" currencyMask
-                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
-              </div>
+            <div class="modal-actions">
+              <button type="button" (click)="closeModal()" class="btn-cancel">Cancelar</button>
+              <button
+                type="submit"
+                [disabled]="productForm.invalid || isSaving()"
+                class="btn-primary"
+              >
+                @if (isSaving()) {
+                  <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
+                  Salvando...
+                } @else {
+                  <lucide-icon name="save" class="btn-icon"></lucide-icon>
+                  {{ isEditing() ? 'Salvar Alterações' : 'Cadastrar Produto' }}
+                }
+              </button>
             </div>
-
-            <div class="form-field product-form__col">
-              <label class="form-label">Preço Atacado (R$) <span class="form-label--optional">(PJ)</span></label>
-              <div class="input-prefix">
-                <span class="input-prefix__symbol">R$</span>
-                <input type="text" formControlName="price_wholesale" class="nexora-input input-prefix__input"
-                  currencyMask
-                  [options]="{ prefix: '', thousands: '.', decimal: ',', align: 'left', allowNegative: false }">
-              </div>
-            </div>
-          </div>
-
-          @if (calculatedMargin() !== null) {
-          <div class="margin-indicator" [ngClass]="{
-              'margin-indicator--danger':  calculatedMargin()! < 10,
-              'margin-indicator--warning': calculatedMargin()! >= 10 && calculatedMargin()! < 30,
-              'margin-indicator--success': calculatedMargin()! >= 30
-            }">
-            <lucide-icon name="trending-up" class="margin-indicator__icon"></lucide-icon>
-            <span>Margem estimada: <strong>{{ calculatedMargin() | number:'1.1-1' }}%</strong></span>
-          </div>
-          }
-        </div>
-
-        <div class="product-form__section">
-          <p class="product-form__section-label">Estoque</p>
-
-          <div class="product-form__row">
-            <div class="form-field product-form__col">
-              <label class="form-label">Estoque Inicial</label>
-              <div class="nx-number-input">
-                <button type="button" (click)="decrementStock('stock_qty')" class="nx-number-input__btn">−</button>
-                <input type="number" formControlName="stock_qty" class="nx-number-input__field" min="0">
-                <button type="button" (click)="incrementStock('stock_qty')" class="nx-number-input__btn">+</button>
-              </div>
-            </div>
-
-            <div class="form-field product-form__col">
-              <label class="form-label">Estoque Mínimo</label>
-              <div class="nx-number-input">
-                <button type="button" (click)="decrementStock('stock_min')" class="nx-number-input__btn">−</button>
-                <input type="number" formControlName="stock_min" class="nx-number-input__field" min="0">
-                <button type="button" (click)="incrementStock('stock_min')" class="nx-number-input__btn">+</button>
-              </div>
-              <p class="form-hint">Alerta disparado abaixo deste valor.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="product-form__section product-form__section--collapsible">
-          <button type="button" class="product-form__collapse-btn" (click)="toggleFiscal()">
-            <div class="product-form__collapse-left">
-              <lucide-icon name="file-text" class="product-form__collapse-icon"></lucide-icon>
-              <span class="product-form__section-label product-form__section-label--inline">
-                Dados Fiscais
-              </span>
-              <span class="form-label--optional">— NF-e / NFC-e</span>
-            </div>
-            <lucide-icon [name]="showFiscal() ? 'chevron-up' : 'chevron-down'" class="product-form__collapse-chevron">
-            </lucide-icon>
-          </button>
-
-          @if (showFiscal()) {
-          <div class="product-form__row product-form__fiscal-fields">
-            <div class="form-field product-form__col">
-              <label class="form-label">NCM</label>
-              <input type="text" formControlName="ncm" class="nexora-input" placeholder="Ex: 1006.30.21" maxlength="10">
-            </div>
-            <div class="form-field product-form__col">
-              <label class="form-label">CFOP</label>
-              <input type="text" formControlName="cfop" class="nexora-input" placeholder="Ex: 5102" maxlength="5">
-            </div>
-          </div>
-          }
-        </div>
-
-        <div class="toggle-field" (click)="productForm.patchValue({isActive: !productForm.value.isActive})">
-          <div class="toggle-field__info">
-            <p class="toggle-field__label">Produto disponível para venda</p>
-            <p class="toggle-field__desc">O bot e o catálogo irão exibir este produto.</p>
-          </div>
-          <div class="toggle-switch" [class.toggle-switch--active]="productForm.value.isActive"></div>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" (click)="closeModal()" class="btn-cancel">Cancelar</button>
-          <button type="submit" [disabled]="productForm.invalid || isSaving()" class="btn-primary">
-            @if (isSaving()) {
-            <lucide-icon name="refresh-cw" class="btn-icon btn-icon--spin"></lucide-icon>
-            Salvando...
-            } @else {
-            <lucide-icon name="save" class="btn-icon"></lucide-icon>
-            {{ isEditing() ? 'Salvar Alterações' : 'Cadastrar Produto' }}
-            }
-          </button>
-        </div>
-
-      </form>
-      }
+          </form>
+        }
+      </div>
     </div>
-  </div>
   }
-
 </div>
