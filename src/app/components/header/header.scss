@@ -23,6 +23,34 @@
   gap: var(--ui-space-3);
 }
 
+.theme-toggle-btn {
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 11px;
+  border-color: var(--ui-border);
+  background: var(--ui-surface-2);
+
+  .theme-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--ui-primary-dark);
+
+    :root[data-theme='dark'] &,
+    :root:not([data-theme='light']) & {
+      color: var(--ui-primary);
+    }
+  }
+
+  @media (max-width: 560px) {
+    width: 38px;
+    padding: 0;
+
+    .theme-label {
+      display: none;
+    }
+  }
+}
+
 .menu-btn {
   display: none;
 
@@ -124,8 +152,8 @@
         flex-shrink: 0;
 
         lucide-icon {
-          width: 18px;
-          height: 18px;
+          width: 24px;
+          height: 24px;
         }
 
         &.info {

@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { SocketService } from '../../services/socket.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { AudioService } from '../../services/audio.service';
+import { ThemeService } from '../../services/theme.service';
 
 export interface AppNotification {
   id: string;
@@ -27,6 +28,7 @@ export class Header implements OnInit {
   authService = inject(AuthService);
   socketService = inject(SocketService);
   router = inject(Router);
+  readonly themeService = inject(ThemeService);
     private audioService = inject(AudioService);
   
   toggleMenu = output<void>();

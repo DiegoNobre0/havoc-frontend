@@ -12,6 +12,7 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { errorInterceptor } from './interceptors/error.interceptor';
 import { loadingInterceptor } from './interceptors/loading.interceptor';
@@ -101,6 +102,8 @@ import {
   FileDown,
   FilterX,
   ReceiptText,
+  Sun,
+  Moon,
 } from 'lucide-angular';
 import { AuthService } from './services/auth.service';
 import { firstValueFrom } from 'rxjs';
@@ -124,6 +127,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor, loadingInterceptor])),
     provideEnvironmentNgxMask(),
+    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { disableClose: true } },
 
     // 2. Registramos a trava de inicialização aqui!
     {
@@ -217,6 +221,8 @@ export const appConfig: ApplicationConfig = {
         FileDown,
         FilterX,
         ReceiptText,
+        Sun,
+        Moon,
       }),
     ),
   ],

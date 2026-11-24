@@ -98,7 +98,7 @@
 
   <!-- ✅ Modal de Detalhe (independente do modal de cancelamento) -->
   @if (isDetailOpen() && selectedOrder()) {
-    <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal-overlay">
       <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <div class="modal-header__info">
@@ -374,7 +374,7 @@
 
   <!-- ✅ Modal de Cancelamento FORA do modal de detalhe -->
   @if (isCancelOpen() && selectedOrder()) {
-    <div class="modal-overlay" (click)="closeCancel()">
+    <div class="modal-overlay">
       <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h2 class="modal-header__title">Cancelar Pedido</h2>

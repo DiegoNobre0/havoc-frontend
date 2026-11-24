@@ -70,7 +70,9 @@ export class SupplementConsultantComponent implements OnDestroy {
     this.isOpen.set(true);
     await this.state.hydrate();
     setTimeout(() => {
-      this.closeButton?.nativeElement.focus();
+      if (!this.isTouchDevice()) {
+        this.closeButton?.nativeElement.focus({ preventScroll: true });
+      }
       this.scrollToLatest();
     });
   }
@@ -79,7 +81,19 @@ export class SupplementConsultantComponent implements OnDestroy {
     if (!this.isOpen()) return;
     this.cancelRecording();
     this.isOpen.set(false);
-    setTimeout(() => this.launcher?.nativeElement.focus());
+    setTimeout(() => {
+      if (!this.isTouchDevice()) {
+        this.launcher?.nativeElement.focus({ preventScroll: true });
+      }
+    });
+  }
+
+  private isTouchDevice(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches
+    );
   }
 
   @HostListener('document:keydown.escape')

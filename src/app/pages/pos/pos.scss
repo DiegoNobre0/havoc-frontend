@@ -15,8 +15,8 @@
 
 lucide-icon {
   display: inline-flex;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
 }
 
@@ -325,8 +325,8 @@ lucide-icon {
   }
 
   lucide-icon {
-    width: 14px;
-    height: 14px;
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -429,8 +429,8 @@ lucide-icon {
   transition: inherit;
 
   lucide-icon {
-    width: 14px;
-    height: 14px;
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -488,7 +488,7 @@ lucide-icon {
 .kit-card {
   min-width: 0;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto 16px;
+  grid-template-columns: 34px minmax(0, 1fr) auto 24px;
   align-items: center;
   gap: var(--ui-space-2);
   padding: 10px;
@@ -511,7 +511,8 @@ lucide-icon {
   }
 
   > lucide-icon {
-    width: 15px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-primary);
   }
 }
@@ -720,8 +721,8 @@ lucide-icon {
   }
 
   lucide-icon {
-    width: 14px;
-    height: 14px;
+    width: 24px;
+    height: 24px;
   }
 }
 
@@ -755,8 +756,8 @@ lucide-icon {
   }
 
   lucide-icon {
-    width: 13px;
-    height: 13px;
+    width: 24px;
+    height: 24px;
   }
 
   strong {
@@ -799,6 +800,18 @@ lucide-icon {
     min-height: 37px;
     padding: 7px 10px;
     text-align: right;
+  }
+
+  .ui-input-prefix {
+    .ui-input-prefix__symbol {
+      left: 10px;
+      font-size: 0.78rem;
+    }
+
+    .ui-input {
+      padding: 7px 10px 7px 36px;
+      text-align: left;
+    }
   }
 }
 
@@ -1330,5 +1343,14 @@ lucide-icon {
 
   .payment-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+:host-context([data-theme='light']) {
+  .customer-form,
+  .sale-summary,
+  .modal-header,
+  .payment-card {
+    background: var(--ui-surface-2);
   }
 }

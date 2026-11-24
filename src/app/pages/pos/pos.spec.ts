@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { provideEnvironmentNgxMask } from 'ngx-mask';
 import { of, throwError } from 'rxjs';
 
 import { CatalogProduct } from '../../models/product.models';
@@ -98,6 +99,7 @@ describe('Pos', () => {
     await TestBed.configureTestingModule({
       imports: [Pos],
       providers: [
+        provideEnvironmentNgxMask(),
         { provide: CatalogService, useValue: catalogService },
         {
           provide: PosService,

@@ -315,6 +315,7 @@
                 type="text"
                 class="ui-input"
                 formControlName="cpf"
+                mask="000.000.000-00"
                 inputmode="numeric"
                 placeholder="000.000.000-00"
               />
@@ -325,6 +326,8 @@
                 type="tel"
                 class="ui-input"
                 formControlName="phone"
+                mask="(00) 00000-0000||(00) 0000-0000"
+                inputmode="tel"
                 placeholder="(00) 00000-0000"
               />
             </label>
@@ -400,7 +403,17 @@
           </div>
           <label class="discount-row">
             <span>Desconto (R$)</span>
-            <input type="number" class="ui-input" formControlName="discount" min="0" step="0.01" />
+            <div class="ui-input-prefix">
+              <span class="ui-input-prefix__symbol">R$</span>
+              <input
+                type="text"
+                class="ui-input"
+                formControlName="discount"
+                currencyMask
+                [options]="currencyMaskOptions"
+                inputmode="decimal"
+              />
+            </div>
           </label>
           @if (saleForm.controls.discount.value > subtotal()) {
             <small class="form-warning">O desconto será limitado ao subtotal.</small>
@@ -441,7 +454,7 @@
   }
 
   @if (activeModal(); as modal) {
-    <div class="ui-modal-overlay pos-modal-overlay" (click)="closeModal()">
+    <div class="ui-modal-overlay pos-modal-overlay">
       <section class="pos-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
         @if (modal === 'open') {
           <header class="modal-header">
@@ -458,14 +471,19 @@
           </header>
           <form [formGroup]="openForm" (ngSubmit)="submitOpenSession()" class="modal-form">
             <label
-              ><span>Saldo inicial</span
-              ><input
-                type="number"
-                class="ui-input"
-                formControlName="openingBalance"
-                min="0"
-                step="0.01"
-            /></label>
+              ><span>Saldo inicial</span>
+              <div class="ui-input-prefix">
+                <span class="ui-input-prefix__symbol">R$</span>
+                <input
+                  type="text"
+                  class="ui-input"
+                  formControlName="openingBalance"
+                  currencyMask
+                  [options]="currencyMaskOptions"
+                  inputmode="decimal"
+                />
+              </div>
+            </label>
             <label
               ><span>Observação</span
               ><textarea
@@ -507,14 +525,19 @@
           </header>
           <form [formGroup]="movementForm" (ngSubmit)="submitMovement()" class="modal-form">
             <label
-              ><span>Valor</span
-              ><input
-                type="number"
-                class="ui-input"
-                formControlName="amount"
-                min="0.01"
-                step="0.01"
-            /></label>
+              ><span>Valor</span>
+              <div class="ui-input-prefix">
+                <span class="ui-input-prefix__symbol">R$</span>
+                <input
+                  type="text"
+                  class="ui-input"
+                  formControlName="amount"
+                  currencyMask
+                  [options]="currencyMaskOptions"
+                  inputmode="decimal"
+                />
+              </div>
+            </label>
             <label
               ><span>Descrição</span
               ><textarea
@@ -549,14 +572,19 @@
               <span>Saldo esperado</span><strong>{{ formatCurrency(expectedBalance()) }}</strong>
             </div>
             <label
-              ><span>Saldo contado</span
-              ><input
-                type="number"
-                class="ui-input counted-input"
-                formControlName="countedBalance"
-                min="0"
-                step="0.01"
-            /></label>
+              ><span>Saldo contado</span>
+              <div class="ui-input-prefix">
+                <span class="ui-input-prefix__symbol">R$</span>
+                <input
+                  type="text"
+                  class="ui-input counted-input"
+                  formControlName="countedBalance"
+                  currencyMask
+                  [options]="currencyMaskOptions"
+                  inputmode="decimal"
+                />
+              </div>
+            </label>
             <div
               class="difference-box"
               [class.positive]="closeDifference() > 0"
@@ -614,44 +642,54 @@
                   <div class="payment-grid">
                     <label
                       ><span>Forma</span
-                      ><select
-                        class="ui-select"
+                      ><mat-select
+                        class="havoc-mat-select"
                         formControlName="method"
-                        (change)="paymentMethodChanged(index)"
+                        (selectionChange)="paymentMethodChanged(index)"
                       >
                         @for (method of paymentMethods; track method.value) {
-                          <option [value]="method.value">{{ method.label }}</option>
+                          <mat-option [value]="method.value">{{ method.label }}</mat-option>
                         }
-                      </select></label
+                      </mat-select></label
                     >
                     <label
-                      ><span>Valor</span
-                      ><input
-                        type="number"
-                        class="ui-input"
-                        formControlName="amount"
-                        min="0.01"
-                        step="0.01"
-                    /></label>
+                      ><span>Valor</span>
+                      <div class="ui-input-prefix">
+                        <span class="ui-input-prefix__symbol">R$</span>
+                        <input
+                          type="text"
+                          class="ui-input"
+                          formControlName="amount"
+                          currencyMask
+                          [options]="currencyMaskOptions"
+                          inputmode="decimal"
+                        />
+                      </div>
+                    </label>
                     @if (payment.controls.method.value === 'CASH') {
                       <label
-                        ><span>Valor entregue</span
-                        ><input
-                          type="number"
-                          class="ui-input"
-                          formControlName="amountTendered"
-                          min="0"
-                          step="0.01"
-                      /></label>
+                        ><span>Valor entregue</span>
+                        <div class="ui-input-prefix">
+                          <span class="ui-input-prefix__symbol">R$</span>
+                          <input
+                            type="text"
+                            class="ui-input"
+                            formControlName="amountTendered"
+                            currencyMask
+                            [options]="currencyMaskOptions"
+                            inputmode="decimal"
+                          />
+                        </div>
+                      </label>
                     }
                     @if (payment.controls.method.value === 'CREDIT_CARD') {
                       <label
                         ><span>Parcelas</span
-                        ><select class="ui-select" formControlName="installments">
+                        ><mat-select class="havoc-mat-select" formControlName="installments">
                           @for (installment of installments; track installment) {
-                            <option [value]="installment">{{ installment }}x</option>
+                            <mat-option [value]="installment">{{ installment }}x</mat-option>
                           }
-                        </select></label
+                        </mat-select></label
                       >
                     }
                     @if (

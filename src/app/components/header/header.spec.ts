@@ -7,7 +7,9 @@ import {
   LucideAngularModule,
   Menu,
   MessageCircle,
+  Moon,
   ShoppingBag,
+  Sun,
 } from 'lucide-angular';
 import { Subject } from 'rxjs';
 
@@ -30,7 +32,9 @@ describe('Header', () => {
           BellOff,
           Menu,
           MessageCircle,
+          Moon,
           ShoppingBag,
+          Sun,
         }),
       ],
       providers: [

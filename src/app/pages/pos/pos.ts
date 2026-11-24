@@ -18,9 +18,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatOptionModule } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LucideAngularModule } from 'lucide-angular';
+import { NgxCurrencyDirective } from 'ngx-currency';
+import { NgxMaskDirective } from 'ngx-mask';
 import {
   Subject,
   catchError,
@@ -87,7 +91,15 @@ type PaymentForm = FormGroup<{
 @Component({
   selector: 'app-pos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+    NgxCurrencyDirective,
+    NgxMaskDirective,
+    MatSelectModule,
+    MatOptionModule,
+  ],
   templateUrl: './pos.html',
   styleUrl: './pos.scss',
 })
@@ -130,6 +142,13 @@ export class Pos implements OnInit, OnDestroy {
     { value: 'CREDIT_CARD', label: 'Cartão de crédito' },
   ];
   readonly installments = Array.from({ length: 24 }, (_, index) => index + 1);
+  readonly currencyMaskOptions = {
+    prefix: '',
+    thousands: '.',
+    decimal: ',',
+    align: 'left',
+    allowNegative: false,
+  };
 
   readonly scannerForm = this.fb.group({ code: [''] });
   readonly searchControl = this.fb.control('');

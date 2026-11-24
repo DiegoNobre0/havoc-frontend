@@ -9,6 +9,7 @@
   right: 24px;
   bottom: 24px;
   z-index: 900;
+  touch-action: manipulation;
 }
 
 .consultant-launcher {
@@ -25,10 +26,11 @@
   font: inherit;
   line-height: 0;
   cursor: pointer;
+  touch-action: manipulation;
 
   lucide-icon {
-    width: 23px;
-    height: 23px;
+    width: 24px;
+    height: 24px;
     display: grid;
     place-items: center;
   }
@@ -84,6 +86,12 @@
   color: var(--ui-text-primary);
   box-shadow: 0 24px 70px rgba(0, 0, 0, .75);
   animation: consultant-in 160ms ease-out;
+  touch-action: manipulation;
+
+  button,
+  textarea {
+    touch-action: manipulation;
+  }
 }
 
 .consultant-header {
@@ -117,7 +125,7 @@
   background: var(--ui-primary);
   color: #000;
 
-  lucide-icon { width: 21px; height: 21px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 .consultant-header-actions {
@@ -137,7 +145,7 @@
 
     &:hover { background: var(--ui-surface-2); color: #fff; }
     &:disabled { opacity: .35; cursor: not-allowed; }
-    lucide-icon { width: 19px; height: 19px; }
+    lucide-icon { width: 24px; height: 24px; }
   }
 }
 
@@ -164,7 +172,7 @@
   color: #555;
 
   img { width: 100%; height: 100%; object-fit: contain; }
-  lucide-icon { width: 22px; height: 22px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 .consultant-product-copy {
@@ -194,8 +202,8 @@
 }
 
 .consultant-product-check {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   color: var(--ui-primary);
 }
 
@@ -567,7 +575,7 @@ textarea:focus-visible {
 }
 
 @keyframes consultant-in {
-  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  from { opacity: 0; transform: translateY(8px); }
 }
 
 @keyframes consultant-prompt-in {
@@ -632,11 +640,18 @@ textarea:focus-visible {
   .composer-row {
     grid-template-columns: minmax(0, 1fr) 42px 42px;
 
+    textarea { font-size: 16px; }
     button { width: 42px; height: 42px; }
   }
 
   .composer-row--recording { grid-template-columns: 42px minmax(0, 1fr) 42px; }
   .recording-preview { height: 42px; padding: 0 10px; gap: 7px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .composer-row textarea {
+    font-size: 16px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

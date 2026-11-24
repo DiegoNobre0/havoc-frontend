@@ -504,7 +504,7 @@
 </div>
 
 @if (isShippingModalOpen()) {
-  <div class="modal-overlay" (click)="closeShippingModal()">
+  <div class="modal-overlay">
     <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-header__info">
@@ -602,7 +602,7 @@
 }
 
 @if (isUserModalOpen()) {
-  <div class="modal-overlay" (click)="closeUserModal()">
+  <div class="modal-overlay">
     <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-header__info">

@@ -122,8 +122,8 @@
   background: rgba(255, 255, 255, 0.025);
 
   lucide-icon {
-    width: 21px;
-    height: 21px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-primary);
   }
 
@@ -289,7 +289,7 @@
     outline: none;
   }
 
-  lucide-icon { width: 19px; height: 19px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 .field-error {
@@ -308,8 +308,8 @@
   animation: slide-down 180ms ease-out;
 
   lucide-icon {
-    width: 19px;
-    height: 19px;
+    width: 24px;
+    height: 24px;
     flex: 0 0 auto;
     color: #ef7777;
   }
@@ -351,7 +351,7 @@
     cursor: wait;
   }
 
-  lucide-icon { width: 18px; height: 18px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 .loading-icon { animation: spin 850ms linear infinite; }
@@ -367,7 +367,7 @@
   color: #656565;
   font-size: 0.68rem;
 
-  lucide-icon { width: 14px; height: 14px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 .store-link {
@@ -381,7 +381,7 @@
   text-decoration: none;
 
   &:hover { color: var(--ui-primary); }
-  lucide-icon { width: 14px; height: 14px; }
+  lucide-icon { width: 24px; height: 24px; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }

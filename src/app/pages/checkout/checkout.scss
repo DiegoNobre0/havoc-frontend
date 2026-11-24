@@ -112,8 +112,8 @@
   transition: background 150ms ease;
 
   lucide-icon {
-    width: 21px;
-    height: 21px;
+    width: 24px;
+    height: 24px;
   }
 
   &:hover {
@@ -189,8 +189,8 @@
     color: #ffffff;
 
     lucide-icon {
-      width: 17px;
-      height: 17px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -198,8 +198,8 @@
     position: absolute;
     top: -4px;
     right: -4px;
-    min-width: 18px;
-    height: 18px;
+    min-width: 24px;
+    height: 24px;
     padding: 0 4px;
     border-radius: 999px;
     background: var(--store-accent);
@@ -248,8 +248,8 @@
     .search-icon {
       position: absolute;
       left: 12px;
-      width: 17px;
-      height: 17px;
+      width: 24px;
+      height: 24px;
       color: var(--ui-text-muted);
     }
 
@@ -280,8 +280,8 @@
       place-items: center;
 
       lucide-icon {
-        width: 16px;
-        height: 16px;
+        width: 24px;
+        height: 24px;
       }
     }
   }
@@ -426,15 +426,15 @@
 
   .mh-arrow-red,
   .mh-arrow-light {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 5px;
     display: grid;
     place-items: center;
 
     lucide-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -473,8 +473,8 @@
   text-align: left;
 
   lucide-icon {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-text-muted);
   }
 
@@ -550,8 +550,8 @@
     font-weight: 800;
 
     .step-check-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -660,8 +660,8 @@
   gap: 10px;
 
   lucide-icon {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     color: var(--store-accent);
     flex-shrink: 0;
     margin-top: 2px;
@@ -763,15 +763,15 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-text-muted);
   }
 
   .catalog-search {
     width: 100%;
     height: 40px;
-    padding: 0 36px;
+    padding: 0 42px;
     border: 1px solid var(--ui-border);
     border-radius: 10px;
     background: #fafafa;
@@ -796,8 +796,8 @@
     cursor: pointer;
 
     lucide-icon {
-      width: 15px;
-      height: 15px;
+      width: 24px;
+      height: 24px;
     }
   }
 }
@@ -980,8 +980,8 @@
   transition: all 150ms ease;
 
   lucide-icon {
-    width: 17px;
-    height: 17px;
+    width: 24px;
+    height: 24px;
   }
 
   &:hover:not(:disabled) {
@@ -1125,8 +1125,8 @@
       flex-shrink: 0;
 
       lucide-icon {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
       }
     }
 
@@ -1238,8 +1238,8 @@
   transition: all 150ms ease;
 
   .radio-indicator {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: 2px solid #a1a1aa;
     margin-top: 2px;
@@ -1257,8 +1257,8 @@
     flex-shrink: 0;
 
     lucide-icon {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -1320,8 +1320,8 @@
     margin-bottom: 14px;
 
     lucide-icon {
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
       color: var(--store-accent-text);
     }
   }
@@ -1340,8 +1340,8 @@
     margin-bottom: 10px;
 
     .pickup-pin-icon {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       color: var(--store-accent-text);
       flex-shrink: 0;
       margin-top: 2px;
@@ -1370,8 +1370,8 @@
     margin-bottom: 6px;
 
     lucide-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -1414,8 +1414,8 @@
   }
 
   .radio-indicator {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     border: 2px solid #a1a1aa;
   }
@@ -1430,8 +1430,8 @@
     place-items: center;
 
     lucide-icon {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -1539,8 +1539,8 @@
         cursor: pointer;
 
         lucide-icon {
-          width: 13px;
-          height: 13px;
+          width: 24px;
+          height: 24px;
         }
 
         &:disabled {
@@ -1574,8 +1574,8 @@
       cursor: pointer;
 
       lucide-icon {
-        width: 14px;
-        height: 14px;
+        width: 24px;
+        height: 24px;
       }
 
       &:hover {
@@ -1816,8 +1816,8 @@
       cursor: pointer;
 
       lucide-icon {
-        width: 15px;
-        height: 15px;
+        width: 24px;
+        height: 24px;
       }
     }
   }
@@ -2020,8 +2020,8 @@
     flex-shrink: 0;
 
     lucide-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
     }
 
     &.reached {
@@ -2189,8 +2189,8 @@
       cursor: pointer;
 
       lucide-icon {
-        width: 13px;
-        height: 13px;
+        width: 24px;
+        height: 24px;
       }
 
       &:disabled {
@@ -2215,8 +2215,8 @@
     padding: 4px;
 
     lucide-icon {
-      width: 15px;
-      height: 15px;
+      width: 24px;
+      height: 24px;
     }
 
     &:hover {
@@ -2311,8 +2311,8 @@
     cursor: pointer;
 
     lucide-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -2512,8 +2512,8 @@
 }
 
 .btn-icon-xs {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
 }
 
 // ─── RESPONSIVIDADE ───────────────────────────────────────────
@@ -2715,8 +2715,8 @@
         cursor: pointer;
 
         lucide-icon {
-          width: 13px;
-          height: 13px;
+          width: 24px;
+          height: 24px;
         }
       }
     }
@@ -2819,8 +2819,8 @@
     }
 
     .mobile-step-icon {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
 
     .step-title {
@@ -2900,8 +2900,8 @@
       }
 
       lucide-icon {
-        width: 16px;
-        height: 16px;
+        width: 24px;
+        height: 24px;
       }
     }
   }

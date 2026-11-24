@@ -53,35 +53,87 @@
         />
       </div>
     </label>
-    <label class="filter-field">
+    <div class="filter-field">
       <span>Status</span>
-      <select class="ui-select" formControlName="status" (change)="applyFilters()">
-        <option value="">Todos</option>
-        <option value="AUTHORIZED">Autorizada</option>
-        <option value="PROCESSING">Processando</option>
-        <option value="PENDING">Pendente</option>
-        <option value="REJECTED">Rejeitada</option>
-        <option value="CANCELLED">Cancelada</option>
-        <option value="UNKNOWN">Atenção</option>
-        <option value="ERROR">Erro</option>
-      </select>
-    </label>
-    <label class="filter-field">
+      <mat-select
+        class="havoc-mat-select"
+        formControlName="status"
+        (selectionChange)="applyFilters()"
+      >
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="AUTHORIZED">Autorizada</mat-option>
+        <mat-option value="PROCESSING">Processando</mat-option>
+        <mat-option value="PENDING">Pendente</mat-option>
+        <mat-option value="REJECTED">Rejeitada</mat-option>
+        <mat-option value="CANCELLED">Cancelada</mat-option>
+        <mat-option value="UNKNOWN">Atenção</mat-option>
+        <mat-option value="ERROR">Erro</mat-option>
+      </mat-select>
+    </div>
+    <div class="filter-field">
       <span>Ambiente</span>
-      <select class="ui-select" formControlName="environment" (change)="applyFilters()">
-        <option value="">Todos</option>
-        <option value="PRODUCAO">Produção</option>
-        <option value="HOMOLOGACAO">Homologação</option>
-      </select>
-    </label>
-    <label class="filter-field"
-      ><span>De</span
-      ><input class="ui-input" type="date" formControlName="startDate" (change)="applyFilters()"
-    /></label>
-    <label class="filter-field"
-      ><span>Até</span
-      ><input class="ui-input" type="date" formControlName="endDate" (change)="applyFilters()"
-    /></label>
+      <mat-select
+        class="havoc-mat-select"
+        formControlName="environment"
+        (selectionChange)="applyFilters()"
+      >
+        <mat-option value="">Todos</mat-option>
+        <mat-option value="PRODUCAO">Produção</mat-option>
+        <mat-option value="HOMOLOGACAO">Homologação</mat-option>
+      </mat-select>
+    </div>
+    <div class="filter-field">
+      <span>De</span>
+      <div class="havoc-date-wrapper">
+        <button
+          type="button"
+          class="havoc-date-trigger"
+          (click)="startPicker.open()"
+          aria-label="Selecionar data inicial"
+        >
+          <lucide-icon name="calendar" class="havoc-date-icon"></lucide-icon>
+          <span class="havoc-date-value" [class.is-placeholder]="!filters.controls.startDate.value">
+            {{ displayDateFilter('startDate') }}
+          </span>
+          <lucide-icon name="chevron-down" class="havoc-date-chevron"></lucide-icon>
+        </button>
+        <mat-form-field class="havoc-date-hidden" aria-hidden="true">
+          <input
+            matInput
+            [matDatepicker]="startPicker"
+            [value]="dateFilterValue('startDate')"
+            (dateChange)="onDateSelected('startDate', $event.value)"
+          />
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="filter-field">
+      <span>Até</span>
+      <div class="havoc-date-wrapper">
+        <button
+          type="button"
+          class="havoc-date-trigger"
+          (click)="endPicker.open()"
+          aria-label="Selecionar data final"
+        >
+          <lucide-icon name="calendar" class="havoc-date-icon"></lucide-icon>
+          <span class="havoc-date-value" [class.is-placeholder]="!filters.controls.endDate.value">
+            {{ displayDateFilter('endDate') }}
+          </span>
+          <lucide-icon name="chevron-down" class="havoc-date-chevron"></lucide-icon>
+        </button>
+        <mat-form-field class="havoc-date-hidden" aria-hidden="true">
+          <input
+            matInput
+            [matDatepicker]="endPicker"
+            [value]="dateFilterValue('endDate')"
+            (dateChange)="onDateSelected('endDate', $event.value)"
+          />
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </div>
     <button type="button" class="ui-btn ui-btn--ghost filter-clear" (click)="clearFilters()">
       <lucide-icon name="filter-x"></lucide-icon> Limpar
     </button>

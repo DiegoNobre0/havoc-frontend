@@ -59,8 +59,8 @@
   flex: 1 1 300px;
 
   &__icon {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
   }
 
@@ -76,8 +76,8 @@
 
     .alert__icon {
       color: var(--ui-warning);
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       flex-shrink: 0;
     }
 
@@ -148,8 +148,8 @@
     left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-text-muted);
     pointer-events: none;
     z-index: 1;
@@ -277,8 +277,8 @@
 
   &__placeholder-icon {
     color: var(--ui-text-muted);
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
   }
 
   &__info {
@@ -514,8 +514,8 @@
 
   &__collapse-icon,
   &__collapse-chevron {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-text-muted);
   }
 
@@ -667,8 +667,8 @@
     color: var(--ui-primary);
 
     lucide-icon {
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
       flex-shrink: 0;
     }
   }
@@ -745,8 +745,8 @@
   margin-top: 2px;
 
   &__icon {
-    width: 14px;
-    height: 14px;
+    width: 24px;
+    height: 24px;
   }
 
   &--success {
@@ -819,8 +819,8 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     background: #ffffff;
     border-radius: 50%;
     transition: transform var(--ui-transition-slow);
@@ -1003,8 +1003,8 @@
   font-size: 0.8125rem;
 
   &__icon {
-    width: 17px;
-    height: 17px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-primary);
     flex-shrink: 0;
   }

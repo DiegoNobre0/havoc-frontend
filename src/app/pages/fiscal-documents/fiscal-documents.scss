@@ -34,8 +34,8 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   lucide-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
   }
 }
 .summary-grid {
@@ -111,8 +111,8 @@
   color: var(--accent) !important;
   background: color-mix(in srgb, var(--accent) 13%, transparent);
   lucide-icon {
-    width: 21px;
-    height: 21px;
+    width: 24px;
+    height: 24px;
   }
 }
 .filter-panel {
@@ -145,8 +145,8 @@
     z-index: 1;
     left: 13px;
     top: 50%;
-    width: 17px;
-    height: 17px;
+    width: 24px;
+    height: 24px;
     color: var(--ui-text-muted);
     transform: translateY(-50%);
   }
@@ -189,7 +189,8 @@
   font-size: 0.78rem;
   font-weight: 700;
   lucide-icon {
-    width: 16px;
+    width: 24px;
+    height: 24px;
   }
 }
 .desktop-table {
@@ -202,7 +203,7 @@
   th {
     padding: 12px 18px;
     color: var(--ui-text-muted);
-    background: rgba(255, 255, 255, 0.018);
+    background: var(--ui-surface-2);
     font-size: 0.7rem;
     letter-spacing: 0.07em;
     text-align: left;
@@ -216,7 +217,7 @@
   tbody tr {
     transition: background var(--ui-transition);
     &:hover {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--ui-surface-2);
     }
   }
   td strong {
@@ -247,8 +248,8 @@
     color: var(--ui-primary);
   }
   lucide-icon {
-    width: 13px;
-    height: 13px;
+    width: 24px;
+    height: 24px;
   }
 }
 .status-chip,
@@ -319,8 +320,8 @@
     cursor: not-allowed;
   }
   lucide-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
   }
 }
 .action-button--event {
@@ -375,7 +376,8 @@
     gap: 8px;
   }
   lucide-icon {
-    width: 15px;
+    width: 24px;
+    height: 24px;
   }
 }
 .mobile-list {

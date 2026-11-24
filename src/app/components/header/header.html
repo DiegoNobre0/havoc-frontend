@@ -10,6 +10,17 @@
   </div>
 
   <div class="header-right">
+    <button
+      type="button"
+      class="ui-btn ui-btn--secondary ui-btn--sm theme-toggle-btn"
+      (click)="themeService.toggleTheme()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'"
+      [title]="themeService.theme() === 'dark' ? 'Alternar para fundo branco' : 'Alternar para fundo preto'"
+    >
+      <lucide-icon [name]="themeService.theme() === 'dark' ? 'sun' : 'moon'" class="theme-icon"></lucide-icon>
+      <span class="theme-label">{{ themeService.theme() === 'dark' ? 'Claro' : 'Escuro' }}</span>
+    </button>
+
     <div class="dropdown-container">
       <button
         type="button"

@@ -2,7 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { MatNativeDateModule, MatOptionModule, provideNativeDateAdapter } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -49,7 +54,18 @@ const EMPTY_SUMMARY: FiscalSummary = {
 @Component({
   selector: 'app-fiscal-documents',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    LucideAngularModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatNativeDateModule,
+    MatInputModule,
+  ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './fiscal-documents.html',
   styleUrl: './fiscal-documents.scss',
 })
@@ -121,6 +137,36 @@ export class FiscalDocuments implements OnInit {
     );
     this.currentPage.set(1);
     this.refresh();
+  }
+
+  dateFilterValue(field: 'startDate' | 'endDate'): Date | null {
+    const raw = this.filters.controls[field].value;
+    if (!raw) return null;
+    const parts = raw.split('-').map(Number);
+    if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part))) return null;
+    const [year, month, day] = parts;
+    return new Date(year, month - 1, day);
+  }
+
+  displayDateFilter(field: 'startDate' | 'endDate'): string {
+    const date = this.dateFilterValue(field);
+    if (!date) return 'dd/mm/aaaa';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
+  }
+
+  onDateSelected(field: 'startDate' | 'endDate', value: Date | null): void {
+    if (!value) {
+      this.filters.controls[field].setValue('');
+      this.applyFilters();
+      return;
+    }
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    this.filters.controls[field].setValue(`${year}-${month}-${day}`);
+    this.applyFilters();
   }
 
   refresh(): void {
